@@ -1,0 +1,30 @@
+name: Up2Date
+version: ${project.version}
+main: com.gamerking195.dev.up2date.Up2Date
+prefix: U2D
+softdepend: [AutoUpdaterAPI]
+authors: [GamerKing195]
+description: Automatically manage all of your Spigot plugins updating!
+website: TBD
+commands:
+  up2date:
+    description: Base command for Up2Date.
+  u2d:
+    description: Alias for /up2date.
+  update:
+    description: Alias for /up2date
+  stp:
+    description: Used for running the setup (do not use this command.)
+permissions:
+  u2d.*:
+    default: op
+    description: Gives an user full access to the plugin.
+  u2d.command:
+    default: true
+    description: Allows an user to see basic plugin info & help when running /u2d.
+  u2d.manage:
+    default: op
+    description: Allows an user to manage plugins & setup this plugin.
+  u2d.update:
+    default: op
+    description: Allows an user to update plugins.
