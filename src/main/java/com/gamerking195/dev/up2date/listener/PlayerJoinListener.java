@@ -51,7 +51,14 @@ public class PlayerJoinListener implements Listener {
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            new MessageBuilder().addHoverClickText("&dThere " + UtilText.getUtil().getEnding("are", availableUpdates.size(), false) + " currently &5" + availableUpdates.size() + "&d " + UtilText.getUtil().getEnding("update", availableUpdates.size(), false) + " available, click to open the GUI.", "&5View plugins.", "/u2d", false).sendToPlayersPrefixed(event.getPlayer());
+                            boolean u2dUpdate = false;
+                            for (PluginInfo info : availableUpdates) {
+                                if (info.getName().equalsIgnoreCase("Up2Date"))
+                                    u2dUpdate = true;
+                            }
+                            String including = u2dUpdate ? "&o(Including U2D)&d" : "";
+
+                            new MessageBuilder().addHoverClickText("&dThere " + UtilText.getUtil().getEnding("are", availableUpdates.size(), false) + " currently &5" + availableUpdates.size() + "&d " + UtilText.getUtil().getEnding("update", availableUpdates.size(), false) + " available, "+including+" click to open the GUI.", "&5View plugins.", "/u2d", false).sendToPlayersPrefixed(event.getPlayer());
                         }
                     }.runTaskLater(Up2Date.getInstance(), 20L);
                 }

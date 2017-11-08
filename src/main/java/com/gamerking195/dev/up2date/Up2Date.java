@@ -3,19 +3,33 @@ package com.gamerking195.dev.up2date;
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
 import com.gamerking195.dev.autoupdaterapi.UpdateLocale;
+import com.gamerking195.dev.autoupdaterapi.util.UtilPlugin;
+import com.gamerking195.dev.autoupdaterapi.util.UtilReader;
 import com.gamerking195.dev.up2date.command.SetupCommand;
 import com.gamerking195.dev.up2date.command.Up2DateCommand;
 import com.gamerking195.dev.up2date.config.MainConfig;
 import com.gamerking195.dev.up2date.listener.PlayerJoinListener;
 import com.gamerking195.dev.up2date.update.UpdateManager;
+import com.gamerking195.dev.up2date.util.UtilDatabase;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import net.cubespace.Yamler.Config.InvalidConfigurationException;
 import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.scheduler.BukkitRunnable;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.lang.reflect.Type;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
@@ -81,9 +95,55 @@ public final class Up2Date extends JavaPlugin {
 
         //Classes
         UpdateManager.getInstance().init();
+        UtilDatabase.getInstance().init();
 
         //Threadpool
         fixedThreadPool = Executors.newFixedThreadPool(mainConfig.getThreadPoolSize());
+
+        //Automatically update AutoUpdaterAPI
+        fixedThreadPool.submit(() -> {
+            try {
+
+                //Latest version number.
+                String latestVersionInfo = UtilReader.readFrom("https://api.spiget.org/v2/resources/39719/versions/latest");
+
+                Type type = new TypeToken<JsonObject>() {}.getType();
+                JsonObject object = new Gson().fromJson(latestVersionInfo, type);
+
+                //if update available
+                Plugin plugin = Bukkit.getPluginManager().getPlugin("AutoUpdaterAPI");
+                if (!object.get("name").getAsString().equals(plugin.getDescription().getVersion()) && (!plugin.getDescription().getVersion().contains("SNAPSHOT") && !plugin.getDescription().getVersion().contains("PRERELEASE"))) {
+                    log.info("Updating AutoUpdaterAPI V"+plugin.getDescription().getVersion()+" » "+object.get("name").getAsString()+".");
+
+                    Bukkit.getPluginManager().disablePlugin(plugin);
+                    UtilPlugin.unload(Bukkit.getPluginManager().getPlugin("AutoUpdaterAPI"));
+
+                    //Download AutoUpdaterAPI
+                    URL url = new URL("https://api.spiget.org/v2/resources/39719/download");
+                    HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
+                    httpConnection.setRequestProperty("User-Agent", "SpigetResourceUpdater");
+
+                    BufferedInputStream in = new BufferedInputStream(httpConnection.getInputStream());
+                    FileOutputStream fos = new FileOutputStream(new File(plugin.getDataFolder().getPath().substring(0, plugin.getDataFolder().getPath().lastIndexOf("/")) + "/AutoUpdaterAPI.jar"));
+                    BufferedOutputStream bout = new BufferedOutputStream(fos, 1024);
+
+                    byte[] data = new byte[1024];
+                    int x;
+                    while ((x = in.read(data, 0, 1024)) >= 0)
+                        bout.write(data, 0, x);
+
+                    bout.close();
+                    in.close();
+
+                    Plugin target = Bukkit.getPluginManager().loadPlugin(new File(plugin.getDataFolder().getPath().substring(0, plugin.getDataFolder().getPath().lastIndexOf("/")) + "/AutoUpdaterAPI.jar"));
+                    target.onLoad();
+                    Bukkit.getPluginManager().enablePlugin(target);
+                }
+            }
+            catch (Exception ex) {
+                printError(ex, "Error occurred while checking for AutoUpdaterAPI updates.");
+            }
+        });
 
         //Big message so we look cool
         Stream.of(

@@ -2,10 +2,11 @@ name: Up2Date
 version: ${project.version}
 main: com.gamerking195.dev.up2date.Up2Date
 prefix: U2D
+depend: [ProtocolLib]
 softdepend: [AutoUpdaterAPI]
 authors: [GamerKing195]
-description: Automatically manage all of your Spigot plugins updating!
-website: TBD
+description: Manage all of your spigot plugins and keep them Up2Date.
+website: https://www.spigotmc.org/resources/up2date.49313/
 commands:
   up2date:
     description: Base command for Up2Date.

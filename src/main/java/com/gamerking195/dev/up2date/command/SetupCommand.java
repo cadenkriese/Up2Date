@@ -9,6 +9,7 @@ import com.gamerking195.dev.up2date.Up2Date;
 import com.gamerking195.dev.up2date.ui.PluginLinkGUI;
 import com.gamerking195.dev.up2date.update.PluginInfo;
 import com.gamerking195.dev.up2date.update.UpdateManager;
+import com.gamerking195.dev.up2date.util.UtilDatabase;
 import com.gamerking195.dev.up2date.util.UtilSiteSearch;
 import com.gamerking195.dev.up2date.util.UtilText;
 import com.gamerking195.dev.up2date.util.text.MessageBuilder;
@@ -165,7 +166,7 @@ public class SetupCommand implements CommandExecutor {
                 new MessageBuilder().addPlainText("&dUp2Date needs to parse through your plugins to establish &dlinks from the server side plugin to a spigot web-page.").sendToPlayersPrefixed(player);
                 new MessageBuilder().addPlainText("&dWe will run a &oVERY &dintensive algorithm to establish as many &dlinks as we can on our own.").sendToPlayersPrefixed(player);
                 new MessageBuilder().addPlainText("&dWe highly recommend that you have anyone else leave the &dserver (you must stay) and don't move or do anything while this &druns.").sendToPlayersPrefixed(player);
-                new MessageBuilder().addPlainText("&dThis could take up to &530&d seconds depending on how many &dplugins you have.").sendToPlayersPrefixed(player);
+                new MessageBuilder().addPlainText("&dThis could take up to &52&d minutes depending on how many &dplugins you have.").sendToPlayersPrefixed(player);
                 new MessageBuilder().addHoverClickText("&2&l✔ &aYES", "&2&lPROCEED", "/stp plugins", false).addPlainText("    &8&l|    ").addHoverClickText("&4&l✘ &cNO", "&4&lCANCEL", "/stp deny", false).sendToPlayers(player);
             }
         }.runTaskLater(Up2Date.getInstance(), 95L);
@@ -178,7 +179,6 @@ public class SetupCommand implements CommandExecutor {
 
         List<Plugin> currentPlugins = new LinkedList<>(Arrays.asList(Bukkit.getPluginManager().getPlugins()));
 
-        currentPlugins.remove(Up2Date.getInstance());
         currentPlugins.remove(AutoUpdaterAPI.getInstance());
 
         ExecutorService pool = Up2Date.getInstance().getFixedThreadPool();
@@ -186,8 +186,14 @@ public class SetupCommand implements CommandExecutor {
         long startTime = System.currentTimeMillis();
 
         for (final Plugin plugin : currentPlugins) {
-            if (plugin == Up2Date.getInstance() || plugin.getName().equals("AutoUpdaterAPI"))
+            if (plugin.getName().equals("AutoUpdaterAPI"))
                 continue;
+
+            if (plugin.getName().equalsIgnoreCase("Up2Date")) {
+                //Don't add version just wait for refresh to check sine its likely they just downloaded the plugin and there aren't any updates.
+                linkedPlugins.add(new PluginInfo("Up2Date", 49313, "Update all your Spigot plugins in seconds! (No reload required)", "GamerKing195", plugin.getDescription().getVersion(), true));
+                continue;
+            }
 
             pool.submit(() -> {
 
@@ -247,6 +253,9 @@ public class SetupCommand implements CommandExecutor {
 
                     UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oRetrieved plugin data for "+currentPlugins.size()+" plugins in "+String.format("%.2f", ((double)(System.currentTimeMillis()-startTime)/1000)) +"s", player);
 
+                    if (linkedPlugins.size() > 0)
+                        linkedPlugins.removeAll(UtilDatabase.getInstance().getIncompatiblePlugins(linkedPlugins));
+
                     UpdateManager.getInstance().setLinkedPlugins(linkedPlugins);
                     UpdateManager.getInstance().setUnlinkedPlugins(unlinkedPlugins);
                     UpdateManager.getInstance().setUnknownPlugins(unknownPlugins);
@@ -263,7 +272,7 @@ public class SetupCommand implements CommandExecutor {
                     new MessageBuilder().addPlainText("&dUp2Date has parsed through your plugins in order to link &dthem to actual spigot plugins.").sendToPlayersPrefixed(player);
                     new MessageBuilder().addPlainText("&dHowever since this is only a program we can't obtain the &ddata for all of your plugins perfectly.").sendToPlayersPrefixed(player);
 
-                    String notMatched = unknownPlugins.size() == 0 ? "" : "find &5"+ unknownPlugins.size()+"&d "+UtilText.getUtil().getEnding("plugin", unknownPlugins.size(), false)+" that will need to be manually setup.";
+                    String notMatched = unknownPlugins.size() == 0 ? "" : "find &5"+ unknownPlugins.size()+"&d "+UtilText.getUtil().getEnding("plugin", unknownPlugins.size(), false)+" that will need to be &dmanually setup.";
                     String partiallyMatched = unlinkedPlugins.size() == 0 ? "" : "partially match &5"+unlinkedPlugins.size()+" &d"+UtilText.getUtil().getEnding("plugin", unlinkedPlugins.size(), false);
                     String perfectlyMatched = linkedPlugins.size() == 0 ? "" : "perfectly match &5"+linkedPlugins.size()+"&d "+UtilText.getUtil().getEnding("plugin", linkedPlugins.size(), false);
 
@@ -274,13 +283,13 @@ public class SetupCommand implements CommandExecutor {
                         partiallyMatched += ", ";
 
                     if (perfectlyMatched.length() > 0  || partiallyMatched.length() > 0)
-                        notMatched = "however there's still &5"+ unknownPlugins.size()+"&d "+UtilText.getUtil().getEnding("plugin", unknownPlugins.size(), false)+" that will need to be manually setup.";
+                        notMatched = "however there's still &5"+ unknownPlugins.size()+"&d "+UtilText.getUtil().getEnding("plugin", unknownPlugins.size(), false)+" that will need to be &dmanually setup.";
 
                     new MessageBuilder().addPlainText("&dWe managed to "+perfectlyMatched+partiallyMatched+notMatched).sendToPlayersPrefixed(player);
                     new MessageBuilder().addPlainText("&dWe need you to go in and manually tell us which plugins &dmatch which search result, and for those that have no search &dresults, you can either provide their ID or have Up2Date ignore &dthem.").sendToPlayersPrefixed(player);
-                    new MessageBuilder().addPlainText("&dWe apologize that this is a rather complex task, just know &dyou'll only have to do it once, you can even copy the data file &dbetween similar servers, or use a database.").sendToPlayersPrefixed(player);
+                    new MessageBuilder().addPlainText("&dWe apologize that this is a rather complex task; just know &dthat you'll only have to do it once. You can even copy the data &dfile between similar servers or use a database.").sendToPlayersPrefixed(player);
                     new MessageBuilder().addPlainText("").sendToPlayers(player);
-                    new MessageBuilder().addPlainText("&dIf you ever get stuck you can visit the Spigot page ").addURLText("&5&n&ohere", "").addPlainText("&d or &dthe wiki ").addURLText("&5&n&ohere", "").addPlainText("&d or watch our youtube tutorials ").addURLText("&5&n&ohere&d.", "").sendToPlayersPrefixed(player);
+                    new MessageBuilder().addPlainText("&dIf you ever get stuck you can visit the Spigot page ").addURLText("&5&n&ohere", "https://www.spigotmc.org/resources/up2date.49313/").addPlainText("&d or &dthe wiki ").addURLText("&5&n&ohere", "https://github.com/GamerKing195/Up2Date/wiki").addPlainText("&d or watch our youtube tutorial ").addURLText("&5&n&ohere&d.", "https://youtu.be/gSnFSRUTqGU").sendToPlayersPrefixed(player);
                     new MessageBuilder().addPlainText("&dAre you ready to begin?").sendToPlayersPrefixed(player);
                     new MessageBuilder().addHoverClickText("&2&l✔ &aYES", "&2&lPROCEED", "/stp manualparse", false).addPlainText("    &8&l|    ").addHoverClickText("&4&l✘ &cNO", "&4&lCANCEL", "/stp deny", false).sendToPlayers(player);
                     cancel();
@@ -377,7 +386,22 @@ public class SetupCommand implements CommandExecutor {
         if (highestResult != null) {
             if (priorities.size() > 0 && priorities.get(highestResult) > 0) {
                 try {
-                    Resource resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(highestResult.getId(), AutoUpdaterAPI.getInstance().getCurrentUser());
+                    if (AutoUpdaterAPI.getInstance().getApi() == null) {
+                        unknownPlugins.add(plugin);
+                        return;
+                    }
+
+                    Resource resource = AutoUpdaterAPI
+                                                .getInstance()
+                                                .getApi()
+                                                .getResourceManager()
+                                                .getResourceById(
+                                                        highestResult
+                                                                .getId()
+                                                        , AutoUpdaterAPI
+                                                                  .getInstance()
+                                                                  .getCurrentUser());
+
                     if (resource != null)
                         linkedPlugins.add(new PluginInfo(plugin, resource, highestResult));
                     else {

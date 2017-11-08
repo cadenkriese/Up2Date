@@ -2,13 +2,13 @@ package com.gamerking195.dev.up2date.ui;
 
 import be.maximvdw.spigotsite.api.exceptions.ConnectionFailedException;
 import be.maximvdw.spigotsite.api.resource.Resource;
-import be.maximvdw.spigotsite.api.resource.ResourceManager;
 import com.gamerking195.dev.autoupdaterapi.*;
 import com.gamerking195.dev.autoupdaterapi.util.UtilPlugin;
 import com.gamerking195.dev.autoupdaterapi.util.UtilReader;
 import com.gamerking195.dev.up2date.Up2Date;
 import com.gamerking195.dev.up2date.update.PluginInfo;
 import com.gamerking195.dev.up2date.update.UpdateManager;
+import com.gamerking195.dev.up2date.util.UtilDatabase;
 import com.gamerking195.dev.up2date.util.UtilSiteSearch;
 import com.gamerking195.dev.up2date.util.UtilText;
 import com.gamerking195.dev.up2date.util.gui.ConfirmGUI;
@@ -31,6 +31,7 @@ import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.plugin.IllegalPluginAccessException;
 import org.bukkit.plugin.InvalidDescriptionException;
 import org.bukkit.plugin.InvalidPluginException;
 import org.bukkit.plugin.Plugin;
@@ -38,7 +39,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.File;
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -66,10 +66,25 @@ public class UpdateGUI extends PageGUI {
     public UpdateGUI(Player player) {
         super("&d&lUp&5&l2&d&lDate", 54);
         this.player = player;
+
+        if (UpdateManager.getInstance().isCurrentTask()) {
+            new MessageBuilder().addPlainText("&dThere's currently an update task running!").sendToPlayersPrefixed(player);
+
+            new BukkitRunnable() {
+                @Override
+                public void run() {
+                    player.closeInventory();
+                }
+            }.runTaskLater(Up2Date.getInstance(), 2L);
+        }
     }
 
     @Override
     protected List<ItemStack> getIcons() {
+        if (UpdateManager.getInstance().isCurrentTask())
+            return null;
+
+
         ArrayList<PluginInfo> linkedPlugins = UpdateManager.getInstance().getLinkedPlugins();
         ArrayList<PluginInfo> badPlugins = new ArrayList<>();
 
@@ -144,6 +159,11 @@ public class UpdateGUI extends PageGUI {
     protected void onPlayerClickIcon(InventoryClickEvent event) {
         player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
 
+        if (selection == null)
+            selection = new ArrayList<>();
+
+        selection.remove(null);
+
         switch (event.getSlot()) {
             //VIEW UNLINKED PLUGINS
             case 45:
@@ -153,13 +173,14 @@ public class UpdateGUI extends PageGUI {
             case 46:
                 //LEFT-CLICK, UPDATE SELECTION
                 if (event.getClick() == ClickType.LEFT) {
-                    ArrayList<PluginInfo> validSelection = selection;
-                    ArrayList<PluginInfo> updatedPlugins = UpdateManager.getInstance().getLinkedPlugins();
+                    ArrayList<PluginInfo> validSelection = new ArrayList<>(selection);
+                    ArrayList<PluginInfo> updatedPlugins = new ArrayList<>(UpdateManager.getInstance().getLinkedPlugins());
+                    //remove all plugins that are updated.
                     updatedPlugins.removeAll(updatesAvailable);
                     validSelection.removeAll(updatedPlugins);
                     updatePlugins(validSelection);
-                    //RIGHT-CLICK, REMOVE LINKS
                 }
+                //RIGHT-CLICK, REMOVE LINKS
                 else if (event.getClick() == ClickType.RIGHT) {
                     new ConfirmGUI("&dContinue?",
                                           () -> {
@@ -209,6 +230,7 @@ public class UpdateGUI extends PageGUI {
                 break;
             //VIEW UNLINKED PLUGINS
             case 47:
+                new UnlinkedGUI().open(player);
                 break;
             //REFRESH GUI
             case 49:
@@ -225,6 +247,8 @@ public class UpdateGUI extends PageGUI {
                     new AnvilGUI(Up2Date.getInstance(), player, "Enter plugin ID.", (p, secondReply) -> {
                         if (NumberUtils.isNumber(secondReply)) {
                             try {
+                                player.closeInventory();
+                                UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oRetrieving info...", player);
                                 String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources/" + secondReply);
 
                                 boolean premium = pluginJson.contains("\"premium\": true");
@@ -261,23 +285,18 @@ public class UpdateGUI extends PageGUI {
                                 JsonObject object = new Gson().fromJson(pluginJson, type);
                                 UtilSiteSearch.SearchResult result = new UtilSiteSearch.SearchResult(object.get("id").getAsInt(), object.get("name").getAsString(), object.get("tag").getAsString(), pluginJson.contains("\"premium\": true"));
 
-                                Resource resource = null;
+                                Resource resource;
                                 if (AutoUpdaterAPI.getInstance().getCurrentUser() != null)
                                     resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(Integer.valueOf(secondReply), AutoUpdaterAPI.getInstance().getCurrentUser());
                                  else
                                     resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(Integer.valueOf(secondReply));
 
-                                 final Resource resourceResult = resource;
-
                                 if (premium) {
-                                    new PremiumUpdater(player, Up2Date.getInstance(), Integer.valueOf(secondReply), locale, false, false, successful -> {
-                                        if (successful) {
+                                    new PremiumUpdater(player, Up2Date.getInstance(), Integer.valueOf(secondReply), locale, false, false, (success, ex) -> {
+                                        if (success) {
                                             Plugin plugin = Bukkit.getPluginManager().getPlugin(firstReply);
-                                            if (result.getName() != null && result.getTag() != null && result.getId() != 0) {
-                                                PluginInfo info = new PluginInfo(plugin, result);
-                                                info.setLatestVersion(resourceResult.getLastVersion());
-                                                UpdateManager.getInstance().addLinkedPlugin(info);
-                                            }
+                                            if (result.getName() != null && result.getTag() != null && result.getId() != 0)
+                                                UpdateManager.getInstance().addLinkedPlugin(new PluginInfo(plugin, resource, result));
                                             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                                         } else
                                             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
@@ -286,14 +305,11 @@ public class UpdateGUI extends PageGUI {
 
                                     return "";
                                 } else {
-                                    new Updater(player, Up2Date.getInstance(), Integer.valueOf(secondReply), locale, false, false, successful -> {
-                                        if (successful) {
+                                    new Updater(player, Up2Date.getInstance(), Integer.valueOf(secondReply), locale, false, false, (success, ex) -> {
+                                        if (success) {
                                             Plugin plugin = Bukkit.getPluginManager().getPlugin(firstReply);
-                                            if (result.getName() != null && result.getTag() != null && result.getId() != 0) {
-                                                PluginInfo info = new PluginInfo(plugin, result);
-                                                info.setLatestVersion(resourceResult.getLastVersion());
-                                                UpdateManager.getInstance().addLinkedPlugin(info);
-                                            }
+                                            if (result.getName() != null && result.getTag() != null && result.getId() != 0)
+                                                UpdateManager.getInstance().addLinkedPlugin(new PluginInfo(plugin, resource, result));
                                             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                                         } else {
                                             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
@@ -316,12 +332,18 @@ public class UpdateGUI extends PageGUI {
             //FORCE INFO REFRESH
             case 53:
                 ArrayList<PluginInfo> plugins = UpdateManager.getInstance().getLinkedPlugins();
+                ArrayList<PluginInfo> badPlugins = new ArrayList<>(UpdateManager.getInstance().getLinkedPlugins());
                 plugins.removeAll(updatesAvailable);
 
                 player.closeInventory();
 
                 ArrayList<PluginInfo> updatedInfo = new ArrayList<>();
                 for (final PluginInfo info : plugins) {
+                    if (info == null) {
+                        badPlugins.add(info);
+                        continue;
+                    }
+
                     ExecutorService threadPool = Up2Date.getInstance().getFixedThreadPool();
 
                     threadPool.submit(() -> {
@@ -343,10 +365,10 @@ public class UpdateGUI extends PageGUI {
                     });
                 }
 
+                final long startingTime = System.currentTimeMillis();
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        long startingTime = System.currentTimeMillis();
 
                         double percent = ((double) 100/plugins.size()) * updatedInfo.size();
                         UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oUpdated information for "+updatedInfo.size()+"/"+plugins.size()+" plugins ("+String.format("%.2f", percent)+"%)", player);
@@ -387,7 +409,6 @@ public class UpdateGUI extends PageGUI {
                                     String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources/"+reply);
 
                                     boolean premium = pluginJson.contains("\"premium\": true");
-                                    ResourceManager manager = AutoUpdaterAPI.getInstance().getApi().getResourceManager();
 
                                     if (pluginJson.contains("\"external\": true")) {
                                         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
@@ -400,7 +421,12 @@ public class UpdateGUI extends PageGUI {
                                         return "Resource type must be a jar!";
                                     }
 
-                                    Resource resource = manager.getResourceById(Integer.valueOf(reply));
+                                    Resource resource;
+                                    if (AutoUpdaterAPI.getInstance().getCurrentUser() != null) {
+                                        resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(Integer.valueOf(reply), AutoUpdaterAPI.getInstance().getCurrentUser());
+                                    } else {
+                                        resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(Integer.valueOf(reply));
+                                    }
                                     if (resource != null) {
                                         UtilSiteSearch.SearchResult result = new UtilSiteSearch.SearchResult(resource.getResourceId(), plugin.getName(), plugin.getDescription().getDescription(), premium);
 
@@ -426,7 +452,6 @@ public class UpdateGUI extends PageGUI {
                         });
                         //SHIFT-LEFT-CLICK, UPDATE INDIVIDUAL PLUGIN
                     } else if (event.getClick() == ClickType.SHIFT_LEFT) {
-
                         if (!updatesAvailable.contains(pluginInfo)) {
                             player.closeInventory();
                             UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oThat plugin is already &dUp&52&dDate!", player);
@@ -438,14 +463,14 @@ public class UpdateGUI extends PageGUI {
                         try {
                             UtilPlugin.unload(plugin);
 
-                            File oldVersion = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-                            oldFile = oldVersion.getName();
-                            File cacheFile = new File(Up2Date.getInstance().getDataFolder().getAbsolutePath()+"/caches/"+plugin.getName()+"/"+oldVersion.getName());
+                            File oldJar = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+                            oldFile = oldJar.getName();
+                            File cacheFile = new File(Up2Date.getInstance().getDataFolder().getAbsolutePath()+"/caches/"+plugin.getName()+"/"+oldJar.getName());
                             if (!cacheFile.getParentFile().mkdirs()) {
                                 Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version", "Directory creation failed.");
                                 return;
                             }
-                            if (!oldVersion.renameTo(cacheFile)) {
+                            if (!oldJar.renameTo(cacheFile)) {
                                 Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version.", "Rename failed.");
                                 return;
                             }
@@ -455,22 +480,45 @@ public class UpdateGUI extends PageGUI {
                         final String oldFileResult = oldFile;
 
                         //Actually apply update.
+
+                        UpdateManager.getInstance().setCurrentTask(true);
                         if (pluginInfo.isPremium()) {
-                            new PremiumUpdater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, success -> {
-                                if (success)
+                            new PremiumUpdater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, false, (success, ex) -> {
+                                UpdateManager.getInstance().setCurrentTask(false);
+                                if (success) {
+                                    try {
+                                        FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+"/caches/"+pluginInfo.getName()));
+                                    } catch (IOException e) {
+                                        Up2Date.getInstance().printError(e, "Error occurred while clearing caches.");
+                                    }
+
                                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-                                else {
+                                    updatesAvailable.remove(pluginInfo);
+                                } else {
                                     restoreFile(oldFileResult, plugin.getName(), plugin.getDescription().getVersion());
                                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                    if (ex instanceof IllegalPluginAccessException || ex instanceof InvalidPluginException || ex instanceof InvalidDescriptionException) {
+                                        UtilDatabase.getInstance().addIncompatiblePlugin(pluginInfo);
+                                    }
                                 }
                             }).update();
                         } else {
-                            new Updater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, success -> {
-                                if (success)
+                            new Updater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, false, (success, ex) -> {
+                                UpdateManager.getInstance().setCurrentTask(false);
+                                if (success) {
+                                    try {
+                                        FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+"/caches/"+pluginInfo.getName()));
+                                    } catch (IOException e) {
+                                        Up2Date.getInstance().printError(e, "Error occurred while clearing caches.");
+                                    }
+
                                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-                                else {
+                                    updatesAvailable.remove(pluginInfo);
+                                } else {
                                     restoreFile(oldFileResult, plugin.getName(), plugin.getDescription().getVersion());
                                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                    if (ex instanceof IllegalPluginAccessException || ex instanceof InvalidPluginException || ex instanceof InvalidDescriptionException)
+                                        UtilDatabase.getInstance().addIncompatiblePlugin(pluginInfo);
                                 }
                             }).update();
                         }
@@ -481,6 +529,7 @@ public class UpdateGUI extends PageGUI {
                                               () -> {
                                                   UpdateManager.getInstance().removeLinkedPlugin(info);
                                                   player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
+                                                  new UpdateGUI(player).open(player);
                                               },
 
                                               () -> {
@@ -592,6 +641,13 @@ public class UpdateGUI extends PageGUI {
                 //TODO add this to invalid db list & email plugin author.
                 Up2Date.getInstance().printError(e, "Error occurred while fixing failed plugin download.");
             }
+
+
+            try {
+                FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+"/caches/"+pluginName));
+            } catch (IOException e) {
+                Up2Date.getInstance().printError(e, "Error occurred while clearing caches.");
+            }
         }
     }
 
@@ -623,11 +679,15 @@ public class UpdateGUI extends PageGUI {
                               //Confirm
                               () -> {
                                   player.closeInventory();
+                                  UpdateManager.getInstance().setCurrentTask(true);
                                   ArrayList<PluginInfo> failedUpdates = new ArrayList<>();
                                   ArrayList<PluginInfo> successfulUpdates = new ArrayList<>();
 
                                   for (int i = 0; i < updatesNeeded.size(); i++) {
                                       PluginInfo info = updatesNeeded.get(i);
+                                      if (updatesNeeded.get(i) == null)
+                                          updatesNeeded.remove(i);
+
                                       Plugin plugin = Bukkit.getPluginManager().getPlugin(info.getName());
 
                                       if (plugin == null) {
@@ -658,12 +718,15 @@ public class UpdateGUI extends PageGUI {
 
                                       final String oldFileNameResult = oldFileName;
 
-                                      final UpdaterRunnable runnable = success -> {
+                                      final UpdaterRunnable runnable = (success, ex) -> {
                                           if (success)
                                               successfulUpdates.add(info);
                                           else {
                                               failedUpdates.add(info);
                                               restoreFile(oldFileNameResult, plugin.getName(), plugin.getDescription().getVersion());
+                                              if (ex instanceof IllegalPluginAccessException || ex instanceof InvalidPluginException || ex instanceof InvalidDescriptionException) {
+                                                  UtilDatabase.getInstance().addIncompatiblePlugin(info);
+                                              }
                                           }
                                       };
 
@@ -691,6 +754,8 @@ public class UpdateGUI extends PageGUI {
                                       public void run() {
                                           double percent = ((double) 100/updatesNeeded.size()) * (successfulUpdates.size() + failedUpdates.size());
                                           UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oUpdated "+(successfulUpdates.size()+failedUpdates.size())+"/"+updatesNeeded.size()+" plugins ("+String.format("%.2f", percent)+"%)", player);
+
+                                          UpdateManager.getInstance().setCurrentTask(false);
 
                                           if (failedUpdates.size()+successfulUpdates.size() >= updatesNeeded.size()) {
                                               if (successfulUpdates.size() == updatesNeeded.size()) {

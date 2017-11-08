@@ -50,6 +50,9 @@ public class UpdateManager {
     @Getter
     private ArrayList<BukkitRunnable> cacheUpdaters = new ArrayList<>();
 
+    @Getter
+    @Setter
+    private boolean currentTask = false;
 
     public void init() {
         if (Up2Date.getInstance().getMainConfig().isEnableSQL()) {
@@ -78,6 +81,17 @@ public class UpdateManager {
         } else {
             DataConfig.getConfig().init();
             linkedPlugins = DataConfig.getConfig().getFile();
+        }
+
+        for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
+            boolean linked = false;
+            for (PluginInfo info : linkedPlugins) {
+                if (info.getName().equals(plugin.getName()))
+                    linked = true;
+            }
+
+            if (Up2Date.getInstance().getMainConfig().isSetupComplete() && !linked && !plugin.getName().equals("Up2Date") && !plugin.getName().equals("AutoUpdaterAPI"))
+                unknownPlugins.add(plugin);
         }
 
         int startDelay = 100;

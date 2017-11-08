@@ -90,8 +90,7 @@ public class UtilSQL {
 
                 connection.close();
             } catch (Exception ex) {
-                //cant do fancy error logging bc it does bukkit calls ;-;
-                ex.printStackTrace();
+                Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while closing connection.");
             }
         }
         catch(Exception ex) {

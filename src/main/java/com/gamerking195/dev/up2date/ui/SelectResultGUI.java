@@ -39,7 +39,7 @@ public class SelectResultGUI extends GUI {
     private ArrayList<UtilSiteSearch.SearchResult> results;
 
     SelectResultGUI(Player player, Plugin plugin) {
-        super("&d&lU&5&l2&d&lD &7- &dSetup &5"+plugin.getName(), 36);
+        super("&d&lU&5&l2&d&lD &8- &dSetup &5"+plugin.getName(), 36);
 
         this.player = player;
         this.plugin = plugin;
