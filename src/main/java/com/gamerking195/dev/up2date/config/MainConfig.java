@@ -40,6 +40,7 @@ public class MainConfig extends YamlConfig {
         CONFIG_FILE = new File(plugin.getDataFolder(), "config.yml");
     }
 
+
     @Comment("---------------General---------------")
 
     @Comments
@@ -58,12 +59,26 @@ public class MainConfig extends YamlConfig {
                      "",
                      "CACHE_REFRESH_DELAY",
                      "Desc: Interval for how long before we refresh the cache (check for updates) for all of your plugins.",
-                     "Note: The refresh process takes your amount of plugins x 2 seconds minimum.",
+                     "Note: The refresh process takes an estimated your amount of plugins x 2 seconds.",
                      "Type: integer (minutes)",
+                     "Minimum: 5",
                      "Default: 120"
             })
     @Path("General.Cache-Refresh-Delay")
     private int cacheRefreshDelay = 120;
+
+    @Comments
+            ({
+                     "",
+                     "DATABASE_REFRESH_DELAY",
+                     "Desc: How often the server will ping your database and update plugin info.",
+                     "Note: Only applies for people with an SQL database enabled.",
+                     "Type: integer (minutes)",
+                     "Minimum: 5",
+                     "Default: 30"
+            })
+    @Path("General.Database-Refresh-Delay")
+    private int databaseRefreshDelay = 30;
 
     @Comment("---------------Messages---------------")
     @Comments
@@ -95,7 +110,8 @@ public class MainConfig extends YamlConfig {
                      "",
                      "THREAD_POOL_SIZE",
                      "Desc: Amount of threads used while parsing your plugins.",
-                     "if you have 10-29 plugins leave it, 30-69 set it to around 10, NEVER SET THIS ABOVE 12",
+                     "if you have 10-29 plugins leave it, 30-69 set it to around 10.",
+                     "Max: 12",
                      "Type: Int",
                      "Default: 5"
             })
@@ -107,7 +123,8 @@ public class MainConfig extends YamlConfig {
                      "",
                      "CONNECTION_POOL_SIZE",
                      "Desc: Amount of connections used while transferring data to your database.",
-                     "Never set this above 10 (unless you really know what you're doing and you have godly servers.)",
+                     "Never set this above 10 (unless you really know what you're doing and you have godly servers).",
+                     "Max: 15",
                      "Type: Int",
                      "Default: 5"
             })
@@ -130,7 +147,7 @@ public class MainConfig extends YamlConfig {
     @Comments
             ({
                      "",
-                     "HOST_NAME",
+                     "HOSTNAME",
                      "Desc: Hostname / IP to the MySQL db, port included.",
                      "Type: String"
             })

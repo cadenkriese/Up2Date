@@ -2,7 +2,6 @@ package com.gamerking195.dev.up2date;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
-import com.gamerking195.dev.autoupdaterapi.UpdateLocale;
 import com.gamerking195.dev.autoupdaterapi.util.UtilPlugin;
 import com.gamerking195.dev.autoupdaterapi.util.UtilReader;
 import com.gamerking195.dev.up2date.command.SetupCommand;
@@ -78,6 +77,18 @@ public final class Up2Date extends JavaPlugin {
         } catch (Exception ex) {
             printError(ex, "Error occurred while initializing config.yml");
         }
+
+        if (mainConfig.getCacheRefreshDelay() < 5)
+            mainConfig.setCacheRefreshDelay(5);
+
+        if (mainConfig.getDatabaseRefreshDelay() < 5)
+            mainConfig.setDatabaseRefreshDelay(5);
+
+        if (mainConfig.getConnectionPoolSize() > 15)
+            mainConfig.setDatabaseRefreshDelay(15);
+
+        if (mainConfig.getThreadPoolSize() > 12)
+            mainConfig.setDatabaseRefreshDelay(12);
 
         //Listeners
         Stream.of(

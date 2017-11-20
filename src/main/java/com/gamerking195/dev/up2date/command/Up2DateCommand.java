@@ -3,11 +3,10 @@ package com.gamerking195.dev.up2date.command;
 import com.gamerking195.dev.autoupdaterapi.AutoUpdaterAPI;
 import com.gamerking195.dev.autoupdaterapi.PremiumUpdater;
 import com.gamerking195.dev.autoupdaterapi.UpdateLocale;
-import com.gamerking195.dev.autoupdaterapi.util.UtilPlugin;
 import com.gamerking195.dev.up2date.Up2Date;
+import com.gamerking195.dev.up2date.ui.SettingsGUI;
 import com.gamerking195.dev.up2date.ui.UpdateGUI;
 import com.gamerking195.dev.up2date.update.UpdateManager;
-import com.gamerking195.dev.up2date.util.UtilText;
 import com.gamerking195.dev.up2date.util.text.MessageBuilder;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -81,6 +80,11 @@ public class Up2DateCommand implements CommandExecutor {
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&', Up2Date.getInstance().getMainConfig().getPrefix()+"&dYou must be a player to setup the plugin!"));
 
             return true;
+        } else if (args[0].equalsIgnoreCase("configure") || args[0].equalsIgnoreCase("config") || args[0].equalsIgnoreCase("c")) {
+            if (sender instanceof Player) {
+                new SettingsGUI(false).open((Player) sender);
+            } else
+                sender.sendMessage(ChatColor.translateAlternateColorCodes('&', Up2Date.getInstance().getMainConfig().getPrefix()+"&dYou must be a player to setup the plugin!"));
         } else {
             if (sender instanceof Player) {
                 if (sender.hasPermission("u2d.manage") || sender.hasPermission("u2d.update") || sender.hasPermission("u2d.*"))
@@ -108,9 +112,9 @@ public class Up2DateCommand implements CommandExecutor {
     private void sendHelp(CommandSender sender) {
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&f&m-----------------------"));
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&d&lUp&5&l2&d&lDate &5V"+ Up2Date.getInstance().getDescription().getVersion()+" &dby &5"+ Up2Date.getInstance().getDescription().getAuthors().toString().replace("[", "").replace("]", "")));
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7/up2date [INFO:HELP:SETUP:LOGIN] | &dBase command for Up2Date. (No arguments will open the Update GUI)"));
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7/update [INFO:HELP:SETUP:LOGIN] | &dAlias for /up2date"));
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7/u2d [I:H:S:L] | &dAlias for /u2d"));
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7/up2date [INFO:HELP:SETUP:LOGIN:CONFIGURE] | &dBase command for Up2Date. (No arguments will open the Update GUI)"));
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7/update [INFO:HELP:SETUP:LOGIN:CONFIG] | &dAlias for /up2date"));
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7/u2d [I:H:S:L:C] | &dAlias for /u2d"));
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&f&m-----------------------"));
     }
 }

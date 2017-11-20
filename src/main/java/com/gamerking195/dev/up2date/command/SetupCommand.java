@@ -13,6 +13,7 @@ import com.gamerking195.dev.up2date.util.UtilDatabase;
 import com.gamerking195.dev.up2date.util.UtilSiteSearch;
 import com.gamerking195.dev.up2date.util.UtilText;
 import com.gamerking195.dev.up2date.util.text.MessageBuilder;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
@@ -37,6 +38,8 @@ import java.util.concurrent.ExecutorService;
  */
 public class SetupCommand implements CommandExecutor {
 
+    public static boolean inSetup = false;
+
     private ArrayList<PluginInfo> linkedPlugins = new ArrayList<>();
     private HashMap<Plugin, ArrayList<UtilSiteSearch.SearchResult>> unlinkedPlugins = new HashMap<>();
     private ArrayList<Plugin> unknownPlugins = new ArrayList<>();
@@ -57,6 +60,7 @@ public class SetupCommand implements CommandExecutor {
                     new MessageBuilder().addPlainText("&dSetup cancelled.").sendToPlayersPrefixed(player);
                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
                 } else if (args[0].equals("accept")) {
+                    inSetup = true;
                     UtilText.getUtil().sendMultipleTitles(player, 20, 80, 20, "&dWelcome to &d&lU&5&l2&d&lD!\n&7&oThis setup wizard will help you get started.", "&a&lStep &2&o1/3\n&7Downloading dependencies.");
                     new BukkitRunnable() {
                         @Override
@@ -142,6 +146,7 @@ public class SetupCommand implements CommandExecutor {
     }
 
     private void finishSetup(Player player) {
+        inSetup = false;
         UtilText.getUtil().sendTitle("&d&lU&5&l2&d&lD &8- &a&oSetup complete!", "&7Thanks for downloading &dUp&52&dDate&7!", 20, 60, 20, player);
         Up2Date.getInstance().getMainConfig().setSetupComplete(true);
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);

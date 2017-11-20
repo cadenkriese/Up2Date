@@ -142,13 +142,13 @@ public class UpdateGUI extends PageGUI {
                 if (ChatColor.stripColor(player.getOpenInventory().getTitle()).equals("Up2Date")) {
                     ItemStack is = player.getOpenInventory().getItem(49);
                     ItemMeta im = is.getItemMeta();
-                    im.setLore(Arrays.asList("", ChatColor.translateAlternateColorCodes('&', "&8CLICK &f| &a&oRefresh GUI")));
+                    im.setLore(Arrays.asList("", ChatColor.translateAlternateColorCodes('&', "&8LEFT-CLICK &f| &a&oOpen Settings"), ChatColor.translateAlternateColorCodes('&', "&8RIGHT-CLICK &f| &a&oRefresh GUI")));
 
                     is.setItemMeta(im);
                     player.getOpenInventory().setItem(49, is);
                 }
             }
-        }.runTaskLater(Up2Date.getInstance(), 2L);
+        }.runTaskLater(Up2Date.getInstance(), 1L);
 
         badPlugins.forEach(plugin -> UpdateManager.getInstance().removeLinkedPlugin(plugin));
 
@@ -234,7 +234,10 @@ public class UpdateGUI extends PageGUI {
                 break;
             //REFRESH GUI
             case 49:
-                new UpdateGUI(player).open(player);
+                if (event.getClick() == ClickType.LEFT)
+                    new SettingsGUI(true).open(player);
+                else if (event.getClick() == ClickType.RIGHT)
+                    new UpdateGUI(player).open(player);
                 break;
             //SAVE DATA
             case 51:
@@ -332,17 +335,14 @@ public class UpdateGUI extends PageGUI {
             //FORCE INFO REFRESH
             case 53:
                 ArrayList<PluginInfo> plugins = UpdateManager.getInstance().getLinkedPlugins();
-                ArrayList<PluginInfo> badPlugins = new ArrayList<>(UpdateManager.getInstance().getLinkedPlugins());
                 plugins.removeAll(updatesAvailable);
 
                 player.closeInventory();
 
                 ArrayList<PluginInfo> updatedInfo = new ArrayList<>();
                 for (final PluginInfo info : plugins) {
-                    if (info == null) {
-                        badPlugins.add(info);
+                    if (info == null)
                         continue;
-                    }
 
                     ExecutorService threadPool = Up2Date.getInstance().getFixedThreadPool();
 
@@ -458,6 +458,19 @@ public class UpdateGUI extends PageGUI {
                             return;
                         }
 
+                        if (plugin.getName().equals("Up2Date")) {
+                            new PremiumUpdater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, (success, ex) -> {
+                                UpdateManager.getInstance().setCurrentTask(false);
+                                if (success) {
+                                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                    updatesAvailable.remove(pluginInfo);
+                                } else {
+                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                }
+                            }).update();
+                            return;
+                        }
+
                         //Cache version in case update goes wrong.
                         String oldFile = null;
                         try {
@@ -528,6 +541,7 @@ public class UpdateGUI extends PageGUI {
                         new ConfirmGUI("&dContinue?",
                                               () -> {
                                                   UpdateManager.getInstance().removeLinkedPlugin(info);
+
                                                   player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
                                                   new UpdateGUI(player).open(player);
                                               },
@@ -693,6 +707,21 @@ public class UpdateGUI extends PageGUI {
                                       if (plugin == null) {
                                           UpdateManager.getInstance().removeLinkedPlugin(info);
                                           new MessageBuilder().addPlainText(Up2Date.getInstance().getMainConfig().getPrefix()+"&dThe plugin '&5"+info.getName()+"&d' is missing, it has been unlinked.");
+                                          continue;
+                                      }
+
+                                      if (plugin.getName().equalsIgnoreCase("Up2Date")) {
+                                          if (i+1 != updatesNeeded.size())
+                                              updatesNeeded.add(updatesNeeded.remove(0));
+
+                                          new PremiumUpdater(player, plugin, info.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, (success, ex) -> {
+                                              UpdateManager.getInstance().setCurrentTask(false);
+                                              if (success) {
+                                                  player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                                  updatesAvailable.remove(info);
+                                              } else
+                                                  player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                          }).update();
                                           continue;
                                       }
 

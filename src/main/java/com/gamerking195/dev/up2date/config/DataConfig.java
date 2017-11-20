@@ -83,4 +83,8 @@ public class DataConfig {
 
         return infoList;
     }
+
+    public void deletePath(String path) {
+        dataConfig.set(path, null);
+    }
 }

@@ -6,6 +6,7 @@ import com.gamerking195.dev.autoupdaterapi.AutoUpdaterAPI;
 import com.gamerking195.dev.autoupdaterapi.UpdateLocale;
 import com.gamerking195.dev.autoupdaterapi.util.UtilReader;
 import com.gamerking195.dev.up2date.Up2Date;
+import com.gamerking195.dev.up2date.command.SetupCommand;
 import com.gamerking195.dev.up2date.config.DataConfig;
 import com.gamerking195.dev.up2date.util.UtilSQL;
 import com.gamerking195.dev.up2date.util.UtilSiteSearch;
@@ -61,13 +62,16 @@ public class UpdateManager {
             new BukkitRunnable() {
                 @Override
                 public void run() {
+                    if (SetupCommand.inSetup)
+                        return;
+
                     ResultSet resultSet = UtilSQL.getInstance().runQuery("SELECT * FROM TABLENAME");
                     ArrayList<PluginInfo> info = new ArrayList<>();
 
                     if (resultSet != null) {
                         try {
                             while (resultSet.next())
-                                info.add(new PluginInfo(resultSet.getString("name"), resultSet.getInt("id"), resultSet.getString("author"), resultSet.getString("version"), resultSet.getString("description"), resultSet.getBoolean("premium")));
+                                info.add(new PluginInfo(resultSet.getString("name"), resultSet.getInt("id"), resultSet.getString("description"), resultSet.getString("author"), resultSet.getString("version"), resultSet.getBoolean("premium")));
 
                             resultSet.close();
                         } catch (Exception ex) {
@@ -75,9 +79,11 @@ public class UpdateManager {
                         }
                     }
 
+                    Bukkit.broadcastMessage("SYNCING W/ DB, SIZE = "+info.size());
+
                     linkedPlugins = info;
                 }
-            }.runTaskAsynchronously(Up2Date.getInstance());
+            }.runTaskTimerAsynchronously(Up2Date.getInstance(), 0, Up2Date.getInstance().getMainConfig().getDatabaseRefreshDelay()*20*60);
         } else {
             DataConfig.getConfig().init();
             linkedPlugins = DataConfig.getConfig().getFile();
@@ -104,10 +110,16 @@ public class UpdateManager {
             BukkitRunnable runnable = new BukkitRunnable() {
                 @Override
                 public void run() {
+                    if (SetupCommand.inSetup)
+                        return;
+
                     if (Bukkit.getPluginManager().getPlugin("AutoUpdaterAPI") == null)
                         return;
 
                     try {
+                        if (linkedPlugins.size() < index/20)
+                            cancel();
+
                         PluginInfo info = linkedPlugins.get(index/20);
 
                         if (UtilReader.readFrom("https://www.spigotmc.org/resources/"+info.getId()+"/").contains("You do not have permission to view this page or perform this action."))
@@ -144,8 +156,32 @@ public class UpdateManager {
     public void saveData() {
         //TODO SQL
         if (Up2Date.getInstance().getMainConfig().isEnableSQL()) {
-            for (PluginInfo info : linkedPlugins) {
-                UtilSQL.getInstance().runStatement("INSERT INTO TABLENAME (id, name, author, version, description, premium) VALUES ('" + info.getId() + "','" + info.getName() + "', '" + info.getAuthor() + "', '" + info.getLatestVersion() + "', '" + info.getDescription() + "', '" + info.isPremium() + "') ON DUPLICATE KEY UPDATE name = '" + info.getName()+"', author = '"+info.getAuthor()+"', version = '"+info.getLatestVersion()+"', description = '"+info.getDescription()+"', premium = '"+info.isPremium()+"'");
+            Iterator<PluginInfo> iterator = linkedPlugins.iterator();
+
+            StringBuilder statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium) VALUES ");
+
+            int i = 0;
+
+            while (iterator.hasNext()) {
+                PluginInfo info = iterator.next();
+
+                statement.append("('").append(info.getName()).append("', ").append(info.getId()).append(", '").append(info.getAuthor()).append("', '").append(info.getLatestVersion()).append("', '").append(info.getDescription()).append("', '").append(info.isPremium()).append("')");
+
+                i++;
+
+                if (i % 25 == 0) {
+                    statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium)");
+                    UtilSQL.getInstance().runStatement(statement.toString());
+
+                    statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium) VALUES ");
+                } else if (iterator.hasNext() || i + 1 % 25 == 0) {
+                    statement.append(", ");
+                }
+            }
+
+            if (i % 25 != 0) {
+                statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium)");
+                UtilSQL.getInstance().runStatement(statement.toString());
             }
         }
 
@@ -159,8 +195,32 @@ public class UpdateManager {
     public void saveDataNow() {
         //TODO SQL
         if (Up2Date.getInstance().getMainConfig().isEnableSQL()) {
-            for (PluginInfo info : linkedPlugins) {
-                UtilSQL.getInstance().runStatementSync("INSERT INTO TABLENAME (id, name, author, version, description, premium) VALUES ('" + info.getId() + "','" + info.getName() + "', '" + info.getAuthor() + "', '" + info.getLatestVersion() + "', '" + info.getDescription() + "', '" + info.isPremium() + "') ON DUPLICATE KEY UPDATE name = '" + info.getName()+"', author = '"+info.getAuthor()+"', version = '"+info.getLatestVersion()+"', description = '"+info.getDescription()+"', premium = '"+info.isPremium()+"'");
+            Iterator<PluginInfo> iterator = linkedPlugins.iterator();
+
+            StringBuilder statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium) VALUES ");
+
+            int i = 0;
+
+            while (iterator.hasNext()) {
+                PluginInfo info = iterator.next();
+
+                statement.append("('").append(info.getName()).append("', ").append(info.getId()).append(", '").append(info.getAuthor()).append("', '").append(info.getLatestVersion()).append("', '").append(info.getDescription()).append("', '").append(info.isPremium()).append("')");
+
+                i++;
+
+                if (i % 50 == 0) {
+                    statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium)");
+                    UtilSQL.getInstance().runStatementSync(statement.toString());
+
+                    statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium) VALUES ");
+                } else if (iterator.hasNext() || i + 1 % 50 == 0) {
+                    statement.append(", ");
+                }
+            }
+
+            if (i % 50 != 0) {
+                statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium)");
+                UtilSQL.getInstance().runStatementSync(statement.toString());
             }
         }
 
@@ -188,11 +248,11 @@ public class UpdateManager {
             while (iterator.hasNext()) {
                 PluginInfo info = iterator.next();
 
-                statement.append("('").append(info.getName()).append("', ").append(info.getId()).append(", ").append(info.getAuthor()).append(", ").append(info.getDescription()).append(", ").append(info.isPremium()).append(")");
+                statement.append("('").append(info.getName()).append("', ").append(info.getId()).append(", '").append(info.getAuthor()).append("', '").append(info.getLatestVersion()).append("', '").append(info.getDescription()).append("', '").append(info.isPremium()).append("')");
 
                 i++;
 
-                if (i % 100 == 0) {
+                if (i % 50 == 0) {
                     UtilSQL.getInstance().runStatement(statement.toString());
 
                     statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium) VALUES ");
@@ -201,9 +261,12 @@ public class UpdateManager {
                 }
             }
 
-            if (i % 100 != 0)
+            if (i % 50 != 0)
                 UtilSQL.getInstance().runStatement(statement.toString());
+
         } else {
+            DataConfig.getConfig().init();
+
             new BukkitRunnable() {
                 @Override
                 public void run() {
@@ -268,6 +331,12 @@ public class UpdateManager {
     }
 
     public void removeLinkedPlugin(PluginInfo info) {
+        if (Up2Date.getInstance().getMainConfig().isEnableSQL()) {
+            UtilSQL.getInstance().runStatement("DELETE FROM TABLENAME WHERE id='"+info.getId()+"'");
+        } else {
+            DataConfig.getConfig().deletePath(info.getName());
+        }
+
         linkedPlugins.remove(info);
     }
 
