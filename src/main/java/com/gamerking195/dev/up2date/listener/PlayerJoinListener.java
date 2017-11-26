@@ -56,9 +56,9 @@ public class PlayerJoinListener implements Listener {
                                 if (info.getName().equalsIgnoreCase("Up2Date"))
                                     u2dUpdate = true;
                             }
-                            String including = u2dUpdate ? "&o(Including U2D)&d" : "";
+                            String including = u2dUpdate ? "&d(Including U2D)&d" : "";
 
-                            new MessageBuilder().addHoverClickText("&dThere " + UtilText.getUtil().getEnding("are", availableUpdates.size(), false) + " currently &5" + availableUpdates.size() + "&d " + UtilText.getUtil().getEnding("update", availableUpdates.size(), false) + " available, "+including+" click to open the GUI.", "&5View plugins.", "/u2d", false).sendToPlayersPrefixed(event.getPlayer());
+                            new MessageBuilder().addHoverClickText("&dThere " + UtilText.getUtil().getEnding("are", availableUpdates.size(), false) + " currently &5" + availableUpdates.size() + "&d " + UtilText.getUtil().getEnding("update", availableUpdates.size(), false) + " available, &d"+including+" &dclick &dto &dopen the GUI.", "&5View plugins.", "/u2d", false).sendToPlayersPrefixed(event.getPlayer());
                         }
                     }.runTaskLater(Up2Date.getInstance(), 20L);
                 }

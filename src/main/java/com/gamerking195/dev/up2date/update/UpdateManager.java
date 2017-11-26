@@ -79,8 +79,6 @@ public class UpdateManager {
                         }
                     }
 
-                    Bukkit.broadcastMessage("SYNCING W/ DB, SIZE = "+info.size());
-
                     linkedPlugins = info;
                 }
             }.runTaskTimerAsynchronously(Up2Date.getInstance(), 0, Up2Date.getInstance().getMainConfig().getDatabaseRefreshDelay()*20*60);

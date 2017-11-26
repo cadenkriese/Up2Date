@@ -47,7 +47,7 @@ public class MainConfig extends YamlConfig {
             ({
                      "",
                      "SETUP_COMPLETE",
-                     "Desc: Has the initial setup wizard been completed, set to false if you wan't to re-do the plugin setup.",
+                     "Desc: Has the initial setup wizard been completed, set to false if you want to re-do the plugin setup.",
                      "Type: boolean",
                      "Default: false (Set to true once in-game setup is complete)"
             })
@@ -72,7 +72,7 @@ public class MainConfig extends YamlConfig {
                      "",
                      "DATABASE_REFRESH_DELAY",
                      "Desc: How often the server will ping your database and update plugin info.",
-                     "Note: Only applies for people with an SQL database enabled.",
+                     "Note: Only applies to people with an SQL database enabled.",
                      "Type: integer (minutes)",
                      "Minimum: 5",
                      "Default: 30"
@@ -110,7 +110,7 @@ public class MainConfig extends YamlConfig {
                      "",
                      "THREAD_POOL_SIZE",
                      "Desc: Amount of threads used while parsing your plugins.",
-                     "if you have 10-29 plugins leave it, 30-69 set it to around 10.",
+                     "If you have 10-29 plugins leave it, 30-69 set it to around 10.",
                      "Max: 12",
                      "Type: Int",
                      "Default: 5"
@@ -123,7 +123,7 @@ public class MainConfig extends YamlConfig {
                      "",
                      "CONNECTION_POOL_SIZE",
                      "Desc: Amount of connections used while transferring data to your database.",
-                     "Never set this above 10 (unless you really know what you're doing and you have godly servers).",
+                     "Never set this above 10 (unless you know what you're doing and you have godly servers).",
                      "Max: 15",
                      "Type: Int",
                      "Default: 5"
@@ -148,7 +148,7 @@ public class MainConfig extends YamlConfig {
             ({
                      "",
                      "HOSTNAME",
-                     "Desc: Hostname / IP to the MySQL db, port included.",
+                     "Desc: Hostname / IP to the MySQL DB, port included.",
                      "Type: String"
             })
     @Path("SQL.Hostname")
@@ -178,7 +178,7 @@ public class MainConfig extends YamlConfig {
             ({
                      "",
                      "DATABASE",
-                     "Desc: The database that Up2Date will store its table in.",
+                     "Desc: The database that Up2Date will use to store its table.",
                      "Type: String"
             })
     @Path("SQL.Database")
@@ -188,7 +188,7 @@ public class MainConfig extends YamlConfig {
             ({
                      "",
                      "TABLENAME",
-                     "Desc: The name of the table Up2Date will store data in.",
+                     "Desc: The name of the table Up2Date will use to store data.",
                      "Type: String"
             })
     @Path("SQL.Tablename")

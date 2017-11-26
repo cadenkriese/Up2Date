@@ -38,9 +38,9 @@ public class UtilDatabase {
             public void run() {
                 if (dataSource == null) {
                     HikariConfig config = new HikariConfig();
-                    config.setJdbcUrl("jdbc:mysql://172.106.203.70/fh_1738");
-                    config.setUsername("fh_1738");
-                    config.setPassword("b62a462f62");
+                    config.setJdbcUrl("jdbc:mysql://172.106.203.70/fh_1986");
+                    config.setUsername("fh_1986");
+                    config.setPassword("d601a73410");
 
                     config.setMaximumPoolSize(3);
 

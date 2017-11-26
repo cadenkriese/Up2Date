@@ -107,7 +107,6 @@ public class UtilSQL {
             connection = dataSource.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(updatedQuery);
 
-            //Give whatever task that is using this 1 second to complete it, TODO find a better way to close the connection.
             new BukkitRunnable() {
                 @Override
                 public void run() {
