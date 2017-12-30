@@ -145,6 +145,17 @@ public class UpdateManager {
             cacheUpdaters.add(runnable);
             runnable.runTaskTimerAsynchronously(Up2Date.getInstance(), Up2Date.getInstance().getMainConfig().getCacheRefreshDelay()*20*60+startDelay+i, (Up2Date.getInstance().getMainConfig().getCacheRefreshDelay()*20*60)+i);
         }
+
+        PluginInfo bad = null;
+
+        for (PluginInfo info : linkedPlugins) {
+            if (info.getName().equalsIgnoreCase("Up2Date")) {
+                bad = info;
+            }
+        }
+
+        if (bad != null)
+            linkedPlugins.remove(bad);
     }
 
     /*

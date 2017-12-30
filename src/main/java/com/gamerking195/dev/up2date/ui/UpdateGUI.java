@@ -41,10 +41,8 @@ import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.nio.file.FileSystems;
+import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -301,6 +299,9 @@ public class UpdateGUI extends PageGUI {
                                             if (result.getName() != null && result.getTag() != null && result.getId() != 0)
                                                 UpdateManager.getInstance().addLinkedPlugin(new PluginInfo(plugin, resource, result));
                                             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+
+                                            UtilDatabase.getInstance().addDownloadedFiles(1);
+                                            UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
                                         } else
                                             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
                                     }).update();
@@ -314,6 +315,9 @@ public class UpdateGUI extends PageGUI {
                                             if (result.getName() != null && result.getTag() != null && result.getId() != 0)
                                                 UpdateManager.getInstance().addLinkedPlugin(new PluginInfo(plugin, resource, result));
                                             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+
+                                            UtilDatabase.getInstance().addDownloadedFiles(1);
+                                            UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
                                         } else {
                                             player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
                                         }
@@ -334,7 +338,7 @@ public class UpdateGUI extends PageGUI {
                 break;
             //FORCE INFO REFRESH
             case 53:
-                ArrayList<PluginInfo> plugins = UpdateManager.getInstance().getLinkedPlugins();
+                ArrayList<PluginInfo> plugins = new ArrayList<>(UpdateManager.getInstance().getLinkedPlugins());
                 plugins.removeAll(updatesAvailable);
 
                 player.closeInventory();
@@ -464,6 +468,9 @@ public class UpdateGUI extends PageGUI {
                                 if (success) {
                                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                                     updatesAvailable.remove(pluginInfo);
+
+                                    UtilDatabase.getInstance().addDownloadedFiles(1);
+                                    UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName(), pluginInfo.getLatestVersion()));
                                 } else {
                                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
                                 }
@@ -507,6 +514,9 @@ public class UpdateGUI extends PageGUI {
 
                                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                                     updatesAvailable.remove(pluginInfo);
+
+                                    UtilDatabase.getInstance().addDownloadedFiles(1);
+                                    UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName(), pluginInfo.getLatestVersion()));
                                 } else {
                                     restoreFile(oldFileResult, plugin.getName(), plugin.getDescription().getVersion());
                                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
@@ -527,6 +537,9 @@ public class UpdateGUI extends PageGUI {
 
                                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                                     updatesAvailable.remove(pluginInfo);
+
+                                    UtilDatabase.getInstance().addDownloadedFiles(1);
+                                    UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName(), pluginInfo.getLatestVersion()));
                                 } else {
                                     restoreFile(oldFileResult, plugin.getName(), plugin.getDescription().getVersion());
                                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
@@ -719,6 +732,9 @@ public class UpdateGUI extends PageGUI {
                                               if (success) {
                                                   player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                                                   updatesAvailable.remove(info);
+
+                                                  UtilDatabase.getInstance().addDownloadedFiles(1);
+                                                  UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
                                               } else
                                                   player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
                                           }).update();
@@ -748,9 +764,13 @@ public class UpdateGUI extends PageGUI {
                                       final String oldFileNameResult = oldFileName;
 
                                       final UpdaterRunnable runnable = (success, ex) -> {
-                                          if (success)
+                                          if (success) {
                                               successfulUpdates.add(info);
-                                          else {
+
+                                              UtilDatabase.getInstance().addDownloadedFiles(1);
+                                              UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
+                                              //Just made updates to autoupdaterapi, need to test this code for statistics^^^
+                                          } else {
                                               failedUpdates.add(info);
                                               restoreFile(oldFileNameResult, plugin.getName(), plugin.getDescription().getVersion());
                                               if (ex instanceof IllegalPluginAccessException || ex instanceof InvalidPluginException || ex instanceof InvalidDescriptionException) {
@@ -818,5 +838,18 @@ public class UpdateGUI extends PageGUI {
                               "&7will download and install &d"+updatesNeeded.size()+"&7 updates &oinstantly&7.",
                               "&7we've made this as efficient as possible",
                               " but still use common sense!").open(player);
+    }
+
+    private float getFileSize(String pluginName, String newVersion) {
+        return (float) new File(Up2Date.getInstance().getDataFolder().getParent() + FileSystems.getDefault().getSeparator() + UpdateManager.getInstance().getUpdateLocale().getFileName().replace("%plugin%", pluginName).replace("%new_version%", newVersion)+".jar").length();
+    }
+
+    private float getFileSize(String pluginName) {
+        for (File file : Objects.requireNonNull(Up2Date.getInstance().getDataFolder().getParentFile().listFiles())) {
+            if (file.getName().contains(pluginName) && file.getName().contains(".jar") && !file.isDirectory()) {
+                return file.length();
+            }
+        }
+        return 0;
     }
 }

@@ -5,6 +5,7 @@ import com.gamerking195.dev.up2date.Up2Date;
 import com.gamerking195.dev.up2date.update.PluginInfo;
 import com.gamerking195.dev.up2date.update.UpdateManager;
 import com.gamerking195.dev.up2date.util.UtilText;
+import com.gamerking195.dev.up2date.util.UtilU2dUpdater;
 import com.gamerking195.dev.up2date.util.text.MessageBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Sound;
@@ -45,23 +46,26 @@ public class PlayerJoinListener implements Listener {
                         new MessageBuilder().addHoverClickText("&2&l✔ &aYES", "&2&lPROCEED", "/stp accept", false).addPlainText("    &8&l|    ").addHoverClickText("&4&l✘ &cNO", "&4&lCANCEL", "/stp deny", false).sendToPlayers(event.getPlayer());
                     }
                 }.runTaskLater(Up2Date.getInstance(), 20L);
-            } else {
-                ArrayList<PluginInfo> availableUpdates = UpdateManager.getInstance().getAvailableUpdates();
-                if (availableUpdates.size() > 0) {
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            boolean u2dUpdate = false;
-                            for (PluginInfo info : availableUpdates) {
-                                if (info.getName().equalsIgnoreCase("Up2Date"))
-                                    u2dUpdate = true;
-                            }
-                            String including = u2dUpdate ? "&d(Including U2D)&d" : "";
+            }
+        }
 
-                            new MessageBuilder().addHoverClickText("&dThere " + UtilText.getUtil().getEnding("are", availableUpdates.size(), false) + " currently &5" + availableUpdates.size() + "&d " + UtilText.getUtil().getEnding("update", availableUpdates.size(), false) + " available, &d"+including+" &dclick &dto &dopen the GUI.", "&5View plugins.", "/u2d", false).sendToPlayersPrefixed(event.getPlayer());
-                        }
-                    }.runTaskLater(Up2Date.getInstance(), 20L);
-                }
+        if (event.getPlayer().isOp() || event.getPlayer().hasPermission("u2d.update") || event.getPlayer().hasPermission("u2d.*")) {
+
+            for (String string : UtilU2dUpdater.getInstance().getUpdateMessage()) {
+                if (string.equalsIgnoreCase("ACCEPT"))
+                    event.getPlayer().spigot().sendMessage(UtilU2dUpdater.getInstance().getAccept());
+                else
+                    event.getPlayer().sendMessage(string);
+            }
+
+            ArrayList<PluginInfo> availableUpdates = UpdateManager.getInstance().getAvailableUpdates();
+            if (availableUpdates.size() > 0) {
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        new MessageBuilder().addHoverClickText("&dThere " + UtilText.getUtil().getEnding("are", availableUpdates.size(), false) + " currently &5" + availableUpdates.size() + "&d " + UtilText.getUtil().getEnding("update", availableUpdates.size(), false) + " available, &dclick &dto &dopen the GUI.", "&5View plugins.", "/u2d", false).sendToPlayersPrefixed(event.getPlayer());
+                    }
+                }.runTaskLater(Up2Date.getInstance(), 20L);
             }
         }
     }

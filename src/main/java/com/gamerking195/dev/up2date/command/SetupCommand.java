@@ -13,7 +13,6 @@ import com.gamerking195.dev.up2date.util.UtilDatabase;
 import com.gamerking195.dev.up2date.util.UtilSiteSearch;
 import com.gamerking195.dev.up2date.util.UtilText;
 import com.gamerking195.dev.up2date.util.text.MessageBuilder;
-import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Sound;
@@ -191,14 +190,8 @@ public class SetupCommand implements CommandExecutor {
         long startTime = System.currentTimeMillis();
 
         for (final Plugin plugin : currentPlugins) {
-            if (plugin.getName().equals("AutoUpdaterAPI"))
+            if (plugin.getName().equals("AutoUpdaterAPI") || plugin.getName().equals("Up2Date"))
                 continue;
-
-            if (plugin.getName().equalsIgnoreCase("Up2Date")) {
-                //Don't add version just wait for refresh to check sine its likely they just downloaded the plugin and there aren't any updates.
-                linkedPlugins.add(new PluginInfo("Up2Date", 49313, "Update all your Spigot plugins in seconds! (No reload required)", "GamerKing195", plugin.getDescription().getVersion(), true));
-                continue;
-            }
 
             pool.submit(() -> {
 

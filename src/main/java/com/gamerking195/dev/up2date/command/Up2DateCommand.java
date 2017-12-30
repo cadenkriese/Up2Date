@@ -7,6 +7,7 @@ import com.gamerking195.dev.up2date.Up2Date;
 import com.gamerking195.dev.up2date.ui.SettingsGUI;
 import com.gamerking195.dev.up2date.ui.UpdateGUI;
 import com.gamerking195.dev.up2date.update.UpdateManager;
+import com.gamerking195.dev.up2date.util.UtilU2dUpdater;
 import com.gamerking195.dev.up2date.util.text.MessageBuilder;
 import net.md_5.bungee.api.ChatColor;
 import org.bukkit.Bukkit;
@@ -85,6 +86,13 @@ public class Up2DateCommand implements CommandExecutor {
                 new SettingsGUI(false).open((Player) sender);
             } else
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&', Up2Date.getInstance().getMainConfig().getPrefix()+"&dYou must be a player to setup the plugin!"));
+        } else if (args[0].equalsIgnoreCase("u2dupdate")) {
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+                if (player.isOp() || player.hasPermission("u2d.update") || player.hasPermission("u2d.*")) {
+                    UtilU2dUpdater.getInstance().update(player);
+                }
+            }
         } else {
             if (sender instanceof Player) {
                 if (sender.hasPermission("u2d.manage") || sender.hasPermission("u2d.update") || sender.hasPermission("u2d.*"))

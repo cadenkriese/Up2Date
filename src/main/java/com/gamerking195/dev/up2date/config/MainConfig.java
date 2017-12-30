@@ -131,6 +131,30 @@ public class MainConfig extends YamlConfig {
     @Path("Advanced.ConnectionPoolSize")
     private int connectionPoolSize = 5;
 
+    @Comment("---------------Statistics---------------")
+
+    @Comments
+            ({
+                    "",
+                    "ENABLED",
+                    "Desc: Do you want Up2Date to track usage data & incompatibilities to help improve it in the future?",
+                    "Type: boolean",
+                    "Default: true"
+            })
+    @Path("Statistics.Enabled")
+    private boolean enableStatistics = true;
+
+    @Comments
+            ({
+                    "",
+                    "SERVER_ID",
+                    "Desc: The unique ID for your server tracked by U2D.",
+                    "Note: DO NOT CHANGE THIS!",
+                    "Type: Int"
+            })
+    @Path("Statistics.ServerID")
+    private int serverId = 0;
+
     @Comment("---------------SQL Database---------------")
 
     @Comments

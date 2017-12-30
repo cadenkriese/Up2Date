@@ -59,7 +59,7 @@ public class UnlinkedGUI extends PageGUI {
         List<Plugin> pluginList = new ArrayList<>();
 
         for (Plugin plugin : UpdateManager.getInstance().getUnknownPlugins()) {
-            if (plugin.getName().equalsIgnoreCase("ProtocolLib"))
+            if (plugin.getName().equalsIgnoreCase("ProtocolLib") || plugin.getName().equals("Up2Date") || plugin.getName().equals("AutoUpdaterAPI"))
                 continue;
 
             //remove all plugins that are invalid.

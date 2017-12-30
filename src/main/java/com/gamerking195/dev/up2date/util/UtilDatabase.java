@@ -4,11 +4,14 @@ import com.gamerking195.dev.up2date.Up2Date;
 import com.gamerking195.dev.up2date.update.PluginInfo;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
+import lombok.Getter;
+import lombok.Setter;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
@@ -30,6 +33,17 @@ public class UtilDatabase {
     private HikariDataSource dataSource;
 
     private String tablename = "incompatibilities";
+    private String statstable = "statistics";
+
+    @Getter
+    @Setter
+    double downloadsize = 0;
+    @Getter
+    @Setter
+    int downloadedfiles = 0;
+    @Getter
+    @Setter
+    int pluginstracked = 0;
 
     public void init() {
         //Do all this async bc we cant let my DB being down affect the performance of the plugin.
@@ -42,14 +56,59 @@ public class UtilDatabase {
                     config.setUsername("fh_1986");
                     config.setPassword("d601a73410");
 
-                    config.setMaximumPoolSize(3);
+                    config.setMaximumPoolSize(4);
 
                     dataSource = new HikariDataSource(config);
                 }
 
                 runStatementSync("CREATE TABLE IF NOT EXISTS "+tablename+" (id varchar(6) NOT NULL, name TEXT, author TEXT, description TEXT, version TEXT, premium TEXT, notified TEXT, disabled TEXT, PRIMARY KEY(id))");
+                runStatementSync("CREATE TABLE IF NOT EXISTS " + statstable + " (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, downloadsize INT, downloadedfiles INT, pluginstracked INT)");
+
+                new BukkitRunnable() {
+                    @Override
+                    public void run() {
+                        if (Up2Date.getInstance().getMainConfig().getServerId() == 0) {
+                            int serverId;
+                            ResultSet rs = runQuery("SELECT MAX(id) FROM "+statstable);
+                            if (rs != null) {
+                                try {
+                                    rs.first();
+
+                                    serverId = rs.getInt(1) + 1;
+                                    Up2Date.getInstance().getMainConfig().setServerId(serverId);
+                                } catch (SQLException e) {
+                                    Up2Date.getInstance().systemOutPrintError(e, "Error occurred while retrieving server ID from database.");
+                                }
+                            }
+                            runStatementSync("INSERT INTO " + statstable + " (downloadsize, downloadedfiles, pluginstracked) VALUES ('0', '0', '0')");
+                        }
+                    }
+                }.runTaskLater(Up2Date.getInstance(), 20L);
             }
         }.runTaskAsynchronously(Up2Date.getInstance());
+
+        //Statistics refreshing
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                /*INSERT INTO statistics
+                *
+                * (id, downloadsize, downloadedfiles, pluginstracked)
+                * VALUES(1, 1, 1, 1)
+                *
+                * ON DUPLICATE KEY UPDATE
+                *
+                * downloadsize = downloadsize+1,
+                * downloadedfiles = downloadedfiles+1,
+                * pluginstracked = pluginstracked+1
+                */
+                runStatementSync("INSERT INTO " + statstable + " (id, downloadsize, downloadedfiles, pluginstracked) VALUES ('"+Up2Date.getInstance().getMainConfig().getServerId()+"', '"+downloadsize+"', '"+downloadedfiles+"', '"+pluginstracked+"') ON DUPLICATE KEY UPDATE downloadsize = downloadsize+"+downloadsize+", downloadedfiles = downloadedfiles+"+downloadedfiles+", pluginstracked = pluginstracked+"+pluginstracked);
+            }
+        }.runTaskTimerAsynchronously(Up2Date.getInstance(), 60L, Up2Date.getInstance().getMainConfig().getDatabaseRefreshDelay()*20*60);
+    }
+
+    public void saveDataNow() {
+        runStatementSync("INSERT INTO " + statstable + " (id, downloadsize, downloadedfiles, pluginstracked) VALUES ('"+Up2Date.getInstance().getMainConfig().getServerId()+"', '"+downloadsize+"', '"+downloadedfiles+"', '"+pluginstracked+"') ON DUPLICATE KEY UPDATE downloadsize = downloadsize+"+downloadsize+", downloadedfiles = downloadedfiles+"+downloadedfiles+", pluginstracked = pluginstracked+"+pluginstracked);
     }
 
     public void addIncompatiblePlugin(PluginInfo info) {
@@ -103,9 +162,9 @@ public class UtilDatabase {
 
         try {
             if (rs != null && rs.first() && !rs.isClosed()) {
-                    while (rs.next())
-                        incompatibles.add(new PluginInfo(rs.getString("name"), rs.getInt("id"), rs.getString("author"), rs.getString("version"), rs.getString("description"), rs.getBoolean("premium")));
-                        rs.close();
+                while (rs.next())
+                    incompatibles.add(new PluginInfo(rs.getString("name"), rs.getInt("id"), rs.getString("author"), rs.getString("version"), rs.getString("description"), rs.getBoolean("premium")));
+                rs.close();
             }
         } catch (Exception ex) {
             Up2Date.getInstance().printError(ex, "Error occurred while reading result set.");
@@ -188,7 +247,7 @@ public class UtilDatabase {
             connection = dataSource.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(updatedQuery);
 
-            //Give whatever task that is using this 1 second to complete it, TODO find a better way to close the connection.
+            //Give whatever task that is using this 2 seconds to complete it, TODO find a better way to close the connection.
             new BukkitRunnable() {
                 @Override
                 public void run() {
@@ -209,4 +268,36 @@ public class UtilDatabase {
 
         return null;
     }
+
+    /*
+     * ADDERS
+     */
+
+    public void addDownloadsize(float downloadsize) {
+        this.downloadsize += Double.valueOf(String.format("%.3f", downloadsize/1024));
+    }
+
+    public void addDownloadedFiles(int downloadedfiles) {
+        this.downloadedfiles += downloadedfiles;
+    }
+
+    /* TODO add stats command, use this code.
+
+
+
+                            ResultSet rs = runQuery("SELECT * FROM "+statstable+" WHERE id ='" + Up2Date.getInstance().getMainConfig().getServerId() + "'");
+                            try {
+                                if (rs != null && !rs.isClosed()) {
+                                    rs.first();
+
+                                    downloadedfiles = rs.getInt("downloadedfiles");
+                                    downloadsize = rs.getInt("downloadsize");
+                                    pluginstracked = rs.getInt("pluginstracked");
+                                } else {
+                                    Up2Date.getInstance().printPluginError("Error occurred while managing statistics.", "Invalid resultset given!");
+                                }
+                            } catch (SQLException e) {
+                                Up2Date.getInstance().systemOutPrintError(e, "Error occurred while retrieving server statistics.");
+                            }
+     */
 }

@@ -10,6 +10,7 @@ import com.gamerking195.dev.up2date.config.MainConfig;
 import com.gamerking195.dev.up2date.listener.PlayerJoinListener;
 import com.gamerking195.dev.up2date.update.UpdateManager;
 import com.gamerking195.dev.up2date.util.UtilDatabase;
+import com.gamerking195.dev.up2date.util.UtilU2dUpdater;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -21,7 +22,6 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bstats.bukkit.Metrics;
 import org.bukkit.scheduler.BukkitRunnable;
-import org.json.simple.JSONObject;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -157,6 +157,11 @@ public final class Up2Date extends JavaPlugin {
             }
         });
 
+        UtilDatabase.getInstance().setPluginstracked(UpdateManager.getInstance().getLinkedPlugins().size());
+        UtilDatabase.getInstance().saveDataNow();
+
+        UtilU2dUpdater.getInstance().init();
+
         //Big message so we look cool
         Stream.of(
                 "&f┏--------------------------------------------┓",
@@ -179,6 +184,7 @@ public final class Up2Date extends JavaPlugin {
     @Override
     public void onDisable() {
         UpdateManager.getInstance().saveDataNow();
+        UtilDatabase.getInstance().saveDataNow();
         UpdateManager.getInstance().getCacheUpdaters().forEach(BukkitRunnable::cancel);
         fixedThreadPool.shutdownNow();
 
