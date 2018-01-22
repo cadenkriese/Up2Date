@@ -9,12 +9,19 @@ import com.gamerking195.dev.up2date.ui.UpdateGUI;
 import com.gamerking195.dev.up2date.update.UpdateManager;
 import com.gamerking195.dev.up2date.util.UtilU2dUpdater;
 import com.gamerking195.dev.up2date.util.text.MessageBuilder;
+import net.cubespace.Yamler.Config.InvalidConfigurationException;
 import net.md_5.bungee.api.ChatColor;
+import net.md_5.bungee.api.ChatMessageType;
+import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
+import org.bukkit.Sound;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.scheduler.BukkitRunnable;
+
+import java.io.File;
 
 /**
  * Created by Caden Kriese (GamerKing195) on 10/11/17.
@@ -75,6 +82,18 @@ public class Up2DateCommand implements CommandExecutor {
             if (sender instanceof Player) {
                 if (sender.hasPermission("u2d.setup") || sender.hasPermission("u2d.*")) {
                     new PremiumUpdater((Player) sender, Up2Date.getInstance(), 1, new UpdateLocale(), false, false).authenticate(false);
+
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            if (new File(Up2Date.getInstance().getDataFolder().getParentFile().getPath()+"/.creds").exists() && AutoUpdaterAPI.getInstance().getCurrentUser() != null) {
+                                ((Player) sender).spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ChatColor.translateAlternateColorCodes('&', "&d&lU&5&l2&d&lD &a&oSuccessfully logged in!")));
+                                ((Player) sender).playSound(((Player) sender).getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
+
+                                cancel();
+                            }
+                        }
+                    }.runTaskTimer(Up2Date.getInstance(), 400L, 40L);
                 } else
                     new MessageBuilder().addPlainText(Up2Date.getInstance().getMainConfig().getNoPermissionMessage()).sendToPlayersPrefixed((Player) sender);
             } else
@@ -92,6 +111,19 @@ public class Up2DateCommand implements CommandExecutor {
                 if (player.isOp() || player.hasPermission("u2d.update") || player.hasPermission("u2d.*")) {
                     UtilU2dUpdater.getInstance().update(player);
                 }
+            }
+        } else if (args[0].equalsIgnoreCase("reload")) {
+            if (sender.hasPermission("u2d.manage") || sender.hasPermission("u2d.*")) {
+                try {
+                    Up2Date.getInstance().getMainConfig().reload();
+
+                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&', Up2Date.getInstance().getMainConfig().getPrefix()+"&dConfig reloaded!"));
+                } catch (InvalidConfigurationException e) {
+                    sender.sendMessage(ChatColor.translateAlternateColorCodes('&', Up2Date.getInstance().getMainConfig().getPrefix()+"&dConfig reload failed, check console."));
+                    Up2Date.getInstance().printError(e, "Error occurred while reloading the config!");
+                }
+            } else {
+                new MessageBuilder().addPlainText(Up2Date.getInstance().getMainConfig().getNoPermissionMessage()).sendToPlayersPrefixed((Player) sender);
             }
         } else {
             if (sender instanceof Player) {

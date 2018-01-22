@@ -125,7 +125,8 @@ public class UpdateGUI extends PageGUI {
                                               "&8LEFT-CLICK &f| &a&oToggle Selection",
                                               "&8RIGHT-CLICK &f| &a&oUpdate ID",
                                               "&8SHIFT-LEFT-CLICK &f| &a&oUpdate Now",
-                                              "&8SHIFT-RIGHT-CLICK &f| &c&oDelete Link"))
+                                              "&8SHIFT-RIGHT-CLICK &f| &c&oDelete Link",
+                                              "&8DOUBLE-CLICK &f| &aCheck for Update"))
                                       .build());
 
                 inventoryMap.put(stackList.size()-1, pluginInfo);
@@ -181,19 +182,19 @@ public class UpdateGUI extends PageGUI {
                 //RIGHT-CLICK, REMOVE LINKS
                 else if (event.getClick() == ClickType.RIGHT) {
                     new ConfirmGUI("&dContinue?",
-                                          () -> {
-                                              selection.forEach(info -> UpdateManager.getInstance().removeLinkedPlugin(info));
-                                              player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
-                                          },
+                            () -> {
+                                selection.forEach(info -> UpdateManager.getInstance().removeLinkedPlugin(info));
+                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
+                            },
 
-                                          () -> {
-                                              player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                                              new UpdateGUI(player).open(player);
-                                          },
+                            () -> {
+                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                new UpdateGUI(player).open(player);
+                            },
 
-                                          "&7Click '&a&lCONFIRM&7' if you want U2D",
-                                          "to stop tracking the &d"+selection.size()+"&7 selected plugins.",
-                                          "&7You can always add them back later!"
+                            "&7Click '&a&lCONFIRM&7' if you want U2D",
+                            "to stop tracking the &d"+selection.size()+"&7 selected plugins.",
+                            "&7You can always add them back later!"
                     ).open(player);
                     selection.forEach(info -> UpdateManager.getInstance().removeLinkedPlugin(info));
                     //SHIFT-RIGHT-CLICK, TOGGLE ENTIRE SELECTION
@@ -254,7 +255,6 @@ public class UpdateGUI extends PageGUI {
 
                                 boolean premium = pluginJson.contains("\"premium\": true");
 
-                                //TODO move this to other GUIs if it works.
                                 if (pluginJson.contains("\"external\": true")) {
                                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
                                     new MessageBuilder().addPlainText("&dPlugins with external downloads are not supported!").sendToPlayersPrefixed(player);
@@ -289,7 +289,7 @@ public class UpdateGUI extends PageGUI {
                                 Resource resource;
                                 if (AutoUpdaterAPI.getInstance().getCurrentUser() != null)
                                     resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(Integer.valueOf(secondReply), AutoUpdaterAPI.getInstance().getCurrentUser());
-                                 else
+                                else
                                     resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(Integer.valueOf(secondReply));
 
                                 if (premium) {
@@ -552,22 +552,58 @@ public class UpdateGUI extends PageGUI {
                     } else if (event.getClick() == ClickType.SHIFT_RIGHT) {
                         PluginInfo info = inventoryMap.get(event.getRawSlot());
                         new ConfirmGUI("&dContinue?",
-                                              () -> {
-                                                  UpdateManager.getInstance().removeLinkedPlugin(info);
+                                () -> {
+                                    UpdateManager.getInstance().removeLinkedPlugin(info);
 
-                                                  player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
-                                                  new UpdateGUI(player).open(player);
-                                              },
+                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
+                                    new UpdateGUI(player).open(player);
+                                },
 
-                                              () -> {
-                                                  player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                                                  new UpdateGUI(player).open(player);
-                                              },
+                                () -> {
+                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                    new UpdateGUI(player).open(player);
+                                },
 
-                                              "&7Click '&a&lCONFIRM&7' if you want U2D",
-                                              "to stop tracking '&d"+info.getName()+"'",
-                                              "&7You can always add it back later!"
+                                "&7Click '&a&lCONFIRM&7' if you want U2D",
+                                "to stop tracking '&d"+info.getName()+"'",
+                                "&7You can always add it back later!"
                         ).open(player);
+                    } else if (event.getClick() == ClickType.DOUBLE_CLICK) {
+                        player.closeInventory();
+                        PluginInfo info = inventoryMap.get(event.getRawSlot());
+
+                        ExecutorService threadPool = Up2Date.getInstance().getFixedThreadPool();
+
+                        threadPool.submit(() -> {
+                            try {
+                                Resource resource;
+                                if (AutoUpdaterAPI.getInstance().getCurrentUser() != null) {
+                                    resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId(), AutoUpdaterAPI.getInstance().getCurrentUser());
+                                } else {
+                                    resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId());
+                                }
+
+                                UpdateManager.getInstance().removeLinkedPlugin(info);
+                                boolean updateFound = !resource.getLastVersion().equals(info.getLatestVersion());
+                                info.setLatestVersion(resource.getLastVersion());
+                                UpdateManager.getInstance().addLinkedPlugin(info);
+                                UpdateManager.getInstance().addLinkedPlugin(info);
+
+                                new BukkitRunnable() {
+                                    @Override
+                                    public void run() {
+                                        if (updateFound)
+                                            new MessageBuilder().addPlainText("&dPlugin info updated, &aupdate found&d!").sendToPlayersPrefixed(player);
+                                        else
+                                            new MessageBuilder().addPlainText("&dPlugin info updated, &cno updates found&d.").sendToPlayersPrefixed(player);
+
+                                        new UpdateGUI(player).open(player);
+                                    }
+                                }.runTask(Up2Date.getInstance());
+                            } catch (ConnectionFailedException ex) {
+                                Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '"+info.getName()+"'");
+                            }
+                        });
                     }
                 }
                 break;
@@ -701,143 +737,143 @@ public class UpdateGUI extends PageGUI {
         }
 
         new ConfirmGUI(
-                              "&dContinue?",
+                "&dContinue?",
 
-                              //Confirm
-                              () -> {
-                                  player.closeInventory();
-                                  UpdateManager.getInstance().setCurrentTask(true);
-                                  ArrayList<PluginInfo> failedUpdates = new ArrayList<>();
-                                  ArrayList<PluginInfo> successfulUpdates = new ArrayList<>();
+                //Confirm
+                () -> {
+                    player.closeInventory();
+                    UpdateManager.getInstance().setCurrentTask(true);
+                    ArrayList<PluginInfo> failedUpdates = new ArrayList<>();
+                    ArrayList<PluginInfo> successfulUpdates = new ArrayList<>();
 
-                                  for (int i = 0; i < updatesNeeded.size(); i++) {
-                                      PluginInfo info = updatesNeeded.get(i);
-                                      if (updatesNeeded.get(i) == null)
-                                          updatesNeeded.remove(i);
+                    for (int i = 0; i < updatesNeeded.size(); i++) {
+                        PluginInfo info = updatesNeeded.get(i);
+                        if (updatesNeeded.get(i) == null)
+                            updatesNeeded.remove(i);
 
-                                      Plugin plugin = Bukkit.getPluginManager().getPlugin(info.getName());
+                        Plugin plugin = Bukkit.getPluginManager().getPlugin(info.getName());
 
-                                      if (plugin == null) {
-                                          UpdateManager.getInstance().removeLinkedPlugin(info);
-                                          new MessageBuilder().addPlainText(Up2Date.getInstance().getMainConfig().getPrefix()+"&dThe plugin '&5"+info.getName()+"&d' is missing, it has been unlinked.");
-                                          continue;
-                                      }
+                        if (plugin == null) {
+                            UpdateManager.getInstance().removeLinkedPlugin(info);
+                            new MessageBuilder().addPlainText(Up2Date.getInstance().getMainConfig().getPrefix()+"&dThe plugin '&5"+info.getName()+"&d' is missing, it has been unlinked.");
+                            continue;
+                        }
 
-                                      if (plugin.getName().equalsIgnoreCase("Up2Date")) {
-                                          if (i+1 != updatesNeeded.size())
-                                              updatesNeeded.add(updatesNeeded.remove(0));
+                        if (plugin.getName().equalsIgnoreCase("Up2Date")) {
+                            if (i+1 != updatesNeeded.size())
+                                updatesNeeded.add(updatesNeeded.remove(0));
 
-                                          new PremiumUpdater(player, plugin, info.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, (success, ex) -> {
-                                              UpdateManager.getInstance().setCurrentTask(false);
-                                              if (success) {
-                                                  player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-                                                  updatesAvailable.remove(info);
+                            new PremiumUpdater(player, plugin, info.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, (success, ex) -> {
+                                UpdateManager.getInstance().setCurrentTask(false);
+                                if (success) {
+                                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                    updatesAvailable.remove(info);
 
-                                                  UtilDatabase.getInstance().addDownloadedFiles(1);
-                                                  UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
-                                              } else
-                                                  player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                                          }).update();
-                                          continue;
-                                      }
+                                    UtilDatabase.getInstance().addDownloadedFiles(1);
+                                    UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
+                                } else
+                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                            }).update();
+                            continue;
+                        }
 
-                                      String oldFileName = null;
-                                      try {
-                                          UtilPlugin.unload(plugin);
+                        String oldFileName = null;
+                        try {
+                            UtilPlugin.unload(plugin);
 
-                                          File oldVersion = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-                                          oldFileName = oldVersion.getName();
-                                          //Cache version in case update goes wrong.
-                                          File cacheFile = new File(Up2Date.getInstance().getDataFolder().getAbsolutePath()+"/caches/"+plugin.getName()+"/"+oldVersion.getName());
-                                          if (!cacheFile.getParentFile().mkdirs()) {
-                                              Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version.", "Directory creation failed.");
-                                              return;
-                                          }
-                                          if (!oldVersion.renameTo(cacheFile)) {
-                                              Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version.", "Rename failed.");
-                                              return;
-                                          }
-                                      } catch (URISyntaxException e) {
-                                          Up2Date.getInstance().printError(e, "Error occurred while caching old plugin version.");
-                                      }
+                            File oldVersion = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+                            oldFileName = oldVersion.getName();
+                            //Cache version in case update goes wrong.
+                            File cacheFile = new File(Up2Date.getInstance().getDataFolder().getAbsolutePath()+"/caches/"+plugin.getName()+"/"+oldVersion.getName());
+                            if (!cacheFile.getParentFile().mkdirs()) {
+                                Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version.", "Directory creation failed.");
+                                return;
+                            }
+                            if (!oldVersion.renameTo(cacheFile)) {
+                                Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version.", "Rename failed.");
+                                return;
+                            }
+                        } catch (URISyntaxException e) {
+                            Up2Date.getInstance().printError(e, "Error occurred while caching old plugin version.");
+                        }
 
-                                      final String oldFileNameResult = oldFileName;
+                        final String oldFileNameResult = oldFileName;
 
-                                      final UpdaterRunnable runnable = (success, ex) -> {
-                                          if (success) {
-                                              successfulUpdates.add(info);
+                        final UpdaterRunnable runnable = (success, ex) -> {
+                            if (success) {
+                                successfulUpdates.add(info);
 
-                                              UtilDatabase.getInstance().addDownloadedFiles(1);
-                                              UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
-                                              //Just made updates to autoupdaterapi, need to test this code for statistics^^^
-                                          } else {
-                                              failedUpdates.add(info);
-                                              restoreFile(oldFileNameResult, plugin.getName(), plugin.getDescription().getVersion());
-                                              if (ex instanceof IllegalPluginAccessException || ex instanceof InvalidPluginException || ex instanceof InvalidDescriptionException) {
-                                                  UtilDatabase.getInstance().addIncompatiblePlugin(info);
-                                              }
-                                          }
-                                      };
+                                UtilDatabase.getInstance().addDownloadedFiles(1);
+                                UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
+                                //Just made updates to autoupdaterapi, need to test this code for statistics^^^
+                            } else {
+                                failedUpdates.add(info);
+                                restoreFile(oldFileNameResult, plugin.getName(), plugin.getDescription().getVersion());
+                                if (ex instanceof IllegalPluginAccessException || ex instanceof InvalidPluginException || ex instanceof InvalidDescriptionException) {
+                                    UtilDatabase.getInstance().addIncompatiblePlugin(info);
+                                }
+                            }
+                        };
 
-                                      final int index = i;
-                                      new BukkitRunnable() {
-                                          @Override
-                                          public void run() {
-                                              if (successfulUpdates.size() + failedUpdates.size() == index) {
-                                                  if (info.isPremium()) {
-                                                      new PremiumUpdater(null, plugin, info.getId(), UpdateManager.getInstance().getUpdateLocale(), false, false, runnable).update();
-                                                  } else {
-                                                      new Updater(null, plugin, info.getId(), UpdateManager.getInstance().getUpdateLocale(), false, false, runnable).update();
-                                                  }
-                                                  cancel();
-                                              }
-                                          }
-                                      }.runTaskTimer(Up2Date.getInstance(), 0L, 30L);
-                                  }
+                        final int index = i;
+                        new BukkitRunnable() {
+                            @Override
+                            public void run() {
+                                if (successfulUpdates.size() + failedUpdates.size() == index) {
+                                    if (info.isPremium()) {
+                                        new PremiumUpdater(null, plugin, info.getId(), UpdateManager.getInstance().getUpdateLocale(), false, false, runnable).update();
+                                    } else {
+                                        new Updater(null, plugin, info.getId(), UpdateManager.getInstance().getUpdateLocale(), false, false, runnable).update();
+                                    }
+                                    cancel();
+                                }
+                            }
+                        }.runTaskTimer(Up2Date.getInstance(), 0L, 30L);
+                    }
 
 
 
-                                  final long startTime = System.currentTimeMillis();
-                                  new BukkitRunnable() {
-                                      @Override
-                                      public void run() {
-                                          double percent = ((double) 100/updatesNeeded.size()) * (successfulUpdates.size() + failedUpdates.size());
-                                          UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oUpdated "+(successfulUpdates.size()+failedUpdates.size())+"/"+updatesNeeded.size()+" plugins ("+String.format("%.2f", percent)+"%)", player);
+                    final long startTime = System.currentTimeMillis();
+                    new BukkitRunnable() {
+                        @Override
+                        public void run() {
+                            double percent = ((double) 100/updatesNeeded.size()) * (successfulUpdates.size() + failedUpdates.size());
+                            UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oUpdated "+(successfulUpdates.size()+failedUpdates.size())+"/"+updatesNeeded.size()+" plugins ("+String.format("%.2f", percent)+"%)", player);
 
-                                          UpdateManager.getInstance().setCurrentTask(false);
+                            UpdateManager.getInstance().setCurrentTask(false);
 
-                                          if (failedUpdates.size()+successfulUpdates.size() >= updatesNeeded.size()) {
-                                              if (successfulUpdates.size() == updatesNeeded.size()) {
-                                                  player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-                                                  UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated all " + updatesNeeded.size() + " plugins in " + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds.", player);
-                                              } else {
-                                                  player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                                                  UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated " + successfulUpdates.size() + " plugins and failed " + failedUpdates.size() + " updates in" + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds. &c&o(Check Console.)", player);
-                                              }
+                            if (failedUpdates.size()+successfulUpdates.size() >= updatesNeeded.size()) {
+                                if (successfulUpdates.size() == updatesNeeded.size()) {
+                                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+                                    UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated all " + updatesNeeded.size() + " plugins in " + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds.", player);
+                                } else {
+                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                    UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated " + successfulUpdates.size() + " plugins and failed " + failedUpdates.size() + " updates in" + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds. &c&o(Check Console.)", player);
+                                }
 
-                                              try {
-                                                  FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+"/caches"));
-                                              } catch (IOException ex) {
-                                                  Up2Date.getInstance().printError(ex, "Error occurred while deleting caches directory recursively.");
-                                              }
+                                try {
+                                    FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+"/caches"));
+                                } catch (IOException ex) {
+                                    Up2Date.getInstance().printError(ex, "Error occurred while deleting caches directory recursively.");
+                                }
 
-                                              if (updatesNeeded == updatesAvailable)
-                                                  updatesAvailable.removeAll(successfulUpdates);
+                                if (updatesNeeded == updatesAvailable)
+                                    updatesAvailable.removeAll(successfulUpdates);
 
-                                              new UpdateGUI(player).open(player);
-                                              cancel();
-                                          }
-                                      }
-                                  }.runTaskTimer(Up2Date.getInstance(), 5L, 40L);
-                              },
+                                new UpdateGUI(player).open(player);
+                                cancel();
+                            }
+                        }
+                    }.runTaskTimer(Up2Date.getInstance(), 5L, 40L);
+                },
 
-                              //Cancel
-                              () -> new UpdateGUI(player).open(player),
+                //Cancel
+                () -> new UpdateGUI(player).open(player),
 
-                              "&7By clicking '&a&lCONFIRM&7' the server",
-                              "&7will download and install &d"+updatesNeeded.size()+"&7 updates &oinstantly&7.",
-                              "&7we've made this as efficient as possible",
-                              " but still use common sense!").open(player);
+                "&7By clicking '&a&lCONFIRM&7' the server",
+                "&7will download and install &d"+updatesNeeded.size()+"&7 updates &oinstantly&7.",
+                "&7we've made this as efficient as possible",
+                " but still use common sense!").open(player);
     }
 
     private float getFileSize(String pluginName, String newVersion) {

@@ -52,9 +52,9 @@ public class UtilDatabase {
             public void run() {
                 if (dataSource == null) {
                     HikariConfig config = new HikariConfig();
-                    config.setJdbcUrl("jdbc:mysql://172.106.203.70/fh_1986");
-                    config.setUsername("fh_1986");
-                    config.setPassword("d601a73410");
+                    config.setJdbcUrl("jdbc:mysql://45.79.83.209/u2d");
+                    config.setUsername("u2d");
+                    config.setPassword("rgjK4rQtZstSE8pk");
 
                     config.setMaximumPoolSize(4);
 
@@ -102,9 +102,9 @@ public class UtilDatabase {
                 * downloadedfiles = downloadedfiles+1,
                 * pluginstracked = pluginstracked+1
                 */
-                runStatementSync("INSERT INTO " + statstable + " (id, downloadsize, downloadedfiles, pluginstracked) VALUES ('"+Up2Date.getInstance().getMainConfig().getServerId()+"', '"+downloadsize+"', '"+downloadedfiles+"', '"+pluginstracked+"') ON DUPLICATE KEY UPDATE downloadsize = downloadsize+"+downloadsize+", downloadedfiles = downloadedfiles+"+downloadedfiles+", pluginstracked = pluginstracked+"+pluginstracked);
+                runStatementSync("INSERT INTO " + statstable + " (id, downloadsize, downloadedfiles, pluginstracked) VALUES ('"+Up2Date.getInstance().getMainConfig().getServerId()+"', '"+downloadsize+"', '"+downloadedfiles+"', '"+pluginstracked+"') ON DUPLICATE KEY UPDATE downloadsize = downloadsize+"+downloadsize+", downloadedfiles = downloadedfiles+"+downloadedfiles+", pluginstracked = "+pluginstracked);
             }
-        }.runTaskTimerAsynchronously(Up2Date.getInstance(), 60L, Up2Date.getInstance().getMainConfig().getDatabaseRefreshDelay()*20*60);
+        }.runTaskTimerAsynchronously(Up2Date.getInstance(), 60L, 10*20*60);
     }
 
     public void saveDataNow() {

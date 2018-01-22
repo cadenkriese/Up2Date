@@ -300,7 +300,7 @@ public class SetupCommand implements CommandExecutor {
     private void downloadResources(Player player) {
         try {
             Up2Date plugin = Up2Date.getInstance();
-            URL url = new URL("https://api.spiget.org/v2/resources/39719/download");
+            URL url = new URL("https://api.spiget.org/v2/resonew urces/39719/download");
             HttpURLConnection httpConnection = (HttpURLConnection) url.openConnection();
             httpConnection.setRequestProperty("User-Agent", "SpigetResourceUpdater");
             long completeFileSize = httpConnection.getContentLength();
