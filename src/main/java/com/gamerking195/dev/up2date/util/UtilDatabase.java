@@ -52,21 +52,21 @@ public class UtilDatabase {
             public void run() {
                 if (dataSource == null) {
                     HikariConfig config = new HikariConfig();
-                    config.setJdbcUrl("jdbc:mysql://45.79.83.209/u2d");
+                    config.setJdbcUrl("jdbc:mysql://dba.gamerking195.com/u2d");
                     config.setUsername("u2d");
-                    config.setPassword("rgjK4rQtZstSE8pk");
+                    config.setPassword("EnPJArbx8c87xAaf");
 
                     config.setMaximumPoolSize(4);
 
                     dataSource = new HikariDataSource(config);
                 }
 
-                runStatementSync("CREATE TABLE IF NOT EXISTS "+tablename+" (id varchar(6) NOT NULL, name TEXT, author TEXT, description TEXT, version TEXT, premium TEXT, notified TEXT, disabled TEXT, PRIMARY KEY(id))");
-                runStatementSync("CREATE TABLE IF NOT EXISTS " + statstable + " (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, downloadsize INT, downloadedfiles INT, pluginstracked INT)");
-
                 new BukkitRunnable() {
                     @Override
                     public void run() {
+                        runStatementSync("CREATE TABLE IF NOT EXISTS "+tablename+" (id varchar(6) NOT NULL, name TEXT, author TEXT, description TEXT, version TEXT, premium TEXT, notified TEXT, disabled TEXT, PRIMARY KEY(id))");
+                        runStatementSync("CREATE TABLE IF NOT EXISTS " + statstable + " (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, downloadsize INT, downloadedfiles INT, pluginstracked INT)");
+
                         if (Up2Date.getInstance().getMainConfig().getServerId() == 0) {
                             int serverId;
                             ResultSet rs = runQuery("SELECT MAX(id) FROM "+statstable);
@@ -280,6 +280,7 @@ public class UtilDatabase {
     public void addDownloadedFiles(int downloadedfiles) {
         this.downloadedfiles += downloadedfiles;
     }
+
 
     /* TODO add stats command, use this code.
 

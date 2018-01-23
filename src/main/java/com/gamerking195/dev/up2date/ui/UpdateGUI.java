@@ -162,7 +162,6 @@ public class UpdateGUI extends PageGUI {
             selection = new ArrayList<>();
 
         selection.remove(null);
-
         switch (event.getSlot()) {
             //VIEW UNLINKED PLUGINS
             case 45:
@@ -570,6 +569,9 @@ public class UpdateGUI extends PageGUI {
                         ).open(player);
                     } else if (event.getClick() == ClickType.DOUBLE_CLICK) {
                         player.closeInventory();
+
+                        UtilText.getUtil().sendActionBar("&5&lU&d&l2&5&lD &7&oChecking for updates, don't re-open the GUI.", player);
+
                         PluginInfo info = inventoryMap.get(event.getRawSlot());
 
                         ExecutorService threadPool = Up2Date.getInstance().getFixedThreadPool();
