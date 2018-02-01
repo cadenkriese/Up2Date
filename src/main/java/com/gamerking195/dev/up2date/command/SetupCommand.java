@@ -184,6 +184,7 @@ public class SetupCommand implements CommandExecutor {
         List<Plugin> currentPlugins = new LinkedList<>(Arrays.asList(Bukkit.getPluginManager().getPlugins()));
 
         currentPlugins.remove(AutoUpdaterAPI.getInstance());
+        currentPlugins.remove(Up2Date.getInstance());
 
         ExecutorService pool = Up2Date.getInstance().getFixedThreadPool();
 

@@ -69,8 +69,7 @@ public class UtilU2dUpdater {
         new BukkitRunnable() {
             @Override
             public void run() {
-                System.out.println("running");
-                if (AutoUpdaterAPI.getInstance().getCurrentUser() == null)
+                if (Bukkit.getPluginManager().getPlugin("AutoUpdaterAPI") == null || AutoUpdaterAPI.getInstance().getCurrentUser() == null)
                     return;
 
                 checkForUpdate();
