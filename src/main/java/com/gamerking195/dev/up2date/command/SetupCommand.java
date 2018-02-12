@@ -191,7 +191,7 @@ public class SetupCommand implements CommandExecutor {
         long startTime = System.currentTimeMillis();
 
         for (final Plugin plugin : currentPlugins) {
-            if (plugin.getName().equals("AutoUpdaterAPI") || plugin.getName().equals("Up2Date"))
+            if (plugin.getName().equals("AutoUpdaterAPI") || plugin.getName().equals("Up2Date") || plugin.getName().equals("ProtocolLib"))
                 continue;
 
             pool.submit(() -> {

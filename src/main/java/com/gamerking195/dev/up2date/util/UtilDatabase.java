@@ -209,10 +209,8 @@ public class UtilDatabase {
     private void runStatementSync(String statement) {
         final String updatedStatement = statement.replace("TABLENAME", tablename);
 
-        if (dataSource == null) {
-            Up2Date.getInstance().printPluginError("Error occurred while sending statement to private DB.", "This error is not very important and doesn't affect anything ingame but you should probably report it to the dev anyways.");
+        if (dataSource == null)
             return;
-        }
 
         Connection connection;
 
