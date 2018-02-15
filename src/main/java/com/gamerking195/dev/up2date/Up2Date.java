@@ -14,13 +14,13 @@ import com.gamerking195.dev.up2date.util.UtilU2dUpdater;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
-import net.cubespace.Yamler.Config.InvalidConfigurationException;
 import lombok.Getter;
+import net.cubespace.Yamler.Config.InvalidConfigurationException;
+import org.bstats.bukkit.Metrics;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bstats.bukkit.Metrics;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.BufferedInputStream;

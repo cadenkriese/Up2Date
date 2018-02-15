@@ -218,7 +218,7 @@ public class PluginLinkGUI extends PageGUI {
                     ).open(player);
                 }
             }
-        } else if (event.getCurrentItem().getType() != null && event.getCurrentItem().getType() == Material.EMERALD_BLOCK) {
+        } else if (event.getCurrentItem() != null && event.getCurrentItem().getType() != null && event.getCurrentItem().getType() == Material.EMERALD_BLOCK) {
             ArrayList<PluginInfo> incompatibles = UtilDatabase.getInstance().getIncompatiblePlugins(UpdateManager.getInstance().getLinkedPlugins());
             incompatibles.forEach(plugin -> UpdateManager.getInstance().removeLinkedPlugin(plugin));
 
