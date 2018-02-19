@@ -167,7 +167,7 @@ public class UtilU2dUpdater {
             //Do the optimal shutdown.
             UpdateManager.getInstance().saveDataNow();
             UtilDatabase.getInstance().saveDataNow();
-            UpdateManager.getInstance().getCacheUpdaters().forEach(BukkitRunnable::cancel);
+            UpdateManager.getInstance().getCacheUpdater().cancel();
             Up2Date.getInstance().getFixedThreadPool().shutdown();
 
             new BukkitRunnable() {

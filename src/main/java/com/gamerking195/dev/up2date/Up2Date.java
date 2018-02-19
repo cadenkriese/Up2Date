@@ -185,7 +185,7 @@ public final class Up2Date extends JavaPlugin {
     public void onDisable() {
         UpdateManager.getInstance().saveDataNow();
         UtilDatabase.getInstance().saveDataNow();
-        UpdateManager.getInstance().getCacheUpdaters().forEach(BukkitRunnable::cancel);
+        UpdateManager.getInstance().getCacheUpdater().cancel();
         fixedThreadPool.shutdownNow();
 
         try {
@@ -196,11 +196,14 @@ public final class Up2Date extends JavaPlugin {
     }
 
     public void printError(Exception ex, String extraInfo) {
-        log.severe("A severe error has occurred with the Up2Date plugin.");
-        log.severe("If you cannot figure out this error on your own (e.g. a config error) please copy and paste everything from here to END ERROR and post it at https://github.com/GamerKing195/Up2Date/issues.");
+        String latest = UtilU2dUpdater.getInstance().isUpdateAvailable() ? "(OUTDATED)" : "(LATEST)";
+
+        System.out.println("A severe error has occurred with the Up2Date plugin.");
+        System.out.println("If you cannot figure out this error on your own (e.g. a config error) please copy and paste everything from here to END ERROR and post it at https://github.com/GamerKing195/Up2Date/issues.");
+        System.out.println("Or on spigot at https://spigotmc.org/threads/284883/");
         log.severe("");
         log.severe("============== BEGIN ERROR ==============");
-        log.severe("PLUGIN VERSION: Up2Date V" + getDescription().getVersion());
+        log.severe("PLUGIN VERSION: V" + getDescription().getVersion() + " " + latest);
         log.severe("");
         log.severe("PLUGIN MESSAGE: "+extraInfo);
         log.severe("");
@@ -214,11 +217,14 @@ public final class Up2Date extends JavaPlugin {
 
     //use system.out.println to avoid async bukkit calls so it can be run async
     public void systemOutPrintError(Exception ex, String extraInfo) {
+        String latest = UtilU2dUpdater.getInstance().isUpdateAvailable() ? "(OUTDATED)" : "(LATEST)";
+
         System.out.println("A severe error has occurred with the Up2Date plugin.");
         System.out.println("If you cannot figure out this error on your own (e.g. a config error) please copy and paste everything from here to END ERROR and post it at https://github.com/GamerKing195/Up2Date/issues.");
+        System.out.println("Or on spigot at https://spigotmc.org/threads/284883/");
         System.out.println("");
         System.out.println("============== BEGIN ERROR ==============");
-        System.out.println("PLUGIN VERSION: Up2Date V" + getDescription().getVersion());
+        System.out.println("PLUGIN VERSION: V" + getDescription().getVersion() + " " + latest);
         System.out.println("");
         System.out.println("PLUGIN MESSAGE: "+extraInfo);
         System.out.println("");
@@ -231,12 +237,14 @@ public final class Up2Date extends JavaPlugin {
     }
 
     public void printPluginError(String header, String message) {
+        String latest = UtilU2dUpdater.getInstance().isUpdateAvailable() ? "(OUTDATED)" : "(LATEST)";
+
         log.severe("============== BEGIN ERROR ==============");
         log.severe(header);
         log.severe("");
-        log.severe("PLUGIN VERSION: Up2Date V" + getDescription().getVersion());
+        log.severe("PLUGIN VERSION: V" + getDescription().getVersion() + " " + latest);
         log.severe("");
-        log.severe("PLUGIN MESSAGE: "+message);
+        log.severe("PLUGIN MESSAGE: " + message);
         log.severe("");
         log.severe("============== END ERROR ==============");
     }
