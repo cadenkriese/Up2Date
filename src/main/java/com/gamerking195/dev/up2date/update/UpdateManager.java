@@ -102,7 +102,6 @@ public class UpdateManager {
         if (!Up2Date.getInstance().getMainConfig().isSetupComplete()) {
             startDelay += 2400;
         }
-        cacheUpdater = new BukkitRunnable(){
 
         cacheUpdater = new BukkitRunnable() {
             @Override
@@ -440,42 +439,5 @@ public class UpdateManager {
         badApples.forEach(this::removeLinkedPlugin);
 
         return updates;
-    }
-
-    private void refresh() {
-        if (SetupCommand.inSetup) {
-            return;
-        }
-        if (Bukkit.getPluginManager().getPlugin("AutoUpdaterAPI") == null) {
-            return;
-        }
-        int seperation = 100;
-        for (int i = 0; i < this.linkedPlugins.size(); ++i) {
-            final int index = i;
-            new BukkitRunnable(){
-
-                public void run() {
-                    try {
-                        if (UpdateManager.this.linkedPlugins.size() < index) {
-                            this.cancel();
-                        }
-                        PluginInfo info = UpdateManager.this.linkedPlugins.get(index);
-                        if (UtilReader.readFrom(("https://www.spigotmc.org/resources/" + info.getId() + "/")).contains("You do not have permission to view this page or perform this action.")) {
-                            return;
-                        }
-                        Resource resource = AutoUpdaterAPI.getInstance().getCurrentUser() != null ? AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId(), AutoUpdaterAPI.getInstance().getCurrentUser()) : AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId());
-                        UpdateManager.this.linkedPlugins.remove(index);
-                        info.setLatestVersion(resource.getLastVersion());
-                        UpdateManager.this.linkedPlugins.add(info);
-                    }
-                    catch (ConnectionFailedException | IOException ex) {
-                        Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '" + (UpdateManager.this.linkedPlugins.get(index)).getName() + "'");
-                    }
-                    if (index == UpdateManager.this.linkedPlugins.size() - 1) {
-                        UpdateManager.this.saveData();
-                    }
-                }
-            }.runTaskTimerAsynchronously(Up2Date.getInstance(), 0, (i * seperation));
-        }
     }
 }

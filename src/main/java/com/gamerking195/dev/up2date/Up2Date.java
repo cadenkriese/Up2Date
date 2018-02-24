@@ -123,7 +123,7 @@ public final class Up2Date extends JavaPlugin {
 
                 //if update available
                 Plugin plugin = Bukkit.getPluginManager().getPlugin("AutoUpdaterAPI");
-                if (!object.get("name").getAsString().equals(plugin.getDescription().getVersion()) && (!plugin.getDescription().getVersion().contains("SNAPSHOT") && !plugin.getDescription().getVersion().contains("PRERELEASE"))) {
+                if (!object.get("name").getAsString().equals(plugin.getDescription().getVersion()) && (!plugin.getDescription().getVersion().contains("SNAPSHOT") && !plugin.getDescription().getVersion().contains("PRERELEASE") && !plugin.getDescription().getVersion().equalsIgnoreCase("2.2.2"))) {
                     log.info("Updating AutoUpdaterAPI V"+plugin.getDescription().getVersion()+" » "+object.get("name").getAsString()+".");
 
                     Bukkit.getPluginManager().disablePlugin(plugin);
