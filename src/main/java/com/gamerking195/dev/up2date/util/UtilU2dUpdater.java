@@ -114,8 +114,9 @@ public class UtilU2dUpdater {
                         }
                     }
                 }
+                //Do update check once every 90 minutes.
             }
-        }.runTaskTimer(plugin, 240L, 24000L);
+        }.runTaskTimer(plugin, 240L, 90*(20*60));
     }
 
     private void checkForUpdate() {
@@ -153,10 +154,12 @@ public class UtilU2dUpdater {
                 updateInfo = sb.toString();
             }
         } catch (Exception exception) {
-            Up2Date.getInstance().printError(exception, "Error occurred whilst pinging spiget.");
-            try {
-                Up2Date.getInstance().printPluginError("Json received from spigot.", UtilReader.readFrom("https://api.spiget.org/v2/resources/49313/"));
-            } catch (Exception ignored) {}
+            //TODO Error suppressed for now bc it causes lots of console spam.
+
+            //Up2Date.getInstance().printError(exception, "Error occurred whilst pinging spiget.");
+            //try {
+            //    Up2Date.getInstance().printPluginError("Json received from spigot.", UtilReader.readFrom("https://api.spiget.org/v2/resources/49313/"));
+            //} catch (Exception ignored) {}
         }
     }
 

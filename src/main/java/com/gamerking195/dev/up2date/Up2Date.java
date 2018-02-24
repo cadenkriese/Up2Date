@@ -21,7 +21,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -205,7 +204,7 @@ public final class Up2Date extends JavaPlugin {
         log.severe("============== BEGIN ERROR ==============");
         log.severe("PLUGIN VERSION: V" + getDescription().getVersion() + " " + latest);
         log.severe("");
-        log.severe("PLUGIN MESSAGE: "+extraInfo);
+        log.severe("PLUGIN MESSAGE: " + extraInfo);
         log.severe("");
         log.severe("MESSAGE: " + ex.getMessage());
         log.severe("");
@@ -215,7 +214,6 @@ public final class Up2Date extends JavaPlugin {
         log.severe("============== END ERROR ==============");
     }
 
-    //use system.out.println to avoid async bukkit calls so it can be run async
     public void systemOutPrintError(Exception ex, String extraInfo) {
         String latest = UtilU2dUpdater.getInstance().isUpdateAvailable() ? "(OUTDATED)" : "(LATEST)";
 
@@ -226,7 +224,7 @@ public final class Up2Date extends JavaPlugin {
         System.out.println("============== BEGIN ERROR ==============");
         System.out.println("PLUGIN VERSION: V" + getDescription().getVersion() + " " + latest);
         System.out.println("");
-        System.out.println("PLUGIN MESSAGE: "+extraInfo);
+        System.out.println("PLUGIN MESSAGE: " + extraInfo);
         System.out.println("");
         System.out.println("MESSAGE: " + ex.getMessage());
         System.out.println("");
