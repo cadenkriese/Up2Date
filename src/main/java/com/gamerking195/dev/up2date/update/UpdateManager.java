@@ -49,7 +49,7 @@ public class UpdateManager {
 
     //Total refresh time is basedelay+(count*60)
     @Getter
-    private ArrayList<BukkitRunnable> cacheUpdaters = new ArrayList<>();
+    private BukkitRunnable cacheUpdater;
 
     @Getter
     @Setter
@@ -99,52 +99,30 @@ public class UpdateManager {
         }
 
         int startDelay = 100;
-        if (!Up2Date.getInstance().getMainConfig().isSetupComplete())
-            startDelay+= 2400;
-
-        //Not using threadpool here to have static seperations and spread out any server stress more since its in the background.
-        for (int i = 0; i < linkedPlugins.size()*40; i+= 40) {
-            final int index = i;
-            BukkitRunnable runnable = new BukkitRunnable() {
-                @Override
-                public void run() {
-                    if (SetupCommand.inSetup)
-                        return;
-
-                    if (Bukkit.getPluginManager().getPlugin("AutoUpdaterAPI") == null)
-                        return;
-
-                    try {
-                        if (linkedPlugins.size() < index/20)
-                            cancel();
-
-                        PluginInfo info = linkedPlugins.get(index/20);
-
-                        if (UtilReader.readFrom("https://www.spigotmc.org/resources/"+info.getId()+"/").contains("You do not have permission to view this page or perform this action."))
-                            return;
-
-                        Resource resource;
-                        if (AutoUpdaterAPI.getInstance().getCurrentUser() != null) {
-                            resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId(), AutoUpdaterAPI.getInstance().getCurrentUser());
-                        } else {
-                            resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId());
-                        }
-
-                        linkedPlugins.remove(index/20);
-                        info.setLatestVersion(resource.getLastVersion());
-                        linkedPlugins.add(info);
-                    } catch (ConnectionFailedException | IOException ex) {
-                        Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '"+linkedPlugins.get(index/20).getName()+"'");
-                    }
-
-                    if (index == linkedPlugins.size()*40)
-                        saveData();
-                }
-            };
-
-            cacheUpdaters.add(runnable);
-            runnable.runTaskTimerAsynchronously(Up2Date.getInstance(), Up2Date.getInstance().getMainConfig().getCacheRefreshDelay()*20*60+startDelay+i, (Up2Date.getInstance().getMainConfig().getCacheRefreshDelay()*20*60)+i);
+        if (!Up2Date.getInstance().getMainConfig().isSetupComplete()) {
+            startDelay += 2400;
         }
+        cacheUpdater = new BukkitRunnable(){
+
+            public void run() {
+                try {
+                    UtilReader.readFrom("https://spigotmc.org/");
+                }
+                catch (IOException ex) {
+                    if (ex.getMessage().contains("HTTP response code")) {
+                        Up2Date.getInstance().printPluginError("Error occurred while beginning automatic refresh.", "HTTP Error while connecting to spigot.\n \nERROR: " + ex.getMessage() + "\n \nPlease wait " + Up2Date.getInstance().getMainConfig().getCacheRefreshDelay() + " minutes for another automatic refresh.\nIf this error repeats please report it to the developer at https://github.com/GamerKing195/Up2Date/issues\nOr on spigot at https://spigotmc.org/threads/284883/");
+                    } else {
+                        Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while running tests before automatic refresh.");
+                    }
+                    return;
+                }
+                UpdateManager.this.refresh();
+            }
+        };
+
+        cacheUpdater.runTaskTimerAsynchronously(Up2Date.getInstance(), (Up2Date.getInstance().getMainConfig().getCacheRefreshDelay() * 20 * 60 + startDelay), (Up2Date.getInstance().getMainConfig().getCacheRefreshDelay() * 20 * 60));
+
+
 
         PluginInfo bad = null;
 
@@ -414,5 +392,42 @@ public class UpdateManager {
         badApples.forEach(this::removeLinkedPlugin);
 
         return updates;
+    }
+
+    private void refresh() {
+        if (SetupCommand.inSetup) {
+            return;
+        }
+        if (Bukkit.getPluginManager().getPlugin("AutoUpdaterAPI") == null) {
+            return;
+        }
+        int seperation = 100;
+        for (int i = 0; i < this.linkedPlugins.size(); ++i) {
+            final int index = i;
+            new BukkitRunnable(){
+
+                public void run() {
+                    try {
+                        if (UpdateManager.this.linkedPlugins.size() < index) {
+                            this.cancel();
+                        }
+                        PluginInfo info = UpdateManager.this.linkedPlugins.get(index);
+                        if (UtilReader.readFrom(("https://www.spigotmc.org/resources/" + info.getId() + "/")).contains("You do not have permission to view this page or perform this action.")) {
+                            return;
+                        }
+                        Resource resource = AutoUpdaterAPI.getInstance().getCurrentUser() != null ? AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId(), AutoUpdaterAPI.getInstance().getCurrentUser()) : AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId());
+                        UpdateManager.this.linkedPlugins.remove(index);
+                        info.setLatestVersion(resource.getLastVersion());
+                        UpdateManager.this.linkedPlugins.add(info);
+                    }
+                    catch (ConnectionFailedException | IOException ex) {
+                        Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '" + (UpdateManager.this.linkedPlugins.get(index)).getName() + "'");
+                    }
+                    if (index == UpdateManager.this.linkedPlugins.size() - 1) {
+                        UpdateManager.this.saveData();
+                    }
+                }
+            }.runTaskTimerAsynchronously(Up2Date.getInstance(), 0, (i * seperation));
+        }
     }
 }
