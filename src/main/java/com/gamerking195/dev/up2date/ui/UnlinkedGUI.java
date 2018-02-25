@@ -50,6 +50,8 @@ public class UnlinkedGUI extends PageGUI {
 
             if (Up2Date.getInstance().getMainConfig().isSetupComplete() && !linked && !UpdateManager.getInstance().getUnknownPlugins().contains(plugin) && !plugin.getName().equals("Up2Date") && !plugin.getName().equals("AutoUpdaterAPI"))
                 UpdateManager.getInstance().addUnknownPlugin(plugin);
+            else if (UpdateManager.getInstance().getUnknownPlugins().contains(plugin) && !plugin.getName().equals("Up2Date") && !plugin.getName().equals("AutoUpdaterAPI"))
+                UpdateManager.getInstance().getUnknownPlugins().remove(plugin);
         }
     }
 

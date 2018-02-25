@@ -69,7 +69,7 @@ public class UtilU2dUpdater {
         new BukkitRunnable() {
             @Override
             public void run() {
-                if (Bukkit.getPluginManager().getPlugin("AutoUpdaterAPI") == null || AutoUpdaterAPI.getInstance().getCurrentUser() == null)
+                if (Bukkit.getPluginManager().getPlugin("AutoUpdaterAPI") == null || AutoUpdaterAPI.getInstance().getCurrentUser() == null || Up2Date.getInstance().getDescription().getVersion().contains("SNAPSHOT"))
                     return;
 
                 checkForUpdate();
@@ -137,7 +137,7 @@ public class UtilU2dUpdater {
 
                 //Update description
 
-                JsonObject latestUpdateObject = gson.fromJson(UtilReader.readFrom("https://api.spiget.org/v2/resources/49313/updates/latest"), objectType);
+                JsonObject latestUpdateObject = gson.fromJson(UtilReader.readFrom("https://api.spiget.org/v2/resources/49313/updates?size=1&sort=-date"), objectType);
 
                 String descriptionBase64 = gson.fromJson(latestUpdateObject.get("description"), new TypeToken<String>(){}.getType());
                 String decodedDescription = new String(Base64.getDecoder().decode(descriptionBase64));

@@ -244,95 +244,90 @@ public class UpdateGUI extends PageGUI {
                 break;
             //DOWNLOAD & INSTALL A PLUGIN
             case 52:
-                new AnvilGUI(Up2Date.getInstance(), player, "Enter plugin name.", (player, firstReply) -> {
-                    new AnvilGUI(Up2Date.getInstance(), player, "Enter plugin ID.", (p, secondReply) -> {
-                        if (NumberUtils.isNumber(secondReply)) {
-                            try {
-                                player.closeInventory();
-                                UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oRetrieving info...", player);
-                                String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources/" + secondReply);
+                new AnvilGUI(Up2Date.getInstance(), player, "Enter plugin ID.", (p, pluginId) -> {
+                    if (NumberUtils.isNumber(pluginId)) {
+                        try {
+                            player.closeInventory();
+                            UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oRetrieving info...", player);
+                            String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources/" + pluginId);
 
-                                boolean premium = pluginJson.contains("\"premium\": true");
+                            boolean premium = pluginJson.contains("\"premium\": true");
 
-                                if (pluginJson.contains("\"external\": true")) {
-                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                                    new MessageBuilder().addPlainText("&dPlugins with external downloads are not supported!").sendToPlayersPrefixed(player);
-                                    new UpdateGUI(player).open(player);
-                                    return "External downloads not supported!";
-                                } else if (premium && AutoUpdaterAPI.getInstance().getCurrentUser() == null) {
-                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                                    new MessageBuilder().addPlainText("&dYou must be logged into spigot to download premium resources!").sendToPlayersPrefixed(player);
-                                    new UpdateGUI(player).open(player);
-                                    return "You must login to spigot for premium resources!";
-                                } else if (!pluginJson.contains("\"type\": \".jar\"")) {
-                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                                    new MessageBuilder().addPlainText("&dResource download must be a jar!").sendToPlayersPrefixed(player);
-                                    new UpdateGUI(player).open(player);
-                                    return "Resource download must be a jar!";
-                                }
-
-                                UpdateLocale locale = UpdateManager.getInstance().getDownloadLocale();
-
-                                locale.setUpdatingDownload(locale.getUpdatingDownload().replace("%plugin%", firstReply));
-                                locale.setUpdating(locale.getUpdating().replace("%plugin%", firstReply));
-                                locale.setUpdateComplete(locale.getUpdateComplete().replace("%plugin%", firstReply));
-                                locale.setUpdateFailed(locale.getUpdateFailed().replace("%plugin%", firstReply));
-
-                                locale.setPluginName(firstReply);
-                                locale.setFileName(firstReply+"-%new_version%");
-
-                                Type type = new TypeToken<JsonObject>(){}.getType();
-                                JsonObject object = new Gson().fromJson(pluginJson, type);
-                                UtilSiteSearch.SearchResult result = new UtilSiteSearch.SearchResult(object.get("id").getAsInt(), object.get("name").getAsString(), object.get("tag").getAsString(), pluginJson.contains("\"premium\": true"));
-
-                                Resource resource;
-                                if (AutoUpdaterAPI.getInstance().getCurrentUser() != null)
-                                    resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(Integer.valueOf(secondReply), AutoUpdaterAPI.getInstance().getCurrentUser());
-                                else
-                                    resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(Integer.valueOf(secondReply));
-
-                                if (premium) {
-                                    new PremiumUpdater(player, Up2Date.getInstance(), Integer.valueOf(secondReply), locale, false, false, (success, ex) -> {
-                                        if (success) {
-                                            Plugin plugin = Bukkit.getPluginManager().getPlugin(firstReply);
-                                            if (result.getName() != null && result.getTag() != null && result.getId() != 0)
-                                                UpdateManager.getInstance().addLinkedPlugin(new PluginInfo(plugin, resource, result));
-                                            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-
-                                            UtilDatabase.getInstance().addDownloadedFiles(1);
-                                            UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
-                                        } else
-                                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                                    }).update();
-                                    player.closeInventory();
-
-                                    return "";
-                                } else {
-                                    new Updater(player, Up2Date.getInstance(), Integer.valueOf(secondReply), locale, false, false, (success, ex) -> {
-                                        if (success) {
-                                            Plugin plugin = Bukkit.getPluginManager().getPlugin(firstReply);
-                                            if (result.getName() != null && result.getTag() != null && result.getId() != 0)
-                                                UpdateManager.getInstance().addLinkedPlugin(new PluginInfo(plugin, resource, result));
-                                            player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-
-                                            UtilDatabase.getInstance().addDownloadedFiles(1);
-                                            UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
-                                        } else {
-                                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                                        }
-                                    }).update();
-                                    player.closeInventory();
-
-                                    return "";
-                                }
-                            } catch (Exception ex) {
-                                Up2Date.getInstance().printError(ex, "Error occurred while authenticating plugin with potential id '" + secondReply + "'");
+                            if (pluginJson.contains("\"external\": true")) {
+                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                new MessageBuilder().addPlainText("&dPlugins with external downloads are not supported!").sendToPlayersPrefixed(player);
+                                new UpdateGUI(player).open(player);
+                                return "External downloads not supported!";
+                            } else if (premium && AutoUpdaterAPI.getInstance().getCurrentUser() == null) {
+                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                new MessageBuilder().addPlainText("&dYou must be logged into spigot to download premium resources!").sendToPlayersPrefixed(player);
+                                new UpdateGUI(player).open(player);
+                                return "You must login to spigot for premium resources!";
+                            } else if (!pluginJson.contains("\"type\": \".jar\"")) {
+                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                new MessageBuilder().addPlainText("&dResource download must be a jar!").sendToPlayersPrefixed(player);
+                                new UpdateGUI(player).open(player);
+                                return "Resource download must be a jar!";
                             }
-                        }
 
-                        return "Invalid String!";
-                    });
-                    return "";
+                            Type type = new TypeToken<JsonObject>(){}.getType();
+                            JsonObject object = new Gson().fromJson(pluginJson, type);
+                            UtilSiteSearch.SearchResult result = new UtilSiteSearch.SearchResult(object.get("id").getAsInt(), object.get("name").getAsString(), object.get("tag").getAsString(), pluginJson.contains("\"premium\": true"));
+
+                            UpdateLocale locale = UpdateManager.getInstance().getDownloadLocale();
+
+                            locale.setUpdatingDownload(locale.getUpdatingDownload().replace("%plugin%", result.getName()));
+                            locale.setUpdating(locale.getUpdating().replace("%plugin%", result.getName()));
+                            locale.setUpdateComplete(locale.getUpdateComplete().replace("%plugin%", result.getName()));
+                            locale.setUpdateFailed(locale.getUpdateFailed().replace("%plugin%", result.getName()));
+
+                            locale.setPluginName(null);
+                            locale.setFileName(result.getName()+"-%new_version%");
+
+                            Resource resource;
+                            if (AutoUpdaterAPI.getInstance().getCurrentUser() != null)
+                                resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(Integer.valueOf(pluginId), AutoUpdaterAPI.getInstance().getCurrentUser());
+                            else
+                                resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(Integer.valueOf(pluginId));
+
+                            if (premium) {
+                                new PremiumUpdater(player, Up2Date.getInstance(), Integer.valueOf(pluginId), locale, false, false, (success, ex, plugin) -> {
+                                    if (success) {
+                                        if (result.getName() != null && result.getTag() != null && result.getId() != 0)
+                                            UpdateManager.getInstance().addLinkedPlugin(new PluginInfo(plugin, resource, result));
+                                        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+
+                                        UtilDatabase.getInstance().addDownloadedFiles(1);
+                                        UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
+                                    } else
+                                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                }).update();
+                                player.closeInventory();
+
+                                return "";
+                            } else {
+                                new Updater(player, Up2Date.getInstance(), Integer.valueOf(pluginId), locale, false, false, (success, ex, plugin) -> {
+                                    if (success) {
+                                        if (result.getName() != null && result.getTag() != null && result.getId() != 0)
+                                            UpdateManager.getInstance().addLinkedPlugin(new PluginInfo(plugin, resource, result));
+                                        player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
+
+                                        UtilDatabase.getInstance().addDownloadedFiles(1);
+                                        UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
+                                    } else {
+                                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                    }
+                                }).update();
+                                player.closeInventory();
+
+                                return "";
+                            }
+                        } catch (Exception ex) {
+                            Up2Date.getInstance().printError(ex, "Error occurred while authenticating plugin with potential id '" + pluginId + "'");
+                        }
+                    }
+
+                    return "Invalid String!";
                 });
                 break;
             //FORCE INFO REFRESH
@@ -462,7 +457,7 @@ public class UpdateGUI extends PageGUI {
                         }
 
                         if (plugin.getName().equals("Up2Date")) {
-                            new PremiumUpdater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, (success, ex) -> {
+                            new PremiumUpdater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, (success, ex, pl) -> {
                                 UpdateManager.getInstance().setCurrentTask(false);
                                 if (success) {
                                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -502,7 +497,7 @@ public class UpdateGUI extends PageGUI {
 
                         UpdateManager.getInstance().setCurrentTask(true);
                         if (pluginInfo.isPremium()) {
-                            new PremiumUpdater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, false, (success, ex) -> {
+                            new PremiumUpdater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, false, (success, ex, pl) -> {
                                 UpdateManager.getInstance().setCurrentTask(false);
                                 if (success) {
                                     try {
@@ -525,7 +520,7 @@ public class UpdateGUI extends PageGUI {
                                 }
                             }).update();
                         } else {
-                            new Updater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, false, (success, ex) -> {
+                            new Updater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, false, (success, ex, pl) -> {
                                 UpdateManager.getInstance().setCurrentTask(false);
                                 if (success) {
                                     try {
@@ -765,7 +760,7 @@ public class UpdateGUI extends PageGUI {
                             if (i+1 != updatesNeeded.size())
                                 updatesNeeded.add(updatesNeeded.remove(0));
 
-                            new PremiumUpdater(player, plugin, info.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, (success, ex) -> {
+                            new PremiumUpdater(player, plugin, info.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, (success, ex, pl) -> {
                                 UpdateManager.getInstance().setCurrentTask(false);
                                 if (success) {
                                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
@@ -801,7 +796,7 @@ public class UpdateGUI extends PageGUI {
 
                         final String oldFileNameResult = oldFileName;
 
-                        final UpdaterRunnable runnable = (success, ex) -> {
+                        final UpdaterRunnable runnable = (success, ex, pl) -> {
                             if (success) {
                                 successfulUpdates.add(info);
 
