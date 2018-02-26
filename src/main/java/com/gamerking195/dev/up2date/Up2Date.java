@@ -2,7 +2,6 @@ package com.gamerking195.dev.up2date;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
-import com.gamerking195.dev.autoupdaterapi.util.UtilPlugin;
 import com.gamerking195.dev.autoupdaterapi.util.UtilReader;
 import com.gamerking195.dev.up2date.command.SetupCommand;
 import com.gamerking195.dev.up2date.command.Up2DateCommand;
@@ -10,6 +9,7 @@ import com.gamerking195.dev.up2date.config.MainConfig;
 import com.gamerking195.dev.up2date.listener.PlayerJoinListener;
 import com.gamerking195.dev.up2date.update.UpdateManager;
 import com.gamerking195.dev.up2date.util.UtilDatabase;
+import com.gamerking195.dev.up2date.util.UtilPlugin;
 import com.gamerking195.dev.up2date.util.UtilU2dUpdater;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
