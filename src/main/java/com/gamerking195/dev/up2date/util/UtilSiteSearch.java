@@ -25,17 +25,20 @@ public class UtilSiteSearch {
     public static UtilSiteSearch getInstance() {
         return instance;
     }
-    Gson gson = new Gson();
+    private Gson gson = new Gson();
 
     public ArrayList<SearchResult> searchResources(String query, int size) {
         ArrayList<SearchResult> pluginIds = new ArrayList<>();
 
         try {
             Type type = new TypeToken<ArrayList<JsonObject>>(){}.getType();
-            String info = UtilReader.readFrom("https://api.spiget.org/v2/search/resources/"+query+"?field=name&size="+size);
+            String info = UtilReader.readFrom("https://api.spiget.org/v2/search/resources/"+query+"?field=name&size="+size+"&fields=name%2Ctag%2Cid%2CtestedVersions");
             ArrayList<JsonObject> objects = gson.fromJson(info, type);
             for (JsonObject object : objects) {
-                SearchResult result = new SearchResult(object.get("id").getAsInt(), object.get("name").getAsString(), object.get("tag").getAsString(), info.contains("\"premium\": true") && info.contains("\"id\": "+object.get("id").getAsInt()));
+                ArrayList<String> testedVersions = new ArrayList<>();
+                object.getAsJsonArray("testedVersions").forEach(testedVersion -> testedVersions.add(testedVersion.getAsString()));
+                String[] testedVersionsArray = testedVersions.toArray(new String[0]);
+                SearchResult result = new SearchResult(object.get("id").getAsInt(), object.get("name").getAsString(), object.get("tag").getAsString(), info.contains("\"premium\": true") && info.contains("\"id\": "+object.get("id").getAsInt()), testedVersionsArray);
 
                 if (result.getName() != null && result.getTag() != null && result.getId() != 0)
                     pluginIds.add(result);
@@ -60,12 +63,14 @@ public class UtilSiteSearch {
         private String name;
         private String tag;
         private boolean premium;
+        private String[] testedVersions;
 
-        public SearchResult(int id, String name, String tag, boolean premium) {
+        public SearchResult(int id, String name, String tag, boolean premium, String[] testedVersions) {
             this.id = id;
             this.name = name;
             this.tag = tag;
             this.premium = premium;
+            this.testedVersions = testedVersions;
         }
     }
 }

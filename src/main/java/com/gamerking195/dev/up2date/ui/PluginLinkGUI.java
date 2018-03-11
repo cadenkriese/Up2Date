@@ -72,6 +72,7 @@ public class PluginLinkGUI extends PageGUI {
                                               "",
                                               "&7&lAuthor: &d&l"+pluginInfo.getAuthor(),
                                               "&7&lVersion: &d&l"+plugin.getDescription().getVersion(),
+                                              "&7&lSupported MC Versions: &d&l"+pluginInfo.getSupportedMcVersions(),
                                               "&7&lID: &d&l" + pluginInfo.getId(),
                                               "&7&lDescription: ",
                                               "%description%",
@@ -255,7 +256,7 @@ public class PluginLinkGUI extends PageGUI {
 
                     Resource resource = manager.getResourceById(Integer.valueOf(reply));
                     if (resource != null) {
-                        UtilSiteSearch.SearchResult result = new UtilSiteSearch.SearchResult(resource.getResourceId(), plugin.getName(), plugin.getDescription().getDescription(), premium);
+                        UtilSiteSearch.SearchResult result = new UtilSiteSearch.SearchResult(resource.getResourceId(), plugin.getName(), plugin.getDescription().getDescription(), premium, new String[]{"NULL"});
 
                         UpdateManager.getInstance().removeLinkedPlugin(plugin);
                         UpdateManager.getInstance().removeUnlinkedPlugin(plugin);

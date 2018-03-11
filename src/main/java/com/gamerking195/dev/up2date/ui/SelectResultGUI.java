@@ -57,7 +57,7 @@ public class SelectResultGUI extends GUI {
             try {
                 Resource resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(id, AutoUpdaterAPI.getInstance().getCurrentUser());
 
-                UtilSiteSearch.SearchResult result = new UtilSiteSearch.SearchResult(resource.getResourceId(), resource.getResourceName(), plugin.getDescription().getDescription(), event.getCurrentItem().getItemMeta().getLore().get(3).contains("TRUE"));
+                UtilSiteSearch.SearchResult result = new UtilSiteSearch.SearchResult(resource.getResourceId(), resource.getResourceName(), plugin.getDescription().getDescription(), event.getCurrentItem().getItemMeta().getLore().get(3).contains("TRUE"), new String[]{"NULL"});
 
                 UpdateManager.getInstance().addLinkedPlugin(new PluginInfo(plugin, resource, result));
                 UpdateManager.getInstance().removeUnlinkedPlugin(plugin);

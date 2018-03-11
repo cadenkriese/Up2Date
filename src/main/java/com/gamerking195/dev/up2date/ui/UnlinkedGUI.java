@@ -12,6 +12,9 @@ import com.gamerking195.dev.up2date.util.UtilSiteSearch;
 import com.gamerking195.dev.up2date.util.gui.ConfirmGUI;
 import com.gamerking195.dev.up2date.util.gui.PageGUI;
 import com.gamerking195.dev.up2date.util.item.ItemStackBuilder;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import net.wesjd.anvilgui.AnvilGUI;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -25,6 +28,7 @@ import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -118,6 +122,11 @@ public class UnlinkedGUI extends PageGUI {
                                     return "Resource type must be a jar.";
                                 }
 
+                                Type type = new TypeToken<JsonObject>(){}.getType();
+                                JsonObject object = new Gson().fromJson(pluginJson, type);
+                                ArrayList<String> testedVersions = new ArrayList<>();
+                                object.getAsJsonArray("testedVersions").forEach(testedVersion -> testedVersions.add(testedVersion.getAsString()));
+
                                 Resource resource;
                                 if (AutoUpdaterAPI.getInstance().getCurrentUser() != null) {
                                     resource = manager.getResourceById(Integer.valueOf(reply), AutoUpdaterAPI.getInstance().getCurrentUser());
@@ -125,7 +134,7 @@ public class UnlinkedGUI extends PageGUI {
                                     resource = manager.getResourceById(Integer.valueOf(reply));
                                 }
                                 if (resource != null) {
-                                    UtilSiteSearch.SearchResult result = new UtilSiteSearch.SearchResult(resource.getResourceId(), plugin.getName(), plugin.getDescription().getDescription(), premium);
+                                    UtilSiteSearch.SearchResult result = new UtilSiteSearch.SearchResult(resource.getResourceId(), plugin.getName(), plugin.getDescription().getDescription(), premium, testedVersions.toArray(new String[0]));
 
                                     UpdateManager.getInstance().removeLinkedPlugin(plugin);
                                     UpdateManager.getInstance().removeUnlinkedPlugin(plugin);
@@ -151,19 +160,19 @@ public class UnlinkedGUI extends PageGUI {
                     Plugin plugin = Bukkit.getPluginManager().getPlugin(getCorrectPluginName(ChatColor.stripColor(event.getCurrentItem().getItemMeta().getDisplayName())));
 
                     new ConfirmGUI("&dContinue?",
-                                          () -> {
-                                              UtilPlugin.unload(plugin);
-                                              ((Player) event.getWhoClicked()).playSound(event.getWhoClicked().getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
-                                              new UnlinkedGUI().open((Player) event.getWhoClicked());
-                                          },
+                            () -> {
+                                UtilPlugin.unload(plugin);
+                                ((Player) event.getWhoClicked()).playSound(event.getWhoClicked().getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
+                                new UnlinkedGUI().open((Player) event.getWhoClicked());
+                            },
 
-                                          () -> {
-                                              ((Player) event.getWhoClicked()).playSound(event.getWhoClicked().getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                                              new UnlinkedGUI().open((Player) event.getWhoClicked());
-                                          },
+                            () -> {
+                                ((Player) event.getWhoClicked()).playSound(event.getWhoClicked().getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                new UnlinkedGUI().open((Player) event.getWhoClicked());
+                            },
 
-                                          "&7Click '&a&lCONFIRM&7' if you want U2D",
-                                          "to &nfully delete&7 '&d"+plugin.getName()+"&7'"
+                            "&7Click '&a&lCONFIRM&7' if you want U2D",
+                            "to &nfully delete&7 '&d"+plugin.getName()+"&7'"
                     ).open((Player) event.getWhoClicked());
                 }
             }

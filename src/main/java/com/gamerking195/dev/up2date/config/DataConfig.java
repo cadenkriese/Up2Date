@@ -53,7 +53,7 @@ public class DataConfig {
 
     public PluginInfo getPluginInfo(String name) {
         if (fileContains(name)) {
-            return new PluginInfo(name, dataConfig.getInt(name+".ID"), dataConfig.getString(name+".Description"), dataConfig.getString(name+".Author"), dataConfig.getString(name+".Version"), dataConfig.getBoolean(name+".Premium"));
+            return new PluginInfo(name, dataConfig.getInt(name+".ID"), dataConfig.getString(name+".Description"), dataConfig.getString(name+".Author"), dataConfig.getString(name+".Version"), dataConfig.getBoolean(name+".Premium"), dataConfig.getString(name+".TestedVersions"));
         }
         return null;
     }
@@ -64,6 +64,7 @@ public class DataConfig {
         dataConfig.set(info.getName() + ".Version", info.getLatestVersion());
         dataConfig.set(info.getName() + ".Description", info.getDescription());
         dataConfig.set(info.getName() + ".Premium", info.isPremium());
+        dataConfig.set(info.getName() + ".TestedVersions", info.getSupportedMcVersions());
     }
 
     public boolean fileContains(String name) {

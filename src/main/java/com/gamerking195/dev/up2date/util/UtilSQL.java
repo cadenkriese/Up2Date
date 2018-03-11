@@ -40,7 +40,8 @@ public class UtilSQL {
             dataSource = new HikariDataSource(config);
         }
 
-        runStatementSync("CREATE TABLE IF NOT EXISTS "+ Up2Date.getInstance().getMainConfig().getTablename()+" (id varchar(6) NOT NULL, name TEXT, author TEXT, description TEXT, version TEXT, premium TEXT, PRIMARY KEY(id))");
+        runStatementSync("CREATE TABLE IF NOT EXISTS "+ Up2Date.getInstance().getMainConfig().getTablename()+" (id varchar(6) NOT NULL, name TEXT, author TEXT, description TEXT, version TEXT, premium TEXT, testedversions TEXT, PRIMARY KEY(id))");
+        runStatementSync("ALTER TABLE TABLENAME ADD testedversions TEXT", false);
     }
 
     public void runStatement(String statement) {
@@ -73,6 +74,39 @@ public class UtilSQL {
         }
     }
 
+    public void runStatement(String statement, boolean supressErrors) {
+        final String updatedStatement = statement.replace("TABLENAME", Up2Date.getInstance().getMainConfig().getTablename());
+
+        Connection connection;
+
+        if (dataSource == null)
+            init();
+
+        try {
+            connection = dataSource.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(updatedStatement);
+
+            ExecutorService pool = Up2Date.getInstance().getFixedThreadPool();
+
+            pool.submit(() -> {
+                try {
+                    preparedStatement.execute();
+
+                    connection.close();
+                } catch (Exception ex) {
+                    //cant do fancy error logging bc it does bukkit calls ;-;
+                    ex.printStackTrace();
+                }
+            });
+        }
+        catch(Exception ex) {
+            if (supressErrors)
+                return;
+
+            Up2Date.getInstance().printError(ex, "Error occurred while running MySQL statement.");
+        }
+    }
+
     public void runStatementSync(String statement) {
         final String updatedStatement = statement.replace("TABLENAME", Up2Date.getInstance().getMainConfig().getTablename());
 
@@ -94,6 +128,34 @@ public class UtilSQL {
             }
         }
         catch(Exception ex) {
+            Up2Date.getInstance().printError(ex, "Error occurred while running MySQL statement.");
+        }
+    }
+
+    public void runStatementSync(String statement, boolean supressErrors) {
+        final String updatedStatement = statement.replace("TABLENAME", Up2Date.getInstance().getMainConfig().getTablename());
+
+        if (dataSource == null)
+            init();
+
+        Connection connection;
+
+        try {
+            connection = dataSource.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(updatedStatement);
+
+            try {
+                preparedStatement.execute();
+
+                connection.close();
+            } catch (Exception ex) {
+                Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while closing connection.");
+            }
+        }
+        catch(Exception ex) {
+            if (supressErrors)
+                return;
+
             Up2Date.getInstance().printError(ex, "Error occurred while running MySQL statement.");
         }
     }

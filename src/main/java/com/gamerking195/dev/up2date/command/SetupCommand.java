@@ -181,7 +181,7 @@ public class SetupCommand implements CommandExecutor {
         unlinkedPlugins = new HashMap<>();
         unknownPlugins = new ArrayList<>();
 
-        //TODO when updating this update if statement
+        //TODO when changing this line this update if statement
         List<Plugin> currentPlugins = new LinkedList<>(Arrays.asList(Bukkit.getPluginManager().getPlugins()));
 
         currentPlugins.remove(AutoUpdaterAPI.getInstance());
@@ -193,7 +193,7 @@ public class SetupCommand implements CommandExecutor {
         long startTime = System.currentTimeMillis();
 
         for (final Plugin plugin : currentPlugins) {
-            //TODO when updating this update removed plugins
+            //TODO when changing this line this update removed plugins
             if (plugin.getName().equals("AutoUpdaterAPI") || plugin.getName().equals("Up2Date") || plugin.getName().equals("ProtocolLib"))
                 continue;
 
@@ -240,7 +240,6 @@ public class SetupCommand implements CommandExecutor {
 
                     priorities.put(result, priority);
                 }
-
                 parsePriorities(priorities, plugin, searchResults);
             });
         }

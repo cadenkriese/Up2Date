@@ -163,7 +163,7 @@ public class UtilDatabase {
         try {
             if (rs != null && rs.first() && !rs.isClosed()) {
                 while (rs.next())
-                    incompatibles.add(new PluginInfo(rs.getString("name"), rs.getInt("id"), rs.getString("author"), rs.getString("version"), rs.getString("description"), rs.getBoolean("premium")));
+                    incompatibles.add(new PluginInfo(rs.getString("name"), rs.getInt("id"), rs.getString("author"), rs.getString("version"), rs.getString("description"), rs.getBoolean("premium"), ""));
                 rs.close();
             }
         } catch (Exception ex) {
@@ -272,7 +272,7 @@ public class UtilDatabase {
      */
 
     public void addDownloadsize(float downloadsize) {
-        this.downloadsize += Double.valueOf(String.format("%.3f", downloadsize/1024));
+        this.downloadsize += Double.valueOf(String.format("%.3f", downloadsize/1024).replace(",", ""));
     }
 
     public void addDownloadedFiles(int downloadedfiles) {

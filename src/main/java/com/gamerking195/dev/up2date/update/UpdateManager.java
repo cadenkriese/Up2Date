@@ -10,13 +10,18 @@ import com.gamerking195.dev.up2date.command.SetupCommand;
 import com.gamerking195.dev.up2date.config.DataConfig;
 import com.gamerking195.dev.up2date.util.UtilSQL;
 import com.gamerking195.dev.up2date.util.UtilSiteSearch;
+import com.google.gson.Gson;
+import com.google.gson.JsonObject;
+import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
 import lombok.Setter;
+import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -56,6 +61,7 @@ public class UpdateManager {
     private boolean currentTask = false;
 
     public void init() {
+        //Setup Linked plugins
         if (Up2Date.getInstance().getMainConfig().isEnableSQL()) {
             UtilSQL.getInstance().init();
 
@@ -71,7 +77,7 @@ public class UpdateManager {
                     if (resultSet != null) {
                         try {
                             while (resultSet.next())
-                                info.add(new PluginInfo(resultSet.getString("name"), resultSet.getInt("id"), resultSet.getString("description"), resultSet.getString("author"), resultSet.getString("version"), resultSet.getBoolean("premium")));
+                                info.add(new PluginInfo(resultSet.getString("name"), resultSet.getInt("id"), resultSet.getString("description"), resultSet.getString("author"), resultSet.getString("version"), resultSet.getBoolean("premium"), resultSet.getString("testedversions")));
 
                             resultSet.close();
                         } catch (Exception ex) {
@@ -87,6 +93,8 @@ public class UpdateManager {
             linkedPlugins = DataConfig.getConfig().getFile();
         }
 
+
+        //Setup unknown plugins.
         for (Plugin plugin : Bukkit.getPluginManager().getPlugins()) {
             boolean linked = false;
             for (PluginInfo info : linkedPlugins) {
@@ -98,6 +106,7 @@ public class UpdateManager {
                 unknownPlugins.add(plugin);
         }
 
+        //Refreshing
         int startDelay = 100;
         if (!Up2Date.getInstance().getMainConfig().isSetupComplete()) {
             startDelay += 2400;
@@ -150,19 +159,19 @@ public class UpdateManager {
         if (Up2Date.getInstance().getMainConfig().isEnableSQL()) {
             Iterator<PluginInfo> iterator = linkedPlugins.iterator();
 
-            StringBuilder statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium) VALUES ");
+            StringBuilder statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions) VALUES ");
 
             int i = 0;
 
             while (iterator.hasNext()) {
                 PluginInfo info = iterator.next();
 
-                statement.append("('").append(info.getName()).append("', ").append(info.getId()).append(", '").append(info.getAuthor()).append("', '").append(info.getLatestVersion()).append("', '").append(info.getDescription()).append("', '").append(info.isPremium()).append("')");
+                statement.append("('").append(info.getName()).append("', ").append(info.getId()).append(", '").append(info.getAuthor()).append("', '").append(info.getLatestVersion()).append("', '").append(info.getDescription()).append("', '").append(info.isPremium()).append("', '").append(info.getSupportedMcVersions()).append("')");;
 
                 i++;
 
                 if (i % 25 == 0) {
-                    statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium)");
+                    statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions)");
                     UtilSQL.getInstance().runStatement(statement.toString());
 
                     statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium) VALUES ");
@@ -172,7 +181,7 @@ public class UpdateManager {
             }
 
             if (i % 25 != 0) {
-                statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium)");
+                statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions)");
                 UtilSQL.getInstance().runStatement(statement.toString());
             }
         }
@@ -189,29 +198,29 @@ public class UpdateManager {
         if (Up2Date.getInstance().getMainConfig().isEnableSQL()) {
             Iterator<PluginInfo> iterator = linkedPlugins.iterator();
 
-            StringBuilder statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium) VALUES ");
+            StringBuilder statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions) VALUES ");
 
             int i = 0;
 
             while (iterator.hasNext()) {
                 PluginInfo info = iterator.next();
 
-                statement.append("('").append(info.getName()).append("', ").append(info.getId()).append(", '").append(info.getAuthor()).append("', '").append(info.getLatestVersion()).append("', '").append(info.getDescription()).append("', '").append(info.isPremium()).append("')");
+                statement.append("('").append(info.getName()).append("', ").append(info.getId()).append(", '").append(info.getAuthor()).append("', '").append(info.getLatestVersion()).append("', '").append(info.getDescription()).append("', '").append(info.isPremium()).append("', '").append(info.getSupportedMcVersions()).append("')");
 
                 i++;
 
                 if (i % 50 == 0) {
-                    statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium)");
+                    statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions)");
                     UtilSQL.getInstance().runStatementSync(statement.toString());
 
-                    statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium) VALUES ");
+                    statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions) VALUES ");
                 } else if (iterator.hasNext() || i + 1 % 50 == 0) {
                     statement.append(", ");
                 }
             }
 
             if (i % 50 != 0) {
-                statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium)");
+                statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions)");
                 UtilSQL.getInstance().runStatementSync(statement.toString());
             }
         }
@@ -233,21 +242,21 @@ public class UpdateManager {
 
             Iterator<PluginInfo> iterator = currentFile.iterator();
 
-            StringBuilder statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium) VALUES ");
+            StringBuilder statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions) VALUES ");
 
             int i = 0;
 
             while (iterator.hasNext()) {
                 PluginInfo info = iterator.next();
 
-                statement.append("('").append(info.getName()).append("', ").append(info.getId()).append(", '").append(info.getAuthor()).append("', '").append(info.getLatestVersion()).append("', '").append(info.getDescription()).append("', '").append(info.isPremium()).append("')");
+                statement.append("('").append(info.getName()).append("', ").append(info.getId()).append(", '").append(info.getAuthor()).append("', '").append(info.getLatestVersion()).append("', '").append(info.getDescription()).append("', '").append(info.isPremium()).append("', '").append(info.getSupportedMcVersions()).append("')");
 
                 i++;
 
                 if (i % 50 == 0) {
                     UtilSQL.getInstance().runStatement(statement.toString());
 
-                    statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium) VALUES ");
+                    statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions) VALUES ");
                 } else if (iterator.hasNext() || i + 1 % 100 == 0) {
                     statement.append(", ");
                 }
@@ -269,7 +278,7 @@ public class UpdateManager {
                     if (rs != null) {
                         try {
                             while (rs.next()) {
-                                info.add(new PluginInfo(rs.getString("name"), rs.getInt("id"), rs.getString("author"), rs.getString("version"), rs.getString("description"), rs.getBoolean("premium")));
+                                info.add(new PluginInfo(rs.getString("name"), rs.getInt("id"), rs.getString("author"), rs.getString("version"), rs.getString("description"), rs.getBoolean("premium"), rs.getString("testedversion")));
                             }
 
                             rs.close();
@@ -301,7 +310,7 @@ public class UpdateManager {
         if (Bukkit.getPluginManager().getPlugin("AutoUpdaterAPI") == null)
             return;
 
-        int seperation = 100;
+        int seperation = 8*linkedPlugins.size();
 
         for (int i = 0; i < linkedPlugins.size(); i+= 1) {
             final int index = i;
@@ -316,17 +325,29 @@ public class UpdateManager {
 
                         PluginInfo info = linkedPlugins.get(index);
 
-                        if (UtilReader.readFrom("https://www.spigotmc.org/resources/"+info.getId()+"/").contains("You do not have permission to view this page or perform this action."))
+                        String pluginInfo = UtilReader.readFrom("https://www.spigotmc.org/resources/"+info.getId()+"/");
+
+                        if (pluginInfo.contains("You do not have permission to view this page or perform this action."))
                             return;
 
+                        //Update mc version
+                        Gson gson = new Gson();
+
+                        Type type = new TypeToken<JsonObject>(){}.getType();
+                        JsonObject object = gson.fromJson(pluginInfo, type);
+                        ArrayList<String> testedVersions = new ArrayList<>();
+                        object.getAsJsonArray("testedVersions").forEach(testedVersion -> testedVersions.add(testedVersion.getAsString()));
+
+                        //Update resource version
                         Resource resource;
                         if (AutoUpdaterAPI.getInstance().getCurrentUser() != null)
                             resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId(), AutoUpdaterAPI.getInstance().getCurrentUser());
-                         else
+                        else
                             resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId());
 
                         linkedPlugins.remove(index);
                         info.setLatestVersion(resource.getLastVersion());
+                        info.setSupportedMcVersions(StringUtils.join(testedVersions.toArray(new String[0]), ", "));
                         linkedPlugins.add(info);
                     } catch (ConnectionFailedException | IOException ex) {
                         Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '"+linkedPlugins.get(index).getName()+"'");
@@ -335,13 +356,13 @@ public class UpdateManager {
                     if (index == linkedPlugins.size()-1)
                         saveData();
                 }
-            }.runTaskTimerAsynchronously(Up2Date.getInstance(), 0, i* seperation);
+            }.runTaskTimerAsynchronously(Up2Date.getInstance(), 0, i * seperation);
         }
     }
 
     /*
-    * ADDERS
-    */
+     * ADDERS
+     */
     public void addLinkedPlugin(PluginInfo info) {
         linkedPlugins.add(info);
     }
