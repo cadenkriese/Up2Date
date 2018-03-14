@@ -15,7 +15,6 @@ import com.gamerking195.dev.up2date.util.gui.ConfirmGUI;
 import com.gamerking195.dev.up2date.util.gui.PageGUI;
 import com.gamerking195.dev.up2date.util.item.ItemStackBuilder;
 import com.gamerking195.dev.up2date.util.text.MessageBuilder;
-import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
@@ -43,7 +42,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystems;
-import java.nio.file.StandardCopyOption;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 
@@ -353,17 +351,18 @@ public class UpdateGUI extends PageGUI {
 
                     threadPool.submit(() -> {
                         try {
+                            //Update resource version
                             Resource resource;
-                            if (AutoUpdaterAPI.getInstance().getCurrentUser() != null) {
+                            if (AutoUpdaterAPI.getInstance().getCurrentUser() != null)
                                 resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId(), AutoUpdaterAPI.getInstance().getCurrentUser());
-                            } else {
+                            else
                                 resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId());
-                            }
 
                             UpdateManager.getInstance().removeLinkedPlugin(info);
                             info.setLatestVersion(resource.getLastVersion());
                             updatedInfo.add(info);
                             UpdateManager.getInstance().addLinkedPlugin(info);
+
                         } catch (ConnectionFailedException ex) {
                             Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '"+info.getName()+"'");
                         }

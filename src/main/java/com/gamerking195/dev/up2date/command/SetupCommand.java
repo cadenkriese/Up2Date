@@ -74,12 +74,12 @@ public class SetupCommand implements CommandExecutor {
                                         public void run() {
                                             player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
                                             new MessageBuilder().addPlainText("").sendToPlayers(player);
+                                            new MessageBuilder().addPlainText("").sendToPlayers(player);
                                             new MessageBuilder().addPlainText("&dIf you want Up2Date to work with premium resources &d(including itself) you'll &dneed to login to Spigot.").sendToPlayersPrefixed(player);
-                                            new MessageBuilder().addPlainText("&dDon't worry, we don't do anything with your credentials &d&dexcept login to Spigot.").sendToPlayersPrefixed(player);
-                                            new MessageBuilder().addPlainText("&dThey will be locally stored but fully encrypted and hidden.").sendToPlayersPrefixed(player);
+                                            new MessageBuilder().addPlainText("&dDon't worry, we don't do anything with your credentials &dexcept login to Spigot.").sendToPlayersPrefixed(player);
                                             new MessageBuilder().addPlainText("&dIf you don't need to use Up2Date for premium plugins you &dcan skip this step and finish the tutorial.").sendToPlayersPrefixed(player);
+                                            new MessageBuilder().addPlainText("").sendToPlayers(player);
                                             new MessageBuilder().addPlainText("&dMay we proceed?").sendToPlayersPrefixed(player);
-
                                             new MessageBuilder().addHoverClickText("&2&l✔ &aYES", "&2&lPROCEED", "/stp authenticate", false).addPlainText("    &8&l|    ").addHoverClickText("&4&l✘ &cNO", "&4&lSKIP", "/stp skip", false).sendToPlayers(player);
                                         }
                                     }.runTaskLater(Up2Date.getInstance(), 100L);
@@ -92,9 +92,10 @@ public class SetupCommand implements CommandExecutor {
                             } else {
                                 player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
                                 new MessageBuilder().addPlainText("").sendToPlayers(player);
-                                new MessageBuilder().addPlainText("&dUp2Date needs to download some dependencies.").sendToPlayersPrefixed(player);
+                                new MessageBuilder().addPlainText("").sendToPlayers(player);
+                                new MessageBuilder().addPlainText("&dUp2Date needs to download a dependency called &dAutoUpdaterAPI on &do your &dserver, adding &51&d plugin to your &dplugins.").sendToPlayersPrefixed(player);
                                 new MessageBuilder().addPlainText("&dThis could take up to &520 &dseconds depending on your &dservers internet connection.").sendToPlayersPrefixed(player);
-                                new MessageBuilder().addPlainText("&dThis will &oadd &51&d&o plugin to your plugin list&d called &dAutoUpdaterAPI.").sendToPlayersPrefixed(player);
+                                new MessageBuilder().addPlainText("").sendToPlayers(player);
                                 new MessageBuilder().addPlainText("&dMay we proceed?").sendToPlayersPrefixed(player);
                                 new MessageBuilder().addHoverClickText("&2&l✔ &aYES", "&2&lPROCEED", "/stp download", false).addPlainText("    &8&l|    ").addHoverClickText("&4&l✘ &cNO", "&4&lCANCEL", "/stp deny", false).sendToPlayers(player);
                             }
@@ -155,6 +156,8 @@ public class SetupCommand implements CommandExecutor {
 
 
         new MessageBuilder().addPlainText("&dThanks again for purchasing Up2Date! The plugin is now &dfully setup and ready to roll.").sendToPlayersPrefixed(player);
+        new MessageBuilder().addPlainText("&dRemember if you ever need help you can visit the &6&lSpigot &6&lpage ").addURLText("&5&n&ohere", "https://www.spigotmc.org/resources/up2date.49313/").addPlainText("&d or revisit the &4&lYouTube tutorial ").addURLText("&5&n&ohere&d.", "https://youtu.be/gSnFSRUTqGU").sendToPlayersPrefixed(player);
+        new MessageBuilder().addPlainText("&dFor the fastest support with the plugin join our &lDiscord ").addURLText("&5&n&ohere", "https://discord.gg/QmPHeFR").addPlainText("&d thank you again for purchasing the plugin, be sure to &dleave &da &dreview ").addURLText("&5&n&ohere.", "https://www.spigotmc.org/resources/up2date.49313/").sendToPlayersPrefixed(player);
         new MessageBuilder().addPlainText("&dYou can start using the plugin by typing ").addHoverClickText("&5/u2d", "&7Click to run the command.", "/u2d", true).addPlainText("&d.").sendToPlayersPrefixed(player);
         //TODO even more messages here.
     }
@@ -167,10 +170,10 @@ public class SetupCommand implements CommandExecutor {
             public void run() {
                 player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
                 new MessageBuilder().addPlainText("").sendToPlayers(player);
-                new MessageBuilder().addPlainText("&dUp2Date needs to parse through your plugins to establish &dlinks from the server side plugin to a spigot web-page.").sendToPlayersPrefixed(player);
-                new MessageBuilder().addPlainText("&dWe will run a &oVERY &dintensive algorithm to establish as many &dlinks as we can on our own.").sendToPlayersPrefixed(player);
-                new MessageBuilder().addPlainText("&dWe highly recommend that you have anyone else leave the &dserver (you must stay) and don't move or do anything while this &druns.").sendToPlayersPrefixed(player);
-                new MessageBuilder().addPlainText("&dThis could take up to &52&d minutes depending on how many &dplugins you have.").sendToPlayersPrefixed(player);
+                new MessageBuilder().addPlainText("").sendToPlayers(player);
+                new MessageBuilder().addPlainText("&dUp2Date needs to link your local plugins to resources &don &dspigot, &dthis task will run in the background and may take a &dfew &dminutes &ddepending on your servers internet connection.").sendToPlayersPrefixed(player);
+                new MessageBuilder().addPlainText("").sendToPlayers(player);
+                new MessageBuilder().addPlainText("&dMay we proceed?").sendToPlayersPrefixed(player);
                 new MessageBuilder().addHoverClickText("&2&l✔ &aYES", "&2&lPROCEED", "/stp plugins", false).addPlainText("    &8&l|    ").addHoverClickText("&4&l✘ &cNO", "&4&lCANCEL", "/stp deny", false).sendToPlayers(player);
             }
         }.runTaskLater(Up2Date.getInstance(), 95L);
@@ -360,14 +363,14 @@ public class SetupCommand implements CommandExecutor {
                         public void run() {
                             player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
                             new MessageBuilder().addPlainText("").sendToPlayers(player);
-                            new MessageBuilder().addPlainText("&dIf you want Up2Date to work with premium resources you'll &dneed to login to Spigot.").sendToPlayersPrefixed(player);
+                            new MessageBuilder().addPlainText("").sendToPlayers(player);
+                            new MessageBuilder().addPlainText("&dIf you want Up2Date to work with premium resources &d(including itself) you'll &dneed to login to Spigot.").sendToPlayersPrefixed(player);
                             new MessageBuilder().addPlainText("&dDon't worry, we don't do anything with your credentials &dexcept login to Spigot.").sendToPlayersPrefixed(player);
-                            new MessageBuilder().addPlainText("&dThey will be locally stored but fully encrypted and hidden.").sendToPlayersPrefixed(player);
-                            new MessageBuilder().addPlainText("&dIf you don't need to use Up2Date for Premium plugins you &dcan skip this step and finish the tutorial.").sendToPlayersPrefixed(player);
+                            new MessageBuilder().addPlainText("&dIf you don't need to use Up2Date for premium plugins you &dcan skip this step and finish the tutorial.").sendToPlayersPrefixed(player);
+                            new MessageBuilder().addPlainText("").sendToPlayers(player);
                             new MessageBuilder().addPlainText("&dMay we proceed?").sendToPlayersPrefixed(player);
-
                             new MessageBuilder().addHoverClickText("&2&l✔ &aYES", "&2&lPROCEED", "/stp authenticate", false).addPlainText("    &8&l|    ").addHoverClickText("&4&l✘ &cNO", "&4&lSKIP", "/stp skip", false).sendToPlayers(player);
-                        }
+                            }
                     }.runTaskLater(Up2Date.getInstance(), 100L);
                 }
             }.runTaskLater(Up2Date.getInstance(), 100L);
@@ -392,16 +395,7 @@ public class SetupCommand implements CommandExecutor {
                         return;
                     }
 
-                    Resource resource = AutoUpdaterAPI
-                                                .getInstance()
-                                                .getApi()
-                                                .getResourceManager()
-                                                .getResourceById(
-                                                        highestResult
-                                                                .getId()
-                                                        , AutoUpdaterAPI
-                                                                  .getInstance()
-                                                                  .getCurrentUser());
+                    Resource resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(highestResult.getId(), AutoUpdaterAPI.getInstance().getCurrentUser());
 
                     if (resource != null)
                         linkedPlugins.add(new PluginInfo(plugin, resource, highestResult));

@@ -85,7 +85,7 @@ public class MainConfig extends YamlConfig {
             ({
                      "",
                      "PREFIX",
-                     "Desc: Prefix sent before all messages.",
+                     "Desc: Prefix to be used in the prefix variable, '%prefix%'",
                      "Type: String",
                      "Default: &d&lU&5&l2&d&lD &8&l» "
             })
@@ -101,7 +101,7 @@ public class MainConfig extends YamlConfig {
                      "Default: &dYou don't have permission to do that!"
             })
     @Path("Messages.No-Permission")
-    private String noPermissionMessage = "&dYou don't have permission to do that!";
+    private String noPermissionMessage = "%prefix%&dYou don't have permission to do that!";
 
     @Comment("---------------Advanced---------------")
 
