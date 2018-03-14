@@ -41,7 +41,7 @@ public class UtilSQL {
         }
 
         runStatementSync("CREATE TABLE IF NOT EXISTS "+ Up2Date.getInstance().getMainConfig().getTablename()+" (id varchar(6) NOT NULL, name TEXT, author TEXT, description TEXT, version TEXT, premium TEXT, testedversions TEXT, PRIMARY KEY(id))");
-        runStatementSync("ALTER TABLE TABLENAME ADD testedversions TEXT", false);
+        runStatementSync("ALTER TABLE TABLENAME ADD testedversions TEXT", true);
     }
 
     public void runStatement(String statement) {
@@ -149,6 +149,9 @@ public class UtilSQL {
 
                 connection.close();
             } catch (Exception ex) {
+                if (supressErrors)
+                    return;
+
                 Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while closing connection.");
             }
         }

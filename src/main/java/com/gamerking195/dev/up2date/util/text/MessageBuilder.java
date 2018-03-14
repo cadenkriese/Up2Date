@@ -105,4 +105,13 @@ public class MessageBuilder {
 
         return this;
     }
+
+    public MessageBuilder sendToPlayersPrefixVariable(Player... players) {
+        component.setText(component.getText().replace(" ", " " + ChatColor.LIGHT_PURPLE).replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix()));
+
+        for (Player player : players)
+            player.spigot().sendMessage(ChatMessageType.CHAT, component);
+
+        return this;
+    }
 }
