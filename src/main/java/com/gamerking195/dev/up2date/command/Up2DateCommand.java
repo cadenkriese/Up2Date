@@ -86,7 +86,7 @@ public class Up2DateCommand implements CommandExecutor {
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            if (new File(Up2Date.getInstance().getDataFolder().getParentFile().getPath()+"/.creds").exists() && AutoUpdaterAPI.getInstance().getCurrentUser() != null) {
+                            if (new File(Up2Date.getInstance().getDataFolder().getParentFile().getPath()+AutoUpdaterAPI.getFileSeperator()+".creds").exists() && AutoUpdaterAPI.getInstance().getCurrentUser() != null) {
                                 ((Player) sender).spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ChatColor.translateAlternateColorCodes('&', "&d&lU&5&l2&d&lD &a&oSuccessfully logged in!")));
                                 ((Player) sender).playSound(((Player) sender).getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
 
@@ -105,6 +105,16 @@ public class Up2DateCommand implements CommandExecutor {
                 new SettingsGUI(false).open((Player) sender);
             } else
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&', Up2Date.getInstance().getMainConfig().getPrefix()+"&dYou must be a player to setup the plugin!"));
+        } else if (args[0].equalsIgnoreCase("reset") || args[0].equalsIgnoreCase("r")) {
+            if (sender instanceof Player) {
+                Player player = (Player) sender;
+
+                if (player.isOp() || player.hasPermission("u2d.manage") || player.hasPermission("u2d.*")) {
+                    AutoUpdaterAPI.getInstance().resetUser();
+                    player.performCommand("u2d login");
+                }
+            }
+            return true;
         } else if (args[0].equalsIgnoreCase("u2dupdate")) {
             if (sender instanceof Player) {
                 Player player = (Player) sender;
@@ -152,9 +162,9 @@ public class Up2DateCommand implements CommandExecutor {
     private void sendHelp(CommandSender sender) {
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&f&m-----------------------"));
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&d&lUp&5&l2&d&lDate &5V"+ Up2Date.getInstance().getDescription().getVersion()+" &dby &5"+ Up2Date.getInstance().getDescription().getAuthors().toString().replace("[", "").replace("]", "")));
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7/up2date [INFO:HELP:SETUP:LOGIN:CONFIGURE] | &dBase command for Up2Date. (No arguments will open the Update GUI)"));
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7/update [INFO:HELP:SETUP:LOGIN:CONFIG] | &dAlias for /up2date"));
-        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7/u2d [I:H:S:L:C] | &dAlias for /u2d"));
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7/up2date [INFO:HELP:SETUP:LOGIN:CONFIGURE:RESET] | &dBase command for Up2Date. (No arguments will open the Update GUI)"));
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7/update [INFO:HELP:SETUP:LOGIN:CONFIG:RESET] | &dAlias for /up2date"));
+        sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7/u2d [I:H:S:L:C:R] | &dAlias for /u2d"));
         sender.sendMessage(ChatColor.translateAlternateColorCodes('&', "&f&m-----------------------"));
     }
 }
