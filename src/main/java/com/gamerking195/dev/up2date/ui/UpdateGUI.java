@@ -476,6 +476,26 @@ public class UpdateGUI extends PageGUI {
                         }
 
                         final String oldFileResult = oldFile;
+
+                        //Cache version in case update goes wrong.
+                        File cacheFile = new File(Up2Date.getInstance().getDataFolder().getAbsolutePath()+AutoUpdaterAPI.getFileSeperator()+".."+AutoUpdaterAPI.getFileSeperator()+".."+AutoUpdaterAPI.getFileSeperator()+"U2D-caches"+AutoUpdaterAPI.getFileSeperator()+plugin.getName()+AutoUpdaterAPI.getFileSeperator()+oldJar.getName());
+                        //Create parent folders
+                        if (!cacheFile.getParentFile().mkdirs()) {
+                            Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version", "Directory creation failed.");
+                            return;
+                        }
+
+                        try {
+                            FileUtils.copyFile(oldJar, cacheFile);
+                        } catch (IOException e) {
+                            Up2Date.getInstance().printError(e, "Error occurred while caching old plugin version. (Rename failed)");
+                        }
+
+//                        if (!oldJar.renameTo(cacheFile)) {
+//                            Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version.", "Rename failed.");
+//                            return;
+//                        }
+
                         //Actually apply update.
 
                         PremiumUpdater premiumUpdater = null;
@@ -483,12 +503,12 @@ public class UpdateGUI extends PageGUI {
 
                         UpdateManager.getInstance().setCurrentTask(true);
                         if (pluginInfo.isPremium()) {
-                            premiumUpdater = new PremiumUpdater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, false, (success, ex, pl) -> {
+                            premiumUpdater = new PremiumUpdater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, (success, ex, pl) -> {
                                 UpdateManager.getInstance().setCurrentTask(false);
                                 if (success)
                                     updateSuccess(pluginInfo, plugin);
                                 else {
-                                    //restoreFile(oldFileResult, plugin.getName(), plugin.getDescription().getVersion());
+                                    restoreFile(oldFileResult, plugin.getName(), plugin.getDescription().getVersion());
                                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
 
                                     if (ex instanceof IllegalPluginAccessException || ex instanceof InvalidPluginException || ex instanceof InvalidDescriptionException) {
@@ -497,12 +517,12 @@ public class UpdateGUI extends PageGUI {
                                 }
                             });
                         } else {
-                            updater = new Updater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, false, (success, ex, pl) -> {
+                            updater = new Updater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, (success, ex, pl) -> {
                                 UpdateManager.getInstance().setCurrentTask(false);
                                 if (success)
                                     updateSuccess(pluginInfo, plugin);
                                 else {
-                                    //restoreFile(oldFileResult, plugin.getName(), plugin.getDescription().getVersion());
+                                    restoreFile(oldFileResult, plugin.getName(), plugin.getDescription().getVersion());
                                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
                                     if (ex instanceof IllegalPluginAccessException || ex instanceof InvalidPluginException || ex instanceof InvalidDescriptionException)
                                         UtilDatabase.getInstance().addIncompatiblePlugin(pluginInfo);
@@ -510,23 +530,14 @@ public class UpdateGUI extends PageGUI {
                             });
                         }
 
-                        //Cache version in case update goes wrong.
-                        File cacheFile = new File(Up2Date.getInstance().getDataFolder().getAbsolutePath()+"/caches/"+plugin.getName()+"/"+oldJar.getName());
-                        if (!cacheFile.getParentFile().mkdirs()) {
-                            Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version", "Directory creation failed.");
-                            return;
-                        }
-                        if (!oldJar.renameTo(cacheFile)) {
-                            Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version.", "Rename failed.");
-                            return;
-                        }
-
+                        //make previously defined updaters final.
                         final PremiumUpdater premiumUpdater1 = premiumUpdater;
                         final Updater updater1 = updater;
 
                         new BukkitRunnable() {
                             @Override
                             public void run() {
+
                                 //Run the updates
                                 if (premiumUpdater1 != null)
                                     premiumUpdater1.update();

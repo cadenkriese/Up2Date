@@ -22,6 +22,10 @@ public class UtilPlugin {
     /**
      * Method is from PlugMan, developed by Ryan Clancy "rylinaux"
      *
+     * Copyright (c) 2014 Ryan Clancy
+     *
+     * Licensed under the MIT License
+     *
      * PlugMan https://dev.bukkit.org/projects/plugman
      *
      * @param plugin The plugin that needs to be unloaded.
@@ -143,102 +147,5 @@ public class UtilPlugin {
         // Will not work on processes started with the -XX:+DisableExplicitGC flag, but lets try it anyway.
         // This tries to get around the issue where Windows refuses to unlock jar files that were previously loaded into the JVM.
         System.gc();
-
-
-//        String name = plugin.getName();
-//
-//        PluginManager pluginManager = Bukkit.getPluginManager();
-//
-//        SimpleCommandMap commandMap = null;
-//
-//        List<Plugin> plugins = null;
-//
-//        Map<String, Plugin> names = null;
-//        Map<String, Command> commands = null;
-//        Map<Event, SortedSet<RegisteredListener>> listeners = null;
-//
-//        boolean reloadlisteners = true;
-//
-//        if (pluginManager != null) {
-//
-//            pluginManager.disablePlugin(plugin);
-//
-//            try {
-//
-//                Field pluginsField = Bukkit.getPluginManager().getClass().getDeclaredField("plugins");
-//                pluginsField.setAccessible(true);
-//                plugins = (List<Plugin>) pluginsField.get(pluginManager);
-//
-//                Field lookupNamesField = Bukkit.getPluginManager().getClass().getDeclaredField("lookupNames");
-//                lookupNamesField.setAccessible(true);
-//                names = (Map<String, Plugin>) lookupNamesField.get(pluginManager);
-//
-//                try {
-//                    Field listenersField = Bukkit.getPluginManager().getClass().getDeclaredField("listeners");
-//                    listenersField.setAccessible(true);
-//                    listeners = (Map<Event, SortedSet<RegisteredListener>>) listenersField.get(pluginManager);
-//                } catch (Exception e) {
-//                    reloadlisteners = false;
-//                }
-//
-//                Field commandMapField = Bukkit.getPluginManager().getClass().getDeclaredField("commandMap");
-//                commandMapField.setAccessible(true);
-//                commandMap = (SimpleCommandMap) commandMapField.get(pluginManager);
-//
-//                Field knownCommandsField = SimpleCommandMap.class.getDeclaredField("knownCommands");
-//                knownCommandsField.setAccessible(true);
-//                commands = (Map<String, Command>) knownCommandsField.get(commandMap);
-//
-//            } catch (NoSuchFieldException | IllegalAccessException e) {
-//                AutoUpdaterAPI.getInstance().printError(e);
-//            }
-//        }
-//
-//        pluginManager.disablePlugin(plugin);
-//
-//        if (plugins != null && plugins.contains(plugin))
-//            plugins.remove(plugin);
-//
-//        if (names != null && names.containsKey(name))
-//            names.remove(name);
-//
-//        if (listeners != null && reloadlisteners) {
-//            for (SortedSet<RegisteredListener> set : listeners.values()) {
-//                for (Iterator<RegisteredListener> it = set.iterator(); it.hasNext(); ) {
-//                    RegisteredListener value = it.next();
-//                    if (value.getPlugin() == plugin) {
-//                        it.remove();
-//                    }
-//                }
-//            }
-//        } else if (listeners == null) {
-//            Bukkit.broadcastMessage("");
-//            HandlerList.unregisterAll(plugin);
-//        }
-//
-//        if (commandMap != null) {
-//            for (Iterator<Map.Entry<String, Command>> it = commands.entrySet().iterator(); it.hasNext(); ) {
-//                Map.Entry<String, Command> entry = it.next();
-//                if (entry.getValue() instanceof PluginCommand) {
-//                    PluginCommand c = (PluginCommand) entry.getValue();
-//                    if (c.getPlugin() == plugin) {
-//                        c.unregister(commandMap);
-//                        it.remove();
-//                    }
-//                }
-//            }
-//        }
-//
-//        ClassLoader cl = plugin.getClass().getClassLoader();
-//
-//        if (cl instanceof URLClassLoader) {
-//            try {
-//                ((URLClassLoader) cl).close();
-//            } catch (IOException ex) {
-//                ex.printStackTrace();
-//            }
-//        }
-//
-//        System.gc();
     }
 }
