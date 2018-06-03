@@ -149,6 +149,7 @@
             <groupId>com.gamerking195.dev</groupId>
             <artifactId>AutoUpdaterAPI</artifactId>
             <version>2.4.3</version>
+            <scope>provided</scope>
         </dependency>
         <!-- HikariCP -->
         <dependency>
