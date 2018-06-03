@@ -26,6 +26,7 @@ import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.ExecutorService;
 
 /**
  * Created by Caden Kriese (GamerKing195) on 9/2/17.
@@ -115,23 +116,6 @@ public class UpdateManager {
         cacheUpdater = new BukkitRunnable() {
             @Override
             public void run() {
-                try {
-                    UtilReader.readFrom("https://spigotmc.org/");
-                } catch (IOException ex) {
-                    if (ex.getMessage().contains("HTTP response code")) {
-                        Up2Date.getInstance().printPluginError(
-                                "Error occurred while beginning automatic refresh.",
-                                "HTTP Error while connecting to spigot." +
-                                        "\n \nERROR: "+ex.getMessage()+"" +
-                                        "\n \nPlease wait "+Up2Date.getInstance().getMainConfig().getCacheRefreshDelay()+" minutes for another automatic refresh." +
-                                        "\nIf this error repeats please report it to the developer at https://github.com/GamerKing195/Up2Date/issues" +
-                                        "\nOr on spigot at https://spigotmc.org/threads/284883/");
-                    } else
-                        Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while running tests before automatic refresh.");
-
-                    return;
-                }
-
                 refresh();
             }
         };
@@ -302,61 +286,37 @@ public class UpdateManager {
     }
 
     private void refresh() {
-        //Not using threadpool here to have static seperations and spread out any server stress more since its in the background.
-
         if (SetupCommand.inSetup)
             return;
 
         if (Bukkit.getPluginManager().getPlugin("AutoUpdaterAPI") == null)
             return;
 
-        int seperation = 8*linkedPlugins.size();
+        ArrayList<PluginInfo> plugins = new ArrayList<>(UpdateManager.getInstance().getLinkedPlugins());
 
-        for (int i = 0; i < linkedPlugins.size(); i+= 1) {
-            final int index = i;
+        for (final PluginInfo info : plugins) {
+            if (info == null)
+                continue;
 
-            new BukkitRunnable() {
-                @Override
-                public void run() {
+            ExecutorService threadPool = Up2Date.getInstance().getFixedThreadPool();
 
-                    try {
-                        if (linkedPlugins.size() < index)
-                            cancel();
+            threadPool.submit(() -> {
+                try {
+                    //Update resource version
+                    Resource resource;
+                    if (AutoUpdaterAPI.getInstance().getCurrentUser() != null)
+                        resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId(), AutoUpdaterAPI.getInstance().getCurrentUser());
+                    else
+                        resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId());
 
-                        PluginInfo info = linkedPlugins.get(index);
+                    UpdateManager.getInstance().removeLinkedPlugin(info);
+                    info.setLatestVersion(resource.getLastVersion());
+                    UpdateManager.getInstance().addLinkedPlugin(info);
 
-                        String pluginInfo = UtilReader.readFrom("https://www.spigotmc.org/resources/"+info.getId()+"/");
-
-                        if (pluginInfo.contains("You do not have permission to view this page or perform this action."))
-                            return;
-
-                        //Update mc version
-                        Gson gson = new Gson();
-
-                        Type type = new TypeToken<JsonObject>(){}.getType();
-                        JsonObject object = gson.fromJson(pluginInfo, type);
-                        ArrayList<String> testedVersions = new ArrayList<>();
-                        object.getAsJsonArray("testedVersions").forEach(testedVersion -> testedVersions.add(testedVersion.getAsString()));
-
-                        //Update resource version
-                        Resource resource;
-                        if (AutoUpdaterAPI.getInstance().getCurrentUser() != null)
-                            resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId(), AutoUpdaterAPI.getInstance().getCurrentUser());
-                        else
-                            resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId());
-
-                        linkedPlugins.remove(index);
-                        info.setLatestVersion(resource.getLastVersion());
-                        info.setSupportedMcVersions(StringUtils.join(testedVersions.toArray(new String[0]), ", "));
-                        linkedPlugins.add(info);
-                    } catch (ConnectionFailedException | IOException ex) {
-                        Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '"+linkedPlugins.get(index).getName()+"'");
-                    }
-
-                    if (index == linkedPlugins.size()-1)
-                        saveData();
+                } catch (ConnectionFailedException ex) {
+                    Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '"+info.getName()+"'");
                 }
-            }.runTaskTimerAsynchronously(Up2Date.getInstance(), 0, i * seperation);
+            });
         }
     }
 
@@ -460,5 +420,23 @@ public class UpdateManager {
         badApples.forEach(this::removeLinkedPlugin);
 
         return updates;
+    }
+
+    public PluginInfo getInfoFromPlugin(Plugin plugin) {
+        for (PluginInfo info : linkedPlugins) {
+            if (info.getName().equals(plugin.getName()))
+                return info;
+        }
+
+        return null;
+    }
+
+    public PluginInfo getInfoFromPluginName(String pluginName) {
+        for (PluginInfo info : linkedPlugins) {
+            if (info.getName().equals(pluginName))
+                return info;
+        }
+
+        return null;
     }
 }

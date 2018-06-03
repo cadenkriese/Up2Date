@@ -6,7 +6,7 @@
 
     <groupId>com.gamerking195.dev</groupId>
     <artifactId>Up2Date</artifactId>
-    <version>1.4.3-SNAPSHOT</version>
+    <version>1.4.3</version>
     <packaging>jar</packaging>
 
     <name>Up2Date</name>
