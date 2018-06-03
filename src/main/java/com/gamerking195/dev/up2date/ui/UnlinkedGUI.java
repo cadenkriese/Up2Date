@@ -52,9 +52,9 @@ public class UnlinkedGUI extends PageGUI {
                     linked = true;
             }
 
-            if (Up2Date.getInstance().getMainConfig().isSetupComplete() && !linked && !UpdateManager.getInstance().getUnknownPlugins().contains(plugin) && !plugin.getName().equals("Up2Date") && !plugin.getName().equals("AutoUpdaterAPI"))
+            if (Up2Date.getInstance().getMainConfig().isSetupComplete() && !linked && !UpdateManager.getInstance().getUnknownPlugins().contains(plugin) && !plugin.getName().equals("Up2Date") && !plugin.getName().equals("AutoUpdaterAPI") && !plugin.getName().equalsIgnoreCase("ProtocolLib"))
                 UpdateManager.getInstance().addUnknownPlugin(plugin);
-            else if (UpdateManager.getInstance().getUnknownPlugins().contains(plugin) && !plugin.getName().equals("Up2Date") && !plugin.getName().equals("AutoUpdaterAPI"))
+            else if (UpdateManager.getInstance().getUnknownPlugins().contains(plugin) && (plugin.getName().equals("Up2Date") || plugin.getName().equals("AutoUpdaterAPI") || plugin.getName().equals("ProtocolLib")))
                 UpdateManager.getInstance().getUnknownPlugins().remove(plugin);
         }
     }

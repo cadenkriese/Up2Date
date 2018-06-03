@@ -250,7 +250,7 @@ public class UpdateGUI extends PageGUI {
                         try {
                             player.closeInventory();
                             UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oRetrieving info...", player);
-                            String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources/" + pluginId);
+                            String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources"+AutoUpdaterAPI.getFileSeperator() + pluginId);
 
                             boolean premium = pluginJson.contains("\"premium\": true");
 
@@ -410,7 +410,7 @@ public class UpdateGUI extends PageGUI {
                         new AnvilGUI(Up2Date.getInstance(), player, "Enter plugin ID", (player, reply) -> {
                             if (NumberUtils.isNumber(reply)) {
                                 try {
-                                    String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources/"+reply);
+                                    String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources"+AutoUpdaterAPI.getFileSeperator()+reply);
 
                                     boolean premium = pluginJson.contains("\"premium\": true");
 
@@ -461,90 +461,70 @@ public class UpdateGUI extends PageGUI {
                             UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oThat plugin is already &dUp&52&dDate!", player);
                             return;
                         }
-                        if (plugin.getName().equals("Up2Date"))
-                            return;
 
-                        String oldFile;
-                        File oldJar;
+                        //Temporarily disable all plugins depending on the one we're updating to clear the instances and prevent a memory leak.
+                        ArrayList<Plugin> dependers = new ArrayList<>();
 
+                        for (Plugin depender : Bukkit.getPluginManager().getPlugins()) {
+                            if (depender.getDescription().getDepend().contains(plugin.getName()) || depender.getDescription().getSoftDepend().contains(plugin.getName())) {
+                                Bukkit.getPluginManager().disablePlugin(depender);
+                                dependers.add(depender);
+                            }
+                        }
+
+                        UtilPlugin.unload(plugin);
+
+                        //Cache version in case update goes wrong.
+                        String oldFile = null;
                         try {
-                            oldJar = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+                            File oldJar = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
                             oldFile = oldJar.getName();
+                            File cacheFile = new File(Up2Date.getInstance().getDataFolder().getAbsolutePath()+AutoUpdaterAPI.getFileSeperator()+"caches"+AutoUpdaterAPI.getFileSeperator()+plugin.getName()+AutoUpdaterAPI.getFileSeperator()+oldJar.getName());
+                            if (!cacheFile.getParentFile().mkdirs()) {
+                                Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version", "Directory creation failed.");
+                                return;
+                            }
+
+                            try {
+                                FileUtils.copyFile(oldJar, cacheFile);
+                            } catch (IOException e) {
+                                Up2Date.getInstance().printError(e, "Error occurred while caching old plugin version. (Rename failed)");
+                            }
                         } catch (URISyntaxException  e) {
                             Up2Date.getInstance().printError(e, "Error occurred while caching old plugin version.");
-                            return;
                         }
 
                         final String oldFileResult = oldFile;
 
-                        //Cache version in case update goes wrong.
-                        File cacheFile = new File(Up2Date.getInstance().getDataFolder().getAbsolutePath()+AutoUpdaterAPI.getFileSeperator()+".."+AutoUpdaterAPI.getFileSeperator()+".."+AutoUpdaterAPI.getFileSeperator()+"U2D-caches"+AutoUpdaterAPI.getFileSeperator()+plugin.getName()+AutoUpdaterAPI.getFileSeperator()+oldJar.getName());
-                        //Create parent folders
-                        if (!cacheFile.getParentFile().mkdirs()) {
-                            Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version", "Directory creation failed.");
-                            return;
-                        }
+                        //Runnable to be run after update completes/fails.
+                        final UpdaterRunnable runnable = (success, ex, pl) -> {
+                            UpdateManager.getInstance().setCurrentTask(false);
+                            if (success) {
+                                updateSuccess(pluginInfo, plugin);
+                                //Re-enable previously disabled dependers.
+                                dependers.forEach(depender -> Bukkit.getPluginManager().enablePlugin(depender));
 
-                        try {
-                            FileUtils.copyFile(oldJar, cacheFile);
-                        } catch (IOException e) {
-                            Up2Date.getInstance().printError(e, "Error occurred while caching old plugin version. (Rename failed)");
-                        }
+                                new UpdateGUI(player).open(player);
+                            }
+                            else {
+                                restoreFile(oldFileResult, plugin.getName(), plugin.getDescription().getVersion());
+                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
 
-//                        if (!oldJar.renameTo(cacheFile)) {
-//                            Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version.", "Rename failed.");
-//                            return;
-//                        }
+                                if (ex instanceof IllegalPluginAccessException || ex instanceof InvalidPluginException || ex instanceof InvalidDescriptionException) {
+                                    UtilDatabase.getInstance().addIncompatiblePlugin(pluginInfo);
+                                }
+                            }
+                        };
+
+                        //Set the state of the plugin as performing an update.
+                        UpdateManager.getInstance().setCurrentTask(true);
 
                         //Actually apply update.
-
-                        PremiumUpdater premiumUpdater = null;
-                        Updater updater = null;
-
-                        UpdateManager.getInstance().setCurrentTask(true);
-                        if (pluginInfo.isPremium()) {
-                            premiumUpdater = new PremiumUpdater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, (success, ex, pl) -> {
-                                UpdateManager.getInstance().setCurrentTask(false);
-                                if (success)
-                                    updateSuccess(pluginInfo, plugin);
-                                else {
-                                    restoreFile(oldFileResult, plugin.getName(), plugin.getDescription().getVersion());
-                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-
-                                    if (ex instanceof IllegalPluginAccessException || ex instanceof InvalidPluginException || ex instanceof InvalidDescriptionException) {
-                                        UtilDatabase.getInstance().addIncompatiblePlugin(pluginInfo);
-                                    }
-                                }
-                            });
-                        } else {
-                            updater = new Updater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, (success, ex, pl) -> {
-                                UpdateManager.getInstance().setCurrentTask(false);
-                                if (success)
-                                    updateSuccess(pluginInfo, plugin);
-                                else {
-                                    restoreFile(oldFileResult, plugin.getName(), plugin.getDescription().getVersion());
-                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                                    if (ex instanceof IllegalPluginAccessException || ex instanceof InvalidPluginException || ex instanceof InvalidDescriptionException)
-                                        UtilDatabase.getInstance().addIncompatiblePlugin(pluginInfo);
-                                }
-                            });
-                        }
-
-                        //make previously defined updaters final.
-                        final PremiumUpdater premiumUpdater1 = premiumUpdater;
-                        final Updater updater1 = updater;
-
-                        new BukkitRunnable() {
-                            @Override
-                            public void run() {
-
-                                //Run the updates
-                                if (premiumUpdater1 != null)
-                                    premiumUpdater1.update();
-                                else
-                                    updater1.update();
-                            }
-                        }.runTaskLater(Up2Date.getInstance(), 20L);
+                        //Booleans, 1 delete the updater 2 delete the old version of the plugin, set to true since we make a copy to cache instead of a rename.
+                        if (pluginInfo.isPremium())
+                            new PremiumUpdater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, runnable).update();
+                         else
+                            new Updater(player, plugin, pluginInfo.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, runnable).update();
 
                         //SHIFT-RIGHT-CLICK, REMOVE LINK
                     } else if (event.getClick() == ClickType.SHIFT_RIGHT) {
@@ -566,7 +546,6 @@ public class UpdateGUI extends PageGUI {
                                 "to stop tracking '&d"+info.getName()+"'",
                                 "&7You can always add it back later!"
                         ).open(player);
-                        //DOUBLE-CLICK, Individual refresh
                     } else if (event.getClick() == ClickType.DOUBLE_CLICK) {
                         player.closeInventory();
 
@@ -588,6 +567,7 @@ public class UpdateGUI extends PageGUI {
                                 UpdateManager.getInstance().removeLinkedPlugin(info);
                                 boolean updateFound = !resource.getLastVersion().equals(info.getLatestVersion());
                                 info.setLatestVersion(resource.getLastVersion());
+                                UpdateManager.getInstance().addLinkedPlugin(info);
                                 UpdateManager.getInstance().addLinkedPlugin(info);
 
                                 new BukkitRunnable() {
@@ -672,12 +652,12 @@ public class UpdateGUI extends PageGUI {
     }
 
     /*
-     * Utilities
+     * TODO Utilities
      */
 
     private void restoreFile(String oldFileNameResult, String pluginName, String version) {
         //Move cached old version back to plugins folder & enable
-        File downloadedFile = new File(Up2Date.getInstance().getDataFolder().getParentFile().getPath()+"/"+pluginName+"-"+version);
+        File downloadedFile = new File(Up2Date.getInstance().getDataFolder().getParentFile().getPath()+AutoUpdaterAPI.getFileSeperator()+pluginName+"-"+version);
         if (downloadedFile.exists()) {
             if (!downloadedFile.delete()) {
                 Up2Date.getInstance().printPluginError("Error occurred while fixing failed plugin download.", "Corrupt download deletion failed.");
@@ -691,44 +671,30 @@ public class UpdateGUI extends PageGUI {
 
         //Restore cached version
         if (oldFileNameResult != null) {
-            File restoredPluginFile = new File(Up2Date.getInstance().getDataFolder().getParentFile().getPath()+"/"+pluginName+"-"+version+".jar");
-            if (!new File(Up2Date.getInstance().getDataFolder().getAbsolutePath()+"/caches/"+pluginName+"/"+oldFileNameResult).renameTo(restoredPluginFile)) {
+            File restoredPluginFile = new File(Up2Date.getInstance().getDataFolder().getParentFile().getPath()+AutoUpdaterAPI.getFileSeperator()+pluginName+"-"+version+".jar");
+            if (!new File(Up2Date.getInstance().getDataFolder().getAbsolutePath()+AutoUpdaterAPI.getFileSeperator()+"caches"+AutoUpdaterAPI.getFileSeperator()+pluginName+AutoUpdaterAPI.getFileSeperator()+oldFileNameResult).renameTo(restoredPluginFile)) {
                 Up2Date.getInstance().printPluginError("Error occurred while fixing failed plugin download.", "File move failed.");
                 return;
             }
 
             try {
-
                 Plugin reinitializedPlugin = Bukkit.getPluginManager().loadPlugin(restoredPluginFile);
                 if (reinitializedPlugin != null)
                     Bukkit.getPluginManager().enablePlugin(reinitializedPlugin);
             } catch (InvalidPluginException | InvalidDescriptionException e) {
-                //TODO add this to invalid db list & email plugin author.
+                if (UpdateManager.getInstance().getInfoFromPluginName(pluginName) != null)
+                    UtilDatabase.getInstance().addIncompatiblePlugin(UpdateManager.getInstance().getInfoFromPluginName(pluginName));
+
                 Up2Date.getInstance().printError(e, "Error occurred while fixing failed plugin download.");
             }
 
 
             try {
-                FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+"/caches/"+pluginName));
+                FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+AutoUpdaterAPI.getFileSeperator()+"caches"+AutoUpdaterAPI.getFileSeperator()+pluginName));
             } catch (IOException e) {
                 Up2Date.getInstance().printError(e, "Error occurred while clearing caches.");
             }
         }
-    }
-
-    private String[] getLore(String[] varArgLines, String... description) {
-        ArrayList<String> lines = new ArrayList<>();
-
-        for (String line : description) {
-            if (line.contains("%description%")) {
-                for (String varArgLine : varArgLines)
-                    lines.add("&d&l"+varArgLine);
-            } else {
-                lines.add(line);
-            }
-        }
-
-        return lines.toArray(new String[0]);
     }
 
     private void updatePlugins(ArrayList<PluginInfo> updatesNeeded) {
@@ -761,53 +727,49 @@ public class UpdateGUI extends PageGUI {
                             continue;
                         }
 
-                        if (plugin.getName().equalsIgnoreCase("Up2Date")) {
-                            if (i+1 != updatesNeeded.size())
-                                updatesNeeded.add(updatesNeeded.remove(0));
+                        //Temporarily disable all plugins depending on the one we're updating to clear the instances and prevent a memory leak.
+                        ArrayList<Plugin> dependers = new ArrayList<>();
 
-                            new PremiumUpdater(player, plugin, info.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, (success, ex, pl) -> {
-                                UpdateManager.getInstance().setCurrentTask(false);
-                                if (success) {
-                                    player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-                                    updatesAvailable.remove(info);
-
-                                    UtilDatabase.getInstance().addDownloadedFiles(1);
-                                    UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
-                                } else
-                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                            }).update();
-                            continue;
+                        for (Plugin depender : Bukkit.getPluginManager().getPlugins()) {
+                            if (depender.getDescription().getDepend().contains(plugin.getName()) || depender.getDescription().getSoftDepend().contains(plugin.getName()) && plugin.isEnabled()) {
+                                Bukkit.getPluginManager().disablePlugin(depender);
+                                dependers.add(depender);
+                            }
                         }
 
-                        String oldFileName = null;
-                        try {
-                            UtilPlugin.unload(plugin);
+                        UtilPlugin.unload(plugin);
 
-                            File oldVersion = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
-                            oldFileName = oldVersion.getName();
-                            //Cache version in case update goes wrong.
-                            File cacheFile = new File(Up2Date.getInstance().getDataFolder().getAbsolutePath()+"/caches/"+plugin.getName()+"/"+oldVersion.getName());
+                        //Cache version in case update goes wrong.
+                        String oldFile = null;
+                        try {
+                            File oldJar = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
+                            oldFile = oldJar.getName();
+                            File cacheFile = new File(Up2Date.getInstance().getDataFolder().getAbsolutePath()+AutoUpdaterAPI.getFileSeperator()+"caches"+AutoUpdaterAPI.getFileSeperator()+plugin.getName()+AutoUpdaterAPI.getFileSeperator()+oldJar.getName());
                             if (!cacheFile.getParentFile().mkdirs()) {
-                                Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version.", "Directory creation failed.");
+                                Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version", "Directory creation failed.");
                                 return;
                             }
-                            if (!oldVersion.renameTo(cacheFile)) {
-                                Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version.", "Rename failed.");
-                                return;
+
+                            try {
+                                FileUtils.copyFile(oldJar, cacheFile);
+                            } catch (IOException e) {
+                                Up2Date.getInstance().printError(e, "Error occurred while caching old plugin version. (Rename failed)");
                             }
-                        } catch (URISyntaxException e) {
+
+                        } catch (URISyntaxException  e) {
                             Up2Date.getInstance().printError(e, "Error occurred while caching old plugin version.");
                         }
 
-                        final String oldFileNameResult = oldFileName;
+                        final String oldFileNameResult = oldFile;
 
                         final UpdaterRunnable runnable = (success, ex, pl) -> {
                             if (success) {
                                 successfulUpdates.add(info);
 
+                                dependers.forEach(depender -> Bukkit.getPluginManager().enablePlugin(depender));
+
                                 UtilDatabase.getInstance().addDownloadedFiles(1);
                                 UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
-                                //Just made updates to autoupdaterapi, need to test this code for statistics^^^
                             } else {
                                 failedUpdates.add(info);
                                 restoreFile(oldFileNameResult, plugin.getName(), plugin.getDescription().getVersion());
@@ -823,9 +785,9 @@ public class UpdateGUI extends PageGUI {
                             public void run() {
                                 if (successfulUpdates.size() + failedUpdates.size() == index) {
                                     if (info.isPremium()) {
-                                        new PremiumUpdater(null, plugin, info.getId(), UpdateManager.getInstance().getUpdateLocale(), false, false, runnable).update();
+                                        new PremiumUpdater(null, plugin, info.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, runnable).update();
                                     } else {
-                                        new Updater(null, plugin, info.getId(), UpdateManager.getInstance().getUpdateLocale(), false, false, runnable).update();
+                                        new Updater(null, plugin, info.getId(), UpdateManager.getInstance().getUpdateLocale(), false, true, runnable).update();
                                     }
                                     cancel();
                                 }
@@ -854,7 +816,7 @@ public class UpdateGUI extends PageGUI {
                                 }
 
                                 try {
-                                    FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+"/caches"));
+                                    FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+AutoUpdaterAPI.getFileSeperator()+"caches"));
                                 } catch (IOException ex) {
                                     Up2Date.getInstance().printError(ex, "Error occurred while deleting caches directory recursively.");
                                 }
@@ -880,13 +842,16 @@ public class UpdateGUI extends PageGUI {
 
     private void updateSuccess(PluginInfo pluginInfo, Plugin plugin) {
         try {
-            FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+"/caches/"+pluginInfo.getName()));
+            FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+AutoUpdaterAPI.getFileSeperator()+"caches"+AutoUpdaterAPI.getFileSeperator()+pluginInfo.getName()));
         } catch (IOException e) {
             Up2Date.getInstance().printError(e, "Error occurred while clearing caches.");
         }
 
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
         updatesAvailable.remove(pluginInfo);
+
+        if (player.getOpenInventory().getTopInventory() == getInventory())
+            new UpdateGUI(player).open(player);
 
         UtilDatabase.getInstance().addDownloadedFiles(1);
         UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName(), pluginInfo.getLatestVersion()));
@@ -903,5 +868,20 @@ public class UpdateGUI extends PageGUI {
             }
         }
         return 0;
+    }
+
+    private String[] getLore(String[] varArgLines, String... description) {
+        ArrayList<String> lines = new ArrayList<>();
+
+        for (String line : description) {
+            if (line.contains("%description%")) {
+                for (String varArgLine : varArgLines)
+                    lines.add("&d&l"+varArgLine);
+            } else {
+                lines.add(line);
+            }
+        }
+
+        return lines.toArray(new String[0]);
     }
 }

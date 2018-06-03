@@ -63,7 +63,7 @@ public class PlayerJoinListener implements Listener {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        new MessageBuilder().addHoverClickText("&dThere " + UtilText.getUtil().getEnding("are", availableUpdates.size(), false) + " currently &5" + availableUpdates.size() + "&d " + UtilText.getUtil().getEnding("update", availableUpdates.size(), false) + " available, &dclick &dto &dopen the GUI.", "&5View plugins.", "/u2d", false).sendToPlayersPrefixed(event.getPlayer());
+                        new MessageBuilder().addHoverClickText("&dThere " + UtilText.getUtil().getEnding("are", availableUpdates.size(), false) + " currently &5" + availableUpdates.size() + "&d " + UtilText.getUtil().getEnding("update", availableUpdates.size(), false) + " available, &dclick &dto &dopen &dthe &dGUI.", "&5View plugins.", "/u2d", false).sendToPlayersPrefixed(event.getPlayer());
                     }
                 }.runTaskLater(Up2Date.getInstance(), 20L);
             }
