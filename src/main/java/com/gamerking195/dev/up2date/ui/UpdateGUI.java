@@ -93,7 +93,7 @@ public class UpdateGUI extends PageGUI {
 
             if (plugin == null) {
                 badPlugins.add(pluginInfo);
-                new MessageBuilder().addPlainText("&dThe plugin '&5"+pluginInfo.getName()+"&d' is missing, it has been unlinked.").sendToPlayersPrefixed(player);
+                new MessageBuilder().addPlainText("&dThe plugin '&5"+pluginInfo.getName()+"&d' is missing, it &dhas &dbeen &dunlinked.").sendToPlayersPrefixed(player);
                 continue;
             }
 
@@ -546,6 +546,7 @@ public class UpdateGUI extends PageGUI {
                                 "to stop tracking '&d"+info.getName()+"'",
                                 "&7You can always add it back later!"
                         ).open(player);
+                        //DOUBLE-CLICK Check for single update.
                     } else if (event.getClick() == ClickType.DOUBLE_CLICK) {
                         player.closeInventory();
 
@@ -567,7 +568,6 @@ public class UpdateGUI extends PageGUI {
                                 UpdateManager.getInstance().removeLinkedPlugin(info);
                                 boolean updateFound = !resource.getLastVersion().equals(info.getLatestVersion());
                                 info.setLatestVersion(resource.getLastVersion());
-                                UpdateManager.getInstance().addLinkedPlugin(info);
                                 UpdateManager.getInstance().addLinkedPlugin(info);
 
                                 new BukkitRunnable() {
@@ -635,10 +635,7 @@ public class UpdateGUI extends PageGUI {
                                       .setName("&5&lINSTALL A PLUGIN")
                                       .setLore(
                                               "",
-                                              "&8CLICK &f| &a&oEnter an ID for a plugin to be downloaded & installed.",
-                                              "",
-                                              "&7Please note that this task is pretty intensive",
-                                              "&7and may cause server lag while it is installing.")
+                                              "&8CLICK &f| &a&oEnter an ID for a plugin to be downloaded & installed.")
                                       .setDurability((short) 2)
                                       .build());
 
@@ -804,9 +801,8 @@ public class UpdateGUI extends PageGUI {
                             double percent = ((double) 100/updatesNeeded.size()) * (successfulUpdates.size() + failedUpdates.size());
                             UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oUpdated "+(successfulUpdates.size()+failedUpdates.size())+"/"+updatesNeeded.size()+" plugins ("+String.format("%.2f", percent)+"%)", player);
 
-                            UpdateManager.getInstance().setCurrentTask(false);
-
                             if (failedUpdates.size()+successfulUpdates.size() >= updatesNeeded.size()) {
+                                UpdateManager.getInstance().setCurrentTask(false);
                                 if (successfulUpdates.size() == updatesNeeded.size()) {
                                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                                     UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated all " + updatesNeeded.size() + " plugins in " + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds.", player);

@@ -4,24 +4,17 @@ import be.maximvdw.spigotsite.api.exceptions.ConnectionFailedException;
 import be.maximvdw.spigotsite.api.resource.Resource;
 import com.gamerking195.dev.autoupdaterapi.AutoUpdaterAPI;
 import com.gamerking195.dev.autoupdaterapi.UpdateLocale;
-import com.gamerking195.dev.autoupdaterapi.util.UtilReader;
 import com.gamerking195.dev.up2date.Up2Date;
 import com.gamerking195.dev.up2date.command.SetupCommand;
 import com.gamerking195.dev.up2date.config.DataConfig;
 import com.gamerking195.dev.up2date.util.UtilSQL;
 import com.gamerking195.dev.up2date.util.UtilSiteSearch;
-import com.google.gson.Gson;
-import com.google.gson.JsonObject;
-import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.lang.StringUtils;
 import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.io.IOException;
-import java.lang.reflect.Type;
 import java.sql.ResultSet;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -39,6 +32,9 @@ import java.util.concurrent.ExecutorService;
 public class UpdateManager {
 
     private UpdateManager() {}
+
+    @Getter
+    public boolean initialized = false;
 
     @Getter
     private static UpdateManager instance = new UpdateManager();
@@ -132,6 +128,8 @@ public class UpdateManager {
 
         if (bad != null)
             linkedPlugins.remove(bad);
+
+        initialized = true;
     }
 
     /*
@@ -313,7 +311,7 @@ public class UpdateManager {
                     info.setLatestVersion(resource.getLastVersion());
                     UpdateManager.getInstance().addLinkedPlugin(info);
 
-                } catch (ConnectionFailedException ex) {
+                } catch (Exception ex) {
                     Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '"+info.getName()+"'");
                 }
             });

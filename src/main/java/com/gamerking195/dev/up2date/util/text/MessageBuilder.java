@@ -93,7 +93,6 @@ public class MessageBuilder {
     }
 
     public MessageBuilder sendToPlayersPrefixed(Player... players) {
-        component.setText(component.getText().replace(" ", " "+ChatColor.LIGHT_PURPLE));
         for (Player player : players) {
 
             TextComponent prefix = new TextComponent(ChatColor.translateAlternateColorCodes('&', Up2Date.getInstance().getMainConfig().getPrefix()));
@@ -107,7 +106,11 @@ public class MessageBuilder {
     }
 
     public MessageBuilder sendToPlayersPrefixVariable(Player... players) {
-        component.setText(component.getText().replace(" ", " " + ChatColor.LIGHT_PURPLE).replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix()));
+        String componentText = component.getText();
+
+        componentText = componentText.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
+
+        component.setText(componentText);
 
         for (Player player : players)
             player.spigot().sendMessage(ChatMessageType.CHAT, component);

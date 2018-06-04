@@ -34,11 +34,18 @@ import java.io.File;
 public class Up2DateCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
+        if (!Up2Date.getInstance().getMainConfig().isSetupComplete() && sender instanceof Player) {
+            if (!(args.length > 0 && (args[0].equalsIgnoreCase("setup") || args[0].equalsIgnoreCase("s")))) {
+                new MessageBuilder().addPlainText("&dYou must complete the setup first! ").addHoverClickText("&7(Click to begin)", "&aClick to begin the setup process.", "/stp accept", false).sendToPlayersPrefixed((Player) sender);
+                return true;
+            }
+        }
+
         if (args.length == 0) {
             if (sender instanceof Player) {
                 if (sender.hasPermission("u2d.manage") || sender.hasPermission("u2d.update") || sender.hasPermission("u2d.*"))
-                    new UpdateGUI((Player) sender).open((Player) sender);
-                else
+                        new UpdateGUI((Player) sender).open((Player) sender);
+                 else
                     new MessageBuilder().addPlainText(Up2Date.getInstance().getMainConfig().getNoPermissionMessage()).sendToPlayersPrefixVariable((Player) sender);
 
                 return true;
