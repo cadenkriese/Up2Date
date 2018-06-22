@@ -23,11 +23,11 @@ public class MainConfig extends YamlConfig {
     public MainConfig(Up2Date plugin) {
         CONFIG_HEADER = new String[]
                                 {
-                                        "#################################",
-                                        "                                #",
+                                        "###########################",
+                                        "                          #",
                                         "Up2Date V" + Up2Date.getInstance().getDescription().getVersion() + ", by " + Up2Date.getInstance().getDescription().getAuthors().toString().replace("[", "").replace("]", "") + " #",
-                                        "                                #",
-                                        "#################################",
+                                        "                          #",
+                                        "###########################",
                                         "",
                                         "Config Guide:",
                                         "",

@@ -4,7 +4,7 @@ main: com.gamerking195.dev.up2date.Up2Date
 prefix: U2D
 depend: [ProtocolLib]
 softdepend: [AutoUpdaterAPI]
-authors: [GamerKing195]
+authors: [flogic]
 description: ${project.description}
 website: ${project.url}
 commands:

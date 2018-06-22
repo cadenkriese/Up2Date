@@ -21,6 +21,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitRunnable;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
@@ -29,6 +30,7 @@ import java.io.FileOutputStream;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.nio.file.FileSystems;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
@@ -45,6 +47,8 @@ import java.util.stream.Stream;
  */
 
 public final class Up2Date extends JavaPlugin {
+
+    public static String fs = FileSystems.getDefault().getSeparator();
 
     @Getter
     private static Up2Date instance;
@@ -135,7 +139,7 @@ public final class Up2Date extends JavaPlugin {
                     httpConnection.setRequestProperty("User-Agent", "SpigetResourceUpdater");
 
                     BufferedInputStream in = new BufferedInputStream(httpConnection.getInputStream());
-                    FileOutputStream fos = new FileOutputStream(new File(plugin.getDataFolder().getPath().substring(0, plugin.getDataFolder().getPath().lastIndexOf("/")) + "/AutoUpdaterAPI.jar"));
+                    FileOutputStream fos = new FileOutputStream(new File(plugin.getDataFolder().getPath().substring(0, plugin.getDataFolder().getPath().lastIndexOf(fs)) + fs + "AutoUpdaterAPI.jar"));
                     BufferedOutputStream bout = new BufferedOutputStream(fos, 1024);
 
                     byte[] data = new byte[1024];
@@ -146,7 +150,7 @@ public final class Up2Date extends JavaPlugin {
                     bout.close();
                     in.close();
 
-                    Plugin target = Bukkit.getPluginManager().loadPlugin(new File(plugin.getDataFolder().getPath().substring(0, plugin.getDataFolder().getPath().lastIndexOf("/")) + "/AutoUpdaterAPI.jar"));
+                    Plugin target = Bukkit.getPluginManager().loadPlugin(new File(plugin.getDataFolder().getPath().substring(0, plugin.getDataFolder().getPath().lastIndexOf(fs)) + fs + "AutoUpdaterAPI.jar"));
                     target.onLoad();
                     Bukkit.getPluginManager().enablePlugin(target);
                 }
@@ -159,7 +163,13 @@ public final class Up2Date extends JavaPlugin {
         UtilDatabase.getInstance().setPluginstracked(UpdateManager.getInstance().getLinkedPlugins().size());
         UtilDatabase.getInstance().saveDataNow();
 
-        UtilU2dUpdater.getInstance().init();
+        //TODO Remove
+        new BukkitRunnable() {
+            @Override
+            public void run() {
+                UtilU2dUpdater.getInstance().init();
+            }
+        }.runTaskLater(instance, 20L);
 
         //Big message so we look cool
         Stream.of(
@@ -197,6 +207,9 @@ public final class Up2Date extends JavaPlugin {
     public void printError(Exception ex, String extraInfo) {
         String latest = UtilU2dUpdater.getInstance().isUpdateAvailable() ? "(OUTDATED)" : "(LATEST)";
 
+        //If the task failed, cancel it.
+        UpdateManager.getInstance().setCurrentTask(false);
+
         System.out.println("A severe error has occurred with the Up2Date plugin.");
         System.out.println("If you cannot figure out this error on your own (e.g. a config error) please copy and paste everything from here to END ERROR and post it at https://github.com/GamerKing195/Up2Date/issues.");
         System.out.println("Or on spigot at https://spigotmc.org/threads/284883/");
@@ -217,6 +230,9 @@ public final class Up2Date extends JavaPlugin {
     public void systemOutPrintError(Exception ex, String extraInfo) {
         String latest = UtilU2dUpdater.getInstance().isUpdateAvailable() ? "(OUTDATED)" : "(LATEST)";
 
+        //If the task failed, cancel it.
+        UpdateManager.getInstance().setCurrentTask(false);
+
         System.out.println("A severe error has occurred with the Up2Date plugin.");
         System.out.println("If you cannot figure out this error on your own (e.g. a config error) please copy and paste everything from here to END ERROR and post it at https://github.com/GamerKing195/Up2Date/issues.");
         System.out.println("Or on spigot at https://spigotmc.org/threads/284883/");
@@ -236,6 +252,9 @@ public final class Up2Date extends JavaPlugin {
 
     public void printPluginError(String header, String message) {
         String latest = UtilU2dUpdater.getInstance().isUpdateAvailable() ? "(OUTDATED)" : "(LATEST)";
+
+        //If the task failed, cancel it.
+        UpdateManager.getInstance().setCurrentTask(false);
 
         log.severe("============== BEGIN ERROR ==============");
         log.severe(header);

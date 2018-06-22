@@ -1,6 +1,5 @@
 package com.gamerking195.dev.up2date.update;
 
-import be.maximvdw.spigotsite.api.exceptions.ConnectionFailedException;
 import be.maximvdw.spigotsite.api.resource.Resource;
 import com.gamerking195.dev.autoupdaterapi.AutoUpdaterAPI;
 import com.gamerking195.dev.autoupdaterapi.UpdateLocale;
@@ -148,7 +147,24 @@ public class UpdateManager {
             while (iterator.hasNext()) {
                 PluginInfo info = iterator.next();
 
-                statement.append("('").append(info.getName()).append("', ").append(info.getId()).append(", '").append(info.getAuthor()).append("', '").append(info.getLatestVersion()).append("', '").append(info.getDescription()).append("', '").append(info.isPremium()).append("', '").append(info.getSupportedMcVersions()).append("')");;
+                info.setDescription(info.getDescription().replace("'", ""));
+
+                statement
+                        .append("('")
+                        .append(info.getName())
+                        .append("', ")
+                        .append(info.getId())
+                        .append(", '")
+                        .append(info.getAuthor())
+                        .append("', '")
+                        .append(info.getLatestVersion())
+                        .append("', '")
+                        .append(info.getDescription())
+                        .append("', '")
+                        .append(info.isPremium())
+                        .append("', '")
+                        .append(info.getSupportedMcVersions())
+                        .append("')");
 
                 i++;
 
@@ -187,7 +203,22 @@ public class UpdateManager {
             while (iterator.hasNext()) {
                 PluginInfo info = iterator.next();
 
-                statement.append("('").append(info.getName()).append("', ").append(info.getId()).append(", '").append(info.getAuthor()).append("', '").append(info.getLatestVersion()).append("', '").append(info.getDescription()).append("', '").append(info.isPremium()).append("', '").append(info.getSupportedMcVersions()).append("')");
+                statement
+                        .append("('")
+                        .append(info.getName())
+                        .append("', ")
+                        .append(info.getId())
+                        .append(", '")
+                        .append(info.getAuthor())
+                        .append("', '")
+                        .append(info.getLatestVersion())
+                        .append("', '")
+                        .append(info.getDescription().replace("'", ""))
+                        .append("', '")
+                        .append(info.isPremium())
+                        .append("', '")
+                        .append(info.getSupportedMcVersions())
+                        .append("')");
 
                 i++;
 
@@ -231,7 +262,22 @@ public class UpdateManager {
             while (iterator.hasNext()) {
                 PluginInfo info = iterator.next();
 
-                statement.append("('").append(info.getName()).append("', ").append(info.getId()).append(", '").append(info.getAuthor()).append("', '").append(info.getLatestVersion()).append("', '").append(info.getDescription()).append("', '").append(info.isPremium()).append("', '").append(info.getSupportedMcVersions()).append("')");
+                statement
+                        .append("('")
+                        .append(info.getName())
+                        .append("', ")
+                        .append(info.getId())
+                        .append(", '")
+                        .append(info.getAuthor())
+                        .append("', '")
+                        .append(info.getLatestVersion())
+                        .append("', '")
+                        .append(info.getDescription().replace("'", ""))
+                        .append("', '")
+                        .append(info.isPremium())
+                        .append("', '")
+                        .append(info.getSupportedMcVersions())
+                        .append("')");
 
                 i++;
 
@@ -260,7 +306,7 @@ public class UpdateManager {
                     if (rs != null) {
                         try {
                             while (rs.next()) {
-                                info.add(new PluginInfo(rs.getString("name"), rs.getInt("id"), rs.getString("author"), rs.getString("version"), rs.getString("description"), rs.getBoolean("premium"), rs.getString("testedversion")));
+                                info.add(new PluginInfo(rs.getString("name"), rs.getInt("id"), rs.getString("author"), rs.getString("version"), rs.getString("description").replace("'", ""), rs.getBoolean("premium"), rs.getString("testedversion")));
                             }
 
                             rs.close();

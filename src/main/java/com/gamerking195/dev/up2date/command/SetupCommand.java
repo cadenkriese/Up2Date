@@ -9,7 +9,6 @@ import com.gamerking195.dev.up2date.Up2Date;
 import com.gamerking195.dev.up2date.ui.PluginLinkGUI;
 import com.gamerking195.dev.up2date.update.PluginInfo;
 import com.gamerking195.dev.up2date.update.UpdateManager;
-import com.gamerking195.dev.up2date.util.UtilDatabase;
 import com.gamerking195.dev.up2date.util.UtilSiteSearch;
 import com.gamerking195.dev.up2date.util.UtilText;
 import com.gamerking195.dev.up2date.util.text.MessageBuilder;
@@ -45,6 +44,9 @@ public class SetupCommand implements CommandExecutor {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!sender.hasPermission("u2d.*") && !sender.hasPermission("u2d.manage") && !sender.isOp())
+            return true;
+
         if (sender instanceof Player) {
             Player player = (Player) sender;
 
@@ -122,7 +124,7 @@ public class SetupCommand implements CommandExecutor {
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            if (new File(Up2Date.getInstance().getDataFolder().getParentFile().getPath()+"/.creds").exists() && AutoUpdaterAPI.getInstance().getCurrentUser() != null) {
+                            if (new File(Up2Date.getInstance().getDataFolder().getParentFile().getPath()+Up2Date.fs+".creds").exists() && AutoUpdaterAPI.getInstance().getCurrentUser() != null) {
                                 beginStepThree(player);
 
                                 cancel();
@@ -257,8 +259,8 @@ public class SetupCommand implements CommandExecutor {
 
                     UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oRetrieved plugin data for "+currentPlugins.size()+" plugins in "+String.format("%.2f", ((double)(System.currentTimeMillis()-startTime)/1000)) +"s", player);
 
-                    if (linkedPlugins.size() > 0)
-                        linkedPlugins.removeAll(UtilDatabase.getInstance().getIncompatiblePlugins(linkedPlugins));
+//                    if (linkedPlugins.size() > 0)
+//                        linkedPlugins.removeAll(UtilDatabase.getInstance().getIncompatiblePlugins(linkedPlugins));
 
                     UpdateManager.getInstance().setLinkedPlugins(linkedPlugins);
                     UpdateManager.getInstance().setUnlinkedPlugins(unlinkedPlugins);
@@ -313,7 +315,7 @@ public class SetupCommand implements CommandExecutor {
 
             BufferedInputStream in = new BufferedInputStream(httpConnection.getInputStream());
 
-            File location = new File(plugin.getDataFolder().getParentFile().getPath() + "/AutoUpdaterAPI.jar");
+            File location = new File(plugin.getDataFolder().getParentFile().getPath() + Up2Date.fs + "AutoUpdaterAPI.jar");
             location.getParentFile().mkdirs();
 
             FileOutputStream fos = new FileOutputStream(location);

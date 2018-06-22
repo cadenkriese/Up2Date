@@ -93,7 +93,7 @@ public class Up2DateCommand implements CommandExecutor {
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            if (new File(Up2Date.getInstance().getDataFolder().getParentFile().getPath()+AutoUpdaterAPI.getFileSeperator()+".creds").exists() && AutoUpdaterAPI.getInstance().getCurrentUser() != null) {
+                            if (new File(Up2Date.getInstance().getDataFolder().getParentFile().getPath()+Up2Date.fs+".creds").exists() && AutoUpdaterAPI.getInstance().getCurrentUser() != null) {
                                 ((Player) sender).spigot().sendMessage(ChatMessageType.ACTION_BAR, new TextComponent(ChatColor.translateAlternateColorCodes('&', "&d&lU&5&l2&d&lD &a&oSuccessfully logged in!")));
                                 ((Player) sender).playSound(((Player) sender).getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
 

@@ -6,6 +6,7 @@ import com.gamerking195.dev.autoupdaterapi.util.UtilReader;
 import com.gamerking195.dev.up2date.Up2Date;
 import com.gamerking195.dev.up2date.update.UpdateManager;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.reflect.TypeToken;
 import lombok.Getter;
@@ -137,9 +138,11 @@ public class UtilU2dUpdater {
 
                 //Update description
 
-                JsonObject latestUpdateObject = gson.fromJson(UtilReader.readFrom("https://api.spiget.org/v2/resources/49313/updates?size=1&sort=-date"), objectType);
+                Type arrayType = new TypeToken<JsonArray>(){}.getType();
 
-                String descriptionBase64 = gson.fromJson(latestUpdateObject.get("description"), new TypeToken<String>(){}.getType());
+                JsonArray latestUpdateObject = gson.fromJson(UtilReader.readFrom("https://api.spiget.org/v2/resources/49313/updates?size=1&sort=-date"), arrayType);
+
+                String descriptionBase64 = gson.fromJson(latestUpdateObject.get(0).getAsJsonObject().get("description"), new TypeToken<String>(){}.getType());
                 String decodedDescription = new String(Base64.getDecoder().decode(descriptionBase64));
 
                 Pattern pat = Pattern.compile("<li>(.*)</li>");
@@ -156,10 +159,10 @@ public class UtilU2dUpdater {
         } catch (Exception exception) {
             //TODO Error suppressed for now bc it causes lots of console spam.
 
-            //Up2Date.getInstance().printError(exception, "Error occurred whilst pinging spiget.");
-            //try {
-            //    Up2Date.getInstance().printPluginError("Json received from spigot.", UtilReader.readFrom("https://api.spiget.org/v2/resources/49313/"));
-            //} catch (Exception ignored) {}
+            Up2Date.getInstance().printError(exception, "Error occurred whilst pinging spiget.");
+            try {
+                Up2Date.getInstance().printPluginError("Json received from spigot.", UtilReader.readFrom("https://api.spiget.org/v2/resources/49313/"));
+            } catch (Exception ignored) {}
         }
     }
 

@@ -7,13 +7,10 @@ import com.gamerking195.dev.autoupdaterapi.util.UtilReader;
 import com.gamerking195.dev.up2date.Up2Date;
 import com.gamerking195.dev.up2date.update.PluginInfo;
 import com.gamerking195.dev.up2date.update.UpdateManager;
-import com.gamerking195.dev.up2date.util.UtilDatabase;
 import com.gamerking195.dev.up2date.util.UtilSiteSearch;
-import com.gamerking195.dev.up2date.util.UtilText;
 import com.gamerking195.dev.up2date.util.gui.ConfirmGUI;
 import com.gamerking195.dev.up2date.util.gui.PageGUI;
 import com.gamerking195.dev.up2date.util.item.ItemStackBuilder;
-import com.gamerking195.dev.up2date.util.text.MessageBuilder;
 import net.wesjd.anvilgui.AnvilGUI;
 import org.apache.commons.lang.WordUtils;
 import org.apache.commons.lang.math.NumberUtils;
@@ -220,14 +217,15 @@ public class PluginLinkGUI extends PageGUI {
                 }
             }
         } else if (event.getCurrentItem() != null && event.getCurrentItem().getType() != null && event.getCurrentItem().getType() == Material.EMERALD_BLOCK) {
-            ArrayList<PluginInfo> incompatibles = UtilDatabase.getInstance().getIncompatiblePlugins(UpdateManager.getInstance().getLinkedPlugins());
-            incompatibles.forEach(plugin -> UpdateManager.getInstance().removeLinkedPlugin(plugin));
-
-            StringBuilder list = new StringBuilder();
-            incompatibles.forEach(plugin -> list.append("\n&d- ").append(plugin.getName()));
-
-            if (incompatibles.size() > 0)
-                new MessageBuilder().addHoverText("&dWe noticed there were &5"+incompatibles.size()+" &dknown incompatible "+ UtilText.getUtil().getEnding("plugin", incompatibles.size(), false)+" we've automatically removed them. &7&o(Hover for List)", "&5Known Incompatible Plugins:"+list.toString()).sendToPlayersPrefixed(player);
+            //TODO add again once incompatibility tracking works.
+//            ArrayList<PluginInfo> incompatibles = UtilDatabase.getInstance().getIncompatiblePlugins(UpdateManager.getInstance().getLinkedPlugins());
+//            incompatibles.forEach(plugin -> UpdateManager.getInstance().removeLinkedPlugin(plugin));
+//
+//            StringBuilder list = new StringBuilder();
+//            incompatibles.forEach(plugin -> list.append("\n&d- ").append(plugin.getName()));
+//
+//            if (incompatibles.size() > 0)
+//                new MessageBuilder().addHoverText("&dWe noticed there were &5"+incompatibles.size()+" &dknown incompatible "+ UtilText.getUtil().getEnding("plugin", incompatibles.size(), false)+" we've &dautomatically &dremoved &dthem. &7&o(Hover for List)", "&5Known Incompatible Plugins:"+list.toString()).sendToPlayersPrefixed(player);
 
             UpdateManager.getInstance().saveData();
             player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
