@@ -148,4 +148,11 @@ public class UtilPlugin {
         // This tries to get around the issue where Windows refuses to unlock jar files that were previously loaded into the JVM.
         System.gc();
     }
+
+    public static boolean compareVersions(String old, String latest) {
+        latest = latest.replace("0", "").replace("v", "").replace("_", "").replace("-", "").replace(" ", "");
+        old = old.replace("0", "").replace("v", "").replace("_", "").replace("-", "").replace(" ", "");
+
+        return !old.equalsIgnoreCase(latest);
+    }
 }

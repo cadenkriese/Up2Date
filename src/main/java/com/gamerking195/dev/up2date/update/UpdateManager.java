@@ -6,6 +6,7 @@ import com.gamerking195.dev.autoupdaterapi.UpdateLocale;
 import com.gamerking195.dev.up2date.Up2Date;
 import com.gamerking195.dev.up2date.command.SetupCommand;
 import com.gamerking195.dev.up2date.config.DataConfig;
+import com.gamerking195.dev.up2date.util.UtilPlugin;
 import com.gamerking195.dev.up2date.util.UtilSQL;
 import com.gamerking195.dev.up2date.util.UtilSiteSearch;
 import lombok.Getter;
@@ -147,7 +148,7 @@ public class UpdateManager {
             while (iterator.hasNext()) {
                 PluginInfo info = iterator.next();
 
-                info.setDescription(info.getDescription().replace("'", ""));
+                String desc = info.getDescription() != null ? info.getDescription().replace("'", "") : "Description not found.";
 
                 statement
                         .append("('")
@@ -159,7 +160,7 @@ public class UpdateManager {
                         .append("', '")
                         .append(info.getLatestVersion())
                         .append("', '")
-                        .append(info.getDescription())
+                        .append(desc)
                         .append("', '")
                         .append(info.isPremium())
                         .append("', '")
@@ -203,6 +204,8 @@ public class UpdateManager {
             while (iterator.hasNext()) {
                 PluginInfo info = iterator.next();
 
+                String desc = info.getDescription() != null ? info.getDescription().replace("'", "") : "Description not found.";
+
                 statement
                         .append("('")
                         .append(info.getName())
@@ -213,7 +216,7 @@ public class UpdateManager {
                         .append("', '")
                         .append(info.getLatestVersion())
                         .append("', '")
-                        .append(info.getDescription().replace("'", ""))
+                        .append(desc)
                         .append("', '")
                         .append(info.isPremium())
                         .append("', '")
@@ -262,6 +265,8 @@ public class UpdateManager {
             while (iterator.hasNext()) {
                 PluginInfo info = iterator.next();
 
+                String desc = info.getDescription() != null ? info.getDescription().replace("'", "") : "Description not found.";
+
                 statement
                         .append("('")
                         .append(info.getName())
@@ -272,7 +277,7 @@ public class UpdateManager {
                         .append("', '")
                         .append(info.getLatestVersion())
                         .append("', '")
-                        .append(info.getDescription().replace("'", ""))
+                        .append(desc)
                         .append("', '")
                         .append(info.isPremium())
                         .append("', '")
@@ -456,7 +461,7 @@ public class UpdateManager {
                 continue;
             }
 
-            if (!plugin.getDescription().getVersion().equalsIgnoreCase(info.getLatestVersion())) {
+            if (UtilPlugin.compareVersions(plugin.getDescription().getVersion(), info.getLatestVersion())) {
                 updates.add(info);
             }
         }

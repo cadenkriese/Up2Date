@@ -3,12 +3,12 @@ package com.gamerking195.dev.up2date.ui;
 import be.maximvdw.spigotsite.api.exceptions.ConnectionFailedException;
 import be.maximvdw.spigotsite.api.resource.Resource;
 import com.gamerking195.dev.autoupdaterapi.*;
-import com.gamerking195.dev.autoupdaterapi.util.UtilPlugin;
 import com.gamerking195.dev.autoupdaterapi.util.UtilReader;
 import com.gamerking195.dev.up2date.Up2Date;
 import com.gamerking195.dev.up2date.update.PluginInfo;
 import com.gamerking195.dev.up2date.update.UpdateManager;
 import com.gamerking195.dev.up2date.util.UtilDatabase;
+import com.gamerking195.dev.up2date.util.UtilPlugin;
 import com.gamerking195.dev.up2date.util.UtilSiteSearch;
 import com.gamerking195.dev.up2date.util.UtilText;
 import com.gamerking195.dev.up2date.util.gui.ConfirmGUI;
@@ -98,9 +98,9 @@ public class UpdateGUI extends PageGUI {
 
             try {
                 short durability = 5;
-                String updateStatus = "&d&l&nUp&5&l&n2&d&l&nDate!";
+                String updateStatus = "&dPlugin is &l&nUp&5&l&n2&d&l&nDate!";
 
-                if (!plugin.getDescription().getVersion().equals(pluginInfo.getLatestVersion())) {
+                if (UtilPlugin.compareVersions(plugin.getDescription().getVersion(), pluginInfo.getLatestVersion())) {
                     updateStatus = "&e&lUpdate Available";
                     durability = 1;
                     if (!updatesAvailable.contains(pluginInfo))
@@ -383,6 +383,8 @@ public class UpdateGUI extends PageGUI {
 
                             UpdateManager.getInstance().saveData();
 
+                            updatesAvailable = UpdateManager.getInstance().getAvailableUpdates();
+
                             cancel();
                         }
                     }
@@ -498,7 +500,7 @@ public class UpdateGUI extends PageGUI {
                                 }
 
                                 UpdateManager.getInstance().removeLinkedPlugin(info);
-                                boolean updateFound = !resource.getLastVersion().equals(info.getLatestVersion());
+                                boolean updateFound = UtilPlugin.compareVersions(info.getLatestVersion(), resource.getLastVersion());
                                 info.setLatestVersion(resource.getLastVersion());
                                 UpdateManager.getInstance().addLinkedPlugin(info);
 
@@ -612,21 +614,19 @@ public class UpdateGUI extends PageGUI {
             File oldJar = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
             oldFile = oldJar.getName();
             File cacheFile = new File(Up2Date.getInstance().getDataFolder().getAbsolutePath()+Up2Date.fs+"caches"+Up2Date.fs+plugin.getName()+Up2Date.fs+oldJar.getName());
+
+            if (cacheFile.getParentFile().exists())
+                FileUtils.deleteDirectory(cacheFile.getParentFile());
+
             if (!cacheFile.getParentFile().mkdirs()) {
                 Up2Date.getInstance().printPluginError("Error occurred while caching old plugin version", "Directory creation failed.");
                 return false;
             }
 
-            try {
-                if (cacheFile.exists())
-                    cacheFile.delete();
-
-                FileUtils.copyFile(oldJar, cacheFile);
-            } catch (IOException e) {
-                Up2Date.getInstance().printError(e, "Error occurred while caching old plugin version. (Rename failed)");
-                return false;
-            }
-        } catch (URISyntaxException  e) {
+            if (cacheFile.exists())
+                cacheFile.delete();
+            FileUtils.copyFile(oldJar, cacheFile);
+        } catch (URISyntaxException | IOException e) {
             Up2Date.getInstance().printError(e, "Error occurred while caching old plugin version.");
             return false;
         }
@@ -683,8 +683,10 @@ public class UpdateGUI extends PageGUI {
 
     private int previousUpdateCount = 0;
 
-    //TODO make this more efficient and space out downloads
-    private void updatePlugins(ArrayList<PluginInfo> updatesNeeded) {
+    private void updatePlugins(ArrayList<PluginInfo> updates) {
+        //Duplicated arraylist to make sure it doesnt get modified.
+        ArrayList<PluginInfo> updatesNeeded = new ArrayList<>(updates);
+
         new ConfirmGUI(
                 "&dContinue?",
 
@@ -697,13 +699,17 @@ public class UpdateGUI extends PageGUI {
                     ArrayList<PluginInfo> successfulUpdates = new ArrayList<>();
                     ArrayList<PluginInfo> failedUpdates = new ArrayList<>();
 
+                    //Create runnable to update our info after an update.
                     UpdaterRunnable runnable = (success, exception, plugin) -> {
+
                         PluginInfo info = UpdateManager.getInstance().getInfoFromPlugin(plugin);
                         if (success)
                             successfulUpdates.add(info);
                         else
                             failedUpdates.add(info);
                     };
+
+                    int totalUpdateCount = updatesNeeded.size();
 
                     PluginInfo info = updatesNeeded.get(0);
                     Plugin plugin = Bukkit.getPluginManager().getPlugin(info.getName());
@@ -712,22 +718,25 @@ public class UpdateGUI extends PageGUI {
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            if (previousUpdateCount < (successfulUpdates.size() + failedUpdates.size())) {
+
+                            //Check if a plugin has been updated if so start another one to never have more than one running at once. && Make sure we're not trying to start another update after we're done.
+                            if (previousUpdateCount < (successfulUpdates.size() + failedUpdates.size()) && failedUpdates.size()+successfulUpdates.size() < totalUpdateCount) {
+                                //Add one to the count
+                                previousUpdateCount = (successfulUpdates.size() + failedUpdates.size());
+
                                 PluginInfo info = updatesNeeded.get(previousUpdateCount);
                                 Plugin plugin = Bukkit.getPluginManager().getPlugin(info.getName());
                                 updatePlugin(info, plugin, runnable, true);
-
-                                previousUpdateCount = (successfulUpdates.size() + failedUpdates.size());
                             }
 
-                            double percent = ((double) 100/updatesNeeded.size()) * (successfulUpdates.size() + failedUpdates.size());
-                            UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oUpdated "+(successfulUpdates.size()+failedUpdates.size())+"/"+updatesNeeded.size()+" plugins ("+String.format("%.2f", percent)+"%)", player);
+                            double percent = ((double) 100/totalUpdateCount) * (successfulUpdates.size() + failedUpdates.size());
+                            UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oUpdated "+(successfulUpdates.size()+failedUpdates.size())+"/"+totalUpdateCount+" plugins ("+String.format("%.2f", percent)+"%)", player);
 
-                            if (failedUpdates.size()+successfulUpdates.size() >= updatesNeeded.size()) {
+                            if (failedUpdates.size()+successfulUpdates.size() >= totalUpdateCount) {
                                 UpdateManager.getInstance().setCurrentTask(false);
-                                if (successfulUpdates.size() == updatesNeeded.size()) {
+                                if (successfulUpdates.size() == totalUpdateCount) {
                                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-                                    UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated all " + updatesNeeded.size() + " plugins in " + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds.", player);
+                                    UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated all " + totalUpdateCount + " plugins in " + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds.", player);
                                 } else {
                                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
                                     UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated " + successfulUpdates.size() + " plugins and failed " + failedUpdates.size() + " updates in" + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds. &c&o(Check Console.)", player);
@@ -739,8 +748,9 @@ public class UpdateGUI extends PageGUI {
                                     Up2Date.getInstance().printError(ex, "Error occurred while deleting caches directory recursively.");
                                 }
 
-                                if (updatesNeeded == updatesAvailable)
-                                    updatesAvailable.removeAll(successfulUpdates);
+                                //TODO randomly removed because this happens on updates success, add back if errors.
+                                //if (updatesNeeded == updatesAvailable)
+                                //updatesAvailable.removeAll(successfulUpdates);
 
                                 new UpdateGUI(player).open(player);
                                 cancel();

@@ -6,7 +6,7 @@
 
     <groupId>com.gamerking195.dev</groupId>
     <artifactId>Up2Date</artifactId>
-    <version>1.5.1-SNAPSHOT</version>
+    <version>1.5.1</version>
     <packaging>jar</packaging>
 
     <name>Up2Date</name>
@@ -74,15 +74,12 @@
     </build>
 
     <repositories>
+        <!-- Maven -->
         <repository>
             <id>maven-central</id>
             <url>http://repo1.maven.org/maven2</url>
         </repository>
-        <!-- Spigot -->
-        <repository>
-            <id>spigotmc-repo</id>
-            <url>https://hub.spigotmc.org/nexus/content/groups/public/</url>
-        </repository>
+        <!-- Sonatype -->
         <repository>
             <id>sonatype</id>
             <url>https://oss.sonatype.org/content/groups/public/</url>
@@ -103,11 +100,11 @@
             <name>GK-Plugins-releases</name>
             <url>http://repo.gamerking195.com/artifactory/GK195-Pub</url>
         </repository>
-        <!-- GamerKing195 Resources -->
+        <!-- Flogic Resources -->
         <repository>
-            <id>GK195-Res</id>
-            <name>GK-Plugins-releases</name>
-            <url>http://repo.gamerking195.com/artifactory/GK195-Res</url>
+            <id>FL-Resources</id>
+            <name>Flogic's Plugin Repository-releases</name>
+            <url>http://repo.gamerking195.com/artifactory/FL-Resources</url>
         </repository>
     </repositories>
     <dependencies>

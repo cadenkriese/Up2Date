@@ -29,7 +29,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 /**
- * Created by Caden Kriese (GamerKing195) on 8/14/17.
+ * Created by Caden Kriese (flogic) on 8/14/17.
  * <p>
  * License is specified by the distributor which this
  * file was written for. Otherwise it can be found in the LICENSE file.
@@ -295,7 +295,7 @@ public class SetupCommand implements CommandExecutor {
                     new MessageBuilder().addPlainText("&dWe need you to go in and manually tell us which plugins &dmatch which search result, and for those that have no search &dresults, you can either provide their ID or have Up2Date ignore &dthem.").sendToPlayersPrefixed(player);
                     new MessageBuilder().addPlainText("&dWe apologize that this is a rather complex task; just know &dthat you'll only have to do it once. You can even copy the data &dfile between similar servers or use a database.").sendToPlayersPrefixed(player);
                     new MessageBuilder().addPlainText("").sendToPlayers(player);
-                    new MessageBuilder().addPlainText("&dIf you ever get stuck you can visit the Spigot page ").addURLText("&5&n&ohere", "https://www.spigotmc.org/resources/up2date.49313/").addPlainText("&d or &dthe wiki ").addURLText("&5&n&ohere", "https://github.com/GamerKing195/Up2Date/wiki").addPlainText("&d or watch our youtube tutorial ").addURLText("&5&n&ohere&d.", "https://youtu.be/gSnFSRUTqGU").sendToPlayersPrefixed(player);
+                    new MessageBuilder().addPlainText("&dIf you ever get stuck you can visit the Spigot page ").addURLText("&5&n&ohere", "https://www.spigotmc.org/resources/up2date.49313/").addPlainText("&d or &dthe wiki ").addURLText("&5&n&ohere", "https://github.com/flogic/Up2Date/wiki").addPlainText("&d or watch our youtube tutorial ").addURLText("&5&n&ohere&d.", "https://youtu.be/gSnFSRUTqGU").sendToPlayersPrefixed(player);
                     new MessageBuilder().addPlainText("&dAre you ready to begin?").sendToPlayersPrefixed(player);
                     new MessageBuilder().addHoverClickText("&2&l✔ &aYES", "&2&lPROCEED", "/stp manualparse", false).addPlainText("    &8&l|    ").addHoverClickText("&4&l✘ &cNO", "&4&lCANCEL", "/stp deny", false).sendToPlayers(player);
                     cancel();
