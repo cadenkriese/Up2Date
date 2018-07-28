@@ -96,9 +96,9 @@
         </repository>
         <!-- GamerKing195 Public -->
         <repository>
-            <id>FL-Snapshots</id>
-            <name>FL-Plugins-snapshots</name>
-            <url>http://repo.gamerking195.com/artifactory/FL-Snapshots</url>
+            <id>FL-Releases</id>
+            <name>FL-Plugins-releases</name>
+            <url>http://repo.gamerking195.com/artifactory/FL-Releases</url>
         </repository>
         <!-- Flogic Resources -->
         <repository>
@@ -145,7 +145,7 @@
         <dependency>
             <groupId>com.gamerking195.dev</groupId>
             <artifactId>AutoUpdaterAPI</artifactId>
-            <version>2.5.2-SNAPSHOT</version>
+            <version>2.5.2</version>
             <scope>provided</scope>
         </dependency>
         <!-- HikariCP -->
