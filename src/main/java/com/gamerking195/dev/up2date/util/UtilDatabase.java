@@ -58,6 +58,8 @@ public class UtilDatabase {
 
                     config.setMaximumPoolSize(4);
 
+                    config.setPoolName("U2D - Statistics DB");
+
                     dataSource = new HikariDataSource(config);
                 }
 
@@ -212,7 +214,7 @@ public class UtilDatabase {
         if (dataSource == null)
             return;
 
-        Connection connection;
+        Connection connection = null;
 
         try {
             connection = dataSource.getConnection();
@@ -224,10 +226,19 @@ public class UtilDatabase {
                 connection.close();
             } catch (Exception ex) {
                 Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while closing connection");
+            } finally {
+                connection.close();
             }
         }
         catch(Exception ex) {
             Up2Date.getInstance().printError(ex, "Error occurred while running MySQL statement.");
+        } finally {
+            try {
+                if (connection != null)
+                    connection.close();
+            } catch (SQLException ex) {
+               Up2Date.getInstance().printError(ex, "Error occurred while closing SQL connection!");
+            }
         }
     }
 
@@ -259,8 +270,7 @@ public class UtilDatabase {
             }.runTaskLater(Up2Date.getInstance(), 40L);
 
             return preparedStatement.executeQuery();
-        }
-        catch(Exception ex) {
+        } catch(Exception ex) {
             Up2Date.getInstance().printError(ex, "Error occurred while running query '"+updatedQuery+"'.");
         }
 

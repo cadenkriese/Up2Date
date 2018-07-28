@@ -37,6 +37,8 @@ public class UtilSQL {
 
             config.setMaximumPoolSize(Up2Date.getInstance().getMainConfig().getConnectionPoolSize());
 
+            config.setPoolName("U2D - User DB ("+Up2Date.getInstance().getMainConfig().getHostName()+")");
+
             dataSource = new HikariDataSource(config);
         }
 
