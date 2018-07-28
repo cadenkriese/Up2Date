@@ -82,6 +82,13 @@ public class UpdateManager {
                         }
                     }
 
+                    if (info.size() == 0) {
+                        if (linkedPlugins.size() != 0)
+                            Up2Date.getInstance().getLogger().warning("Up2Date failed to update database info for this interval! Trying again in "+Up2Date.getInstance().getMainConfig().getDatabaseRefreshDelay()+" minutes.");
+
+                        return;
+                    }
+
                     linkedPlugins = info;
                 }
             }.runTaskTimerAsynchronously(Up2Date.getInstance(), 0, Up2Date.getInstance().getMainConfig().getDatabaseRefreshDelay()*20*60);

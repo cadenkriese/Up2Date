@@ -295,7 +295,7 @@ public class UpdateGUI extends PageGUI {
                                 resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(Integer.valueOf(pluginId));
 
                             if (premium) {
-                                new PremiumUpdater(player, Up2Date.getInstance(), Integer.valueOf(pluginId), locale, false, false, (success, ex, plugin) -> {
+                                new PremiumUpdater(player, Up2Date.getInstance(), Integer.valueOf(pluginId), locale, false, false, (success, ex, plugin, name) -> {
                                     if (success) {
                                         if (result.getName() != null && result.getTag() != null && result.getId() != 0)
                                             UpdateManager.getInstance().addLinkedPlugin(new PluginInfo(plugin, resource, result));
@@ -310,7 +310,7 @@ public class UpdateGUI extends PageGUI {
 
                                 return "";
                             } else {
-                                new Updater(player, Up2Date.getInstance(), Integer.valueOf(pluginId), locale, false, false, (success, ex, plugin) -> {
+                                new Updater(player, Up2Date.getInstance(), Integer.valueOf(pluginId), locale, false, false, (success, ex, plugin, name) -> {
                                     if (success) {
                                         if (result.getName() != null && result.getTag() != null && result.getId() != 0)
                                             UpdateManager.getInstance().addLinkedPlugin(new PluginInfo(plugin, resource, result));
@@ -634,8 +634,9 @@ public class UpdateGUI extends PageGUI {
         final String oldFileResult = oldFile;
 
         //Runnable to be run after update completes/fails.
-        final UpdaterRunnable runnable = (success, ex, pl) -> {
-            customRunnable.run(success, ex, pl);
+        final UpdaterRunnable runnable = (success, ex, pl, name) -> {
+
+            customRunnable.run(success, ex, pl, name);
             if (!silent)
                 UpdateManager.getInstance().setCurrentTask(false);
 
@@ -646,9 +647,8 @@ public class UpdateGUI extends PageGUI {
 
                 if (!silent)
                     new UpdateGUI(player).open(player);
-            }
-            else {
-                restoreFile(oldFileResult, plugin.getName(), plugin.getDescription().getVersion());
+            } else {
+                restoreFile(oldFileResult, name);
 
                 if (!silent)
                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
@@ -678,7 +678,7 @@ public class UpdateGUI extends PageGUI {
     }
 
     private void updatePlugin(PluginInfo pluginInfo, Plugin plugin, boolean silent) {
-        updatePlugin(pluginInfo, plugin, (b, e, plugin1) -> {}, silent);
+        updatePlugin(pluginInfo, plugin, (b, e, plugin1, name) -> {}, silent);
     }
 
     private int previousUpdateCount = 0;
@@ -700,9 +700,8 @@ public class UpdateGUI extends PageGUI {
                     ArrayList<PluginInfo> failedUpdates = new ArrayList<>();
 
                     //Create runnable to update our info after an update.
-                    UpdaterRunnable runnable = (success, exception, plugin) -> {
-
-                        PluginInfo info = UpdateManager.getInstance().getInfoFromPlugin(plugin);
+                    UpdaterRunnable runnable = (success, exception, plugin, name) -> {
+                        PluginInfo info = UpdateManager.getInstance().getInfoFromPluginName(name);
                         if (success)
                             successfulUpdates.add(info);
                         else
@@ -739,7 +738,7 @@ public class UpdateGUI extends PageGUI {
                                     UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated all " + totalUpdateCount + " plugins in " + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds.", player);
                                 } else {
                                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                                    UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated " + successfulUpdates.size() + " plugins and failed " + failedUpdates.size() + " updates in" + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds. &c&o(Check Console.)", player);
+                                    UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated " + successfulUpdates.size() + " plugins and " + failedUpdates.size() + " "+UtilText.getUtil().getEnding("update", failedUpdates.size(), false)+" failed in " + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds. &c&o(Check Console.)", player);
                                 }
 
                                 try {
@@ -769,30 +768,52 @@ public class UpdateGUI extends PageGUI {
         ).open(player);
     }
 
-    private void restoreFile(String oldFileNameResult, String pluginName, String version) {
-        //Move cached old version back to plugins folder & enable
-        File downloadedFile = new File(Up2Date.getInstance().getDataFolder().getParentFile().getPath()+Up2Date.fs+pluginName+"-"+version);
-        if (downloadedFile.exists()) {
-            if (!downloadedFile.delete()) {
-                Up2Date.getInstance().printPluginError("Error occurred while fixing failed plugin download.", "Corrupt download deletion failed.");
-                return;
-            }
-        }
+    private void restoreFile(String oldFileNameResult, String pluginName) {
 
         //Unload invalid plugin.
         if (Bukkit.getPluginManager().getPlugin(pluginName) != null)
             UtilPlugin.unload(Bukkit.getPluginManager().getPlugin(pluginName));
 
-        //Restore cached version
+        //Delete any instances of the plugin from the plugins folder.
+        for (File file : Objects.requireNonNull(Up2Date.getInstance().getDataFolder().getParentFile().listFiles())) {
+            if (file.getName().contains(pluginName) && file.getName().contains(".jar")) {
+                //Try to delete and if it fails try to force delete.
+                if (!file.delete()) {
+                    try {
+                        FileUtils.forceDelete(file);
+                    } catch (IOException e) {
+                        Up2Date.getInstance().printError(e, "Corrupt download deletion failed, file name '" + file.getName() + "'.");
+                    }
+                }
+            }
+        }
+
         if (oldFileNameResult != null) {
-            File restoredPluginFile = new File(Up2Date.getInstance().getDataFolder().getParentFile().getPath()+Up2Date.fs+pluginName+"-"+version+".jar");
-            if (!new File(Up2Date.getInstance().getDataFolder().getAbsolutePath()+Up2Date.fs+"caches"+Up2Date.fs+pluginName+Up2Date.fs+oldFileNameResult).renameTo(restoredPluginFile)) {
-                Up2Date.getInstance().printPluginError("Error occurred while fixing failed plugin download.", "File move failed.");
-                return;
+            File cachedPlugin = null;
+
+            //Find cached jar
+            File cacheDirectory = new File (Up2Date.getInstance().getDataFolder().getAbsolutePath()+Up2Date.fs+"caches"+Up2Date.fs+pluginName);
+            for (File file : Objects.requireNonNull(cacheDirectory.listFiles())) {
+                if (file.getName().contains(pluginName)) {
+                    cachedPlugin = file;
+                }
             }
 
+            if (cachedPlugin == null)
+                return;
+
+            File movedPlugin = new File(Up2Date.getInstance().getDataFolder().getParentFile().getAbsolutePath()+Up2Date.fs+cachedPlugin.getName());
+
+            //Rename cached jar, putting it into the plugins folder.
             try {
-                Plugin reinitializedPlugin = Bukkit.getPluginManager().loadPlugin(restoredPluginFile);
+                FileUtils.moveFile(cachedPlugin, movedPlugin);
+            } catch (IOException e) {
+                Up2Date.getInstance().printError(e, "Failed to move '" + cachedPlugin.getAbsolutePath() + "' to '"+movedPlugin.getAbsolutePath()+"'.");
+            }
+
+            //Initialize moved plugin.
+            try {
+                Plugin reinitializedPlugin = Bukkit.getPluginManager().loadPlugin(movedPlugin);
                 if (reinitializedPlugin != null)
                     Bukkit.getPluginManager().enablePlugin(reinitializedPlugin);
             } catch (InvalidPluginException | InvalidDescriptionException e) {
@@ -802,9 +823,13 @@ public class UpdateGUI extends PageGUI {
                 Up2Date.getInstance().printError(e, "Error occurred while fixing failed plugin download.");
             }
 
-
+            //Clean up the cache
             try {
                 FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+Up2Date.fs+"caches"+Up2Date.fs+pluginName));
+
+                if (Objects.requireNonNull(new File(Up2Date.getInstance().getDataFolder().getPath() + Up2Date.fs + "caches").listFiles()).length == 0) {
+                        FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath() + Up2Date.fs + "caches"));
+                }
             } catch (IOException e) {
                 Up2Date.getInstance().printError(e, "Error occurred while clearing caches.");
             }
@@ -812,8 +837,13 @@ public class UpdateGUI extends PageGUI {
     }
 
     private void updateSuccess(PluginInfo pluginInfo, Plugin plugin, boolean silent) {
+        //Clean up the cache
         try {
-            FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+Up2Date.fs+"caches"+Up2Date.fs+pluginInfo.getName()));
+            FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+Up2Date.fs+"caches"+Up2Date.fs+plugin.getName()));
+
+            if (Objects.requireNonNull(new File(Up2Date.getInstance().getDataFolder().getPath() + Up2Date.fs + "caches").listFiles()).length == 0) {
+                FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath() + Up2Date.fs + "caches"));
+            }
         } catch (IOException e) {
             Up2Date.getInstance().printError(e, "Error occurred while clearing caches.");
         }
