@@ -37,13 +37,12 @@ public class UtilSQL {
 
             config.setMaximumPoolSize(Up2Date.getInstance().getMainConfig().getConnectionPoolSize());
 
-            config.setPoolName("U2D - User DB ("+Up2Date.getInstance().getMainConfig().getHostName()+")");
+            config.setPoolName("U2D - User DB ("+Up2Date.getInstance().getMainConfig().getUsername()+"@"+Up2Date.getInstance().getMainConfig().getHostName()+")");
 
             dataSource = new HikariDataSource(config);
         }
 
-        runStatementSync("CREATE TABLE IF NOT EXISTS "+ Up2Date.getInstance().getMainConfig().getTablename()+" (id varchar(6) NOT NULL, name TEXT, author TEXT, description TEXT, version TEXT, premium TEXT, testedversions TEXT, PRIMARY KEY(id))");
-        runStatementSync("ALTER TABLE TABLENAME ADD testedversions TEXT", true);
+        runStatementSync("CREATE TABLE IF NOT EXISTS TABLENAME (id varchar(6) NOT NULL, name TEXT, author TEXT, description TEXT, version TEXT, premium TEXT, testedversions TEXT, lastupdated TIMESTAMP, PRIMARY KEY(id))");
     }
 
     public void runStatement(String statement) {

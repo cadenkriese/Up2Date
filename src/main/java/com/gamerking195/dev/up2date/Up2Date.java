@@ -8,7 +8,7 @@ import com.gamerking195.dev.up2date.command.Up2DateCommand;
 import com.gamerking195.dev.up2date.config.MainConfig;
 import com.gamerking195.dev.up2date.listener.PlayerJoinListener;
 import com.gamerking195.dev.up2date.update.UpdateManager;
-import com.gamerking195.dev.up2date.util.UtilDatabase;
+import com.gamerking195.dev.up2date.util.UtilStatisticsDatabase;
 import com.gamerking195.dev.up2date.util.UtilPlugin;
 import com.gamerking195.dev.up2date.util.UtilU2dUpdater;
 import com.google.gson.Gson;
@@ -110,7 +110,7 @@ public final class Up2Date extends JavaPlugin {
 
         //Classes
         UpdateManager.getInstance().init();
-        UtilDatabase.getInstance().init();
+        UtilStatisticsDatabase.getInstance().init();
 
         //Threadpool
         fixedThreadPool = Executors.newFixedThreadPool(mainConfig.getThreadPoolSize());
@@ -160,8 +160,8 @@ public final class Up2Date extends JavaPlugin {
             }
         });
 
-        UtilDatabase.getInstance().setPluginstracked(UpdateManager.getInstance().getLinkedPlugins().size());
-        UtilDatabase.getInstance().saveDataNow();
+        UtilStatisticsDatabase.getInstance().setPluginstracked(UpdateManager.getInstance().getLinkedPlugins().size());
+        UtilStatisticsDatabase.getInstance().saveDataNow();
 
         //TODO Remove
         new BukkitRunnable() {
@@ -192,8 +192,7 @@ public final class Up2Date extends JavaPlugin {
 
     @Override
     public void onDisable() {
-        UpdateManager.getInstance().saveDataNow();
-        UtilDatabase.getInstance().saveDataNow();
+        UtilStatisticsDatabase.getInstance().saveDataNow();
         UpdateManager.getInstance().getCacheUpdater().cancel();
         fixedThreadPool.shutdownNow();
 

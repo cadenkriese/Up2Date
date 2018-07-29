@@ -260,7 +260,7 @@ public class SetupCommand implements CommandExecutor {
                     UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oRetrieved plugin data for "+currentPlugins.size()+" plugins in "+String.format("%.2f", ((double)(System.currentTimeMillis()-startTime)/1000)) +"s", player);
 
 //                    if (linkedPlugins.size() > 0)
-//                        linkedPlugins.removeAll(UtilDatabase.getInstance().getIncompatiblePlugins(linkedPlugins));
+//                        linkedPlugins.removeAll(UtilStatisticsDatabase.getInstance().getIncompatiblePlugins(linkedPlugins));
 
                     UpdateManager.getInstance().setLinkedPlugins(linkedPlugins);
                     UpdateManager.getInstance().setUnlinkedPlugins(unlinkedPlugins);

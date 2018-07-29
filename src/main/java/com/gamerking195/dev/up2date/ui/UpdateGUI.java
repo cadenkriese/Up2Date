@@ -7,10 +7,7 @@ import com.gamerking195.dev.autoupdaterapi.util.UtilReader;
 import com.gamerking195.dev.up2date.Up2Date;
 import com.gamerking195.dev.up2date.update.PluginInfo;
 import com.gamerking195.dev.up2date.update.UpdateManager;
-import com.gamerking195.dev.up2date.util.UtilDatabase;
-import com.gamerking195.dev.up2date.util.UtilPlugin;
-import com.gamerking195.dev.up2date.util.UtilSiteSearch;
-import com.gamerking195.dev.up2date.util.UtilText;
+import com.gamerking195.dev.up2date.util.*;
 import com.gamerking195.dev.up2date.util.gui.ConfirmGUI;
 import com.gamerking195.dev.up2date.util.gui.PageGUI;
 import com.gamerking195.dev.up2date.util.item.ItemStackBuilder;
@@ -42,6 +39,7 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystems;
+import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 
@@ -237,9 +235,9 @@ public class UpdateGUI extends PageGUI {
                 else if (event.getClick() == ClickType.RIGHT)
                     new UpdateGUI(player).open(player);
                 break;
-            //SAVE DATA
+            //REFRESH FROM DB
             case 51:
-                UpdateManager.getInstance().saveData();
+                UpdateManager.getInstance().getCacheUpdater().runTask(Up2Date.getInstance());
                 player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                 break;
             //DOWNLOAD & INSTALL A PLUGIN
@@ -301,8 +299,8 @@ public class UpdateGUI extends PageGUI {
                                             UpdateManager.getInstance().addLinkedPlugin(new PluginInfo(plugin, resource, result));
                                         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
 
-                                        UtilDatabase.getInstance().addDownloadedFiles(1);
-                                        UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
+                                        UtilStatisticsDatabase.getInstance().addDownloadedFiles(1);
+                                        UtilStatisticsDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
                                     } else
                                         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
                                 }).update();
@@ -316,8 +314,8 @@ public class UpdateGUI extends PageGUI {
                                             UpdateManager.getInstance().addLinkedPlugin(new PluginInfo(plugin, resource, result));
                                         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
 
-                                        UtilDatabase.getInstance().addDownloadedFiles(1);
-                                        UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
+                                        UtilStatisticsDatabase.getInstance().addDownloadedFiles(1);
+                                        UtilStatisticsDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
                                     } else {
                                         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
                                     }
@@ -363,6 +361,10 @@ public class UpdateGUI extends PageGUI {
 
                             updatedInfo.add(info);
 
+                            UtilSQL.getInstance().runStatement("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ('"+info.getName()+"', '"+info.getId()+"', '"+info.getAuthor()+"', '"+info.getLatestVersion()+"', '"+info.getDescription()+"', '"+info.isPremium()+"', '"+info.getSupportedMcVersions()+"', '"+new Timestamp(System.currentTimeMillis())+"')" +
+                                                                       " ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions),lastupdated=VALUES(lastupdated)");
+
+
                         } catch (ConnectionFailedException ex) {
                             Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '"+info.getName()+"'");
                         }
@@ -380,8 +382,6 @@ public class UpdateGUI extends PageGUI {
                         if (updatedInfo.size() == plugins.size()) {
                             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                             UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oUpdated information for "+plugins.size()+" plugins in "+String.format("%.2f", ((double) (System.currentTimeMillis() - startingTime) / 1000))+" seconds.", player);
-
-                            UpdateManager.getInstance().saveData();
 
                             updatesAvailable = UpdateManager.getInstance().getAvailableUpdates();
 
@@ -654,7 +654,7 @@ public class UpdateGUI extends PageGUI {
                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
 
                 if (ex instanceof IllegalPluginAccessException || ex instanceof InvalidPluginException || ex instanceof InvalidDescriptionException) {
-                    UtilDatabase.getInstance().addIncompatiblePlugin(pluginInfo);
+                    UtilStatisticsDatabase.getInstance().addIncompatiblePlugin(pluginInfo);
                 }
             }
         };
@@ -818,7 +818,7 @@ public class UpdateGUI extends PageGUI {
                     Bukkit.getPluginManager().enablePlugin(reinitializedPlugin);
             } catch (InvalidPluginException | InvalidDescriptionException e) {
                 if (UpdateManager.getInstance().getInfoFromPluginName(pluginName) != null)
-                    UtilDatabase.getInstance().addIncompatiblePlugin(UpdateManager.getInstance().getInfoFromPluginName(pluginName));
+                    UtilStatisticsDatabase.getInstance().addIncompatiblePlugin(UpdateManager.getInstance().getInfoFromPluginName(pluginName));
 
                 Up2Date.getInstance().printError(e, "Error occurred while fixing failed plugin download.");
             }
@@ -856,8 +856,8 @@ public class UpdateGUI extends PageGUI {
         if (player.getOpenInventory().getTopInventory() == getInventory() && !silent)
             new UpdateGUI(player).open(player);
 
-        UtilDatabase.getInstance().addDownloadedFiles(1);
-        UtilDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName(), pluginInfo.getLatestVersion()));
+        UtilStatisticsDatabase.getInstance().addDownloadedFiles(1);
+        UtilStatisticsDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName(), pluginInfo.getLatestVersion()));
     }
 
     private float getFileSize(String pluginName, String newVersion) {

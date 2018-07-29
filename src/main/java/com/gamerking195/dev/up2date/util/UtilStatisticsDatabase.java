@@ -23,10 +23,10 @@ import java.util.concurrent.ExecutorService;
  * If there is no license file the code is then completely copyrighted
  * and you must contact me before using it IN ANY WAY.
  */
-public class UtilDatabase {
-    private UtilDatabase() {}
-    private static UtilDatabase instance = new UtilDatabase();
-    public static UtilDatabase getInstance() {
+public class UtilStatisticsDatabase {
+    private UtilStatisticsDatabase() {}
+    private static UtilStatisticsDatabase instance = new UtilStatisticsDatabase();
+    public static UtilStatisticsDatabase getInstance() {
         return instance;
     }
 

@@ -16,6 +16,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
 import java.sql.ResultSet;
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -35,6 +36,9 @@ public class UpdateManager {
 
     @Getter
     public boolean initialized = false;
+
+    @Getter
+    public Timestamp latestDbUpdate;
 
     @Getter
     private static UpdateManager instance = new UpdateManager();
@@ -68,13 +72,20 @@ public class UpdateManager {
                     if (SetupCommand.inSetup)
                         return;
 
-                    ResultSet resultSet = UtilSQL.getInstance().runQuery("SELECT * FROM TABLENAME");
-                    ArrayList<PluginInfo> info = new ArrayList<>();
+                    //Select everything that has changed since last query
+                    String query = "SELECT * FROM TABLENAME WHERE lastupdated > '"+latestDbUpdate.toString()+"'";
+
+                    if (latestDbUpdate == null) {
+                        query = "SELECT * FROM TABLENAME";
+                    }
+
+                    ResultSet resultSet = UtilSQL.getInstance().runQuery(query);
+                    ArrayList<PluginInfo> pluginInfos = new ArrayList<>();
 
                     if (resultSet != null) {
                         try {
                             while (resultSet.next())
-                                info.add(new PluginInfo(resultSet.getString("name"), resultSet.getInt("id"), resultSet.getString("description"), resultSet.getString("author"), resultSet.getString("version"), resultSet.getBoolean("premium"), resultSet.getString("testedversions")));
+                                pluginInfos.add(new PluginInfo(resultSet.getString("name"), resultSet.getInt("id"), resultSet.getString("description"), resultSet.getString("author"), resultSet.getString("version"), resultSet.getBoolean("premium"), resultSet.getString("testedversions")));
 
                             resultSet.close();
                         } catch (Exception ex) {
@@ -82,14 +93,18 @@ public class UpdateManager {
                         }
                     }
 
-                    if (info.size() == 0) {
-                        if (linkedPlugins.size() != 0)
-                            Up2Date.getInstance().getLogger().warning("Up2Date failed to update database info for this interval! Trying again in "+Up2Date.getInstance().getMainConfig().getDatabaseRefreshDelay()+" minutes.");
+                    //Check if theres already a version of this info in the list, if so remove it.
+                    //if the plugin is installed add it as linked.
+                    //This makes it so we wont create duplicates, and we wont re-link plugins that no longer exist.
+                    for (PluginInfo info : pluginInfos) {
+                        if (getInfoFromPluginName(info.getName()) != null)
+                            removeLinkedPlugin(info);
 
-                        return;
+                        if (Bukkit.getPluginManager().getPlugin(info.getName()) != null)
+                            addLinkedPlugin(info);
                     }
 
-                    linkedPlugins = info;
+                    latestDbUpdate = new Timestamp(System.currentTimeMillis());
                 }
             }.runTaskTimerAsynchronously(Up2Date.getInstance(), 0, Up2Date.getInstance().getMainConfig().getDatabaseRefreshDelay()*20*60);
         } else {
@@ -349,6 +364,8 @@ public class UpdateManager {
             return;
 
         ArrayList<PluginInfo> plugins = new ArrayList<>(UpdateManager.getInstance().getLinkedPlugins());
+        //only check for updates on plugins that aren't already checked
+        plugins.removeAll(getAvailableUpdates());
 
         for (final PluginInfo info : plugins) {
             if (info == null)
@@ -365,9 +382,13 @@ public class UpdateManager {
                     else
                         resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId());
 
-                    UpdateManager.getInstance().removeLinkedPlugin(info);
+                    removeLinkedPlugin(info);
                     info.setLatestVersion(resource.getLastVersion());
-                    UpdateManager.getInstance().addLinkedPlugin(info);
+                    addLinkedPlugin(info);
+
+                    //TODO imlpement this in refresh in updategui, also check trello.
+                    UtilSQL.getInstance().runStatement("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ('"+info.getName()+"', '"+info.getId()+"', '"+info.getAuthor()+"', '"+info.getLatestVersion()+"', '"+info.getDescription()+"', '"+info.isPremium()+"', '"+info.getSupportedMcVersions()+"', '"+new Timestamp(System.currentTimeMillis())+"')" +
+                                                               " ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions),lastupdated=VALUES(lastupdated)");
 
                 } catch (Exception ex) {
                     Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '"+info.getName()+"'");

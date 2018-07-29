@@ -218,7 +218,7 @@ public class PluginLinkGUI extends PageGUI {
             }
         } else if (event.getCurrentItem() != null && event.getCurrentItem().getType() != null && event.getCurrentItem().getType() == Material.EMERALD_BLOCK) {
             //TODO add again once incompatibility tracking works.
-//            ArrayList<PluginInfo> incompatibles = UtilDatabase.getInstance().getIncompatiblePlugins(UpdateManager.getInstance().getLinkedPlugins());
+//            ArrayList<PluginInfo> incompatibles = UtilStatisticsDatabase.getInstance().getIncompatiblePlugins(UpdateManager.getInstance().getLinkedPlugins());
 //            incompatibles.forEach(plugin -> UpdateManager.getInstance().removeLinkedPlugin(plugin));
 //
 //            StringBuilder list = new StringBuilder();
