@@ -8,6 +8,7 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 /**
@@ -26,6 +27,8 @@ public class MessageBuilder {
     }
 
     public MessageBuilder addPlainText(String text) {
+        text = text.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
+
         component.addExtra(ChatColor.translateAlternateColorCodes('&', text));
         return this;
     }
@@ -36,6 +39,8 @@ public class MessageBuilder {
     }
 
     public MessageBuilder addHoverText(String text, String hover) {
+        text = text.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
+
         TextComponent newComponent = new TextComponent(ChatColor.translateAlternateColorCodes('&', text));
 
         newComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.translateAlternateColorCodes('&', hover)).create()));
@@ -44,6 +49,8 @@ public class MessageBuilder {
     }
 
     public MessageBuilder addClickText(String text, String command, boolean suggest) {
+        text = text.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
+
         TextComponent newComponent = new TextComponent(ChatColor.translateAlternateColorCodes('&', text));
         ClickEvent.Action event = suggest ? ClickEvent.Action.SUGGEST_COMMAND : ClickEvent.Action.RUN_COMMAND;
 
@@ -54,6 +61,8 @@ public class MessageBuilder {
     }
 
     public MessageBuilder addURLText(String text, String url) {
+        text = text.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
+
         TextComponent newComponent = new TextComponent(ChatColor.translateAlternateColorCodes('&', text));
 
         newComponent.setClickEvent(new ClickEvent(ClickEvent.Action.OPEN_URL, url));
@@ -63,6 +72,8 @@ public class MessageBuilder {
     }
 
     public MessageBuilder addHoverClickText(String text, String hover, String command, boolean suggest) {
+        text = text.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
+
         TextComponent newComponent = new TextComponent(ChatColor.translateAlternateColorCodes('&', text));
         ClickEvent.Action event = suggest ? ClickEvent.Action.SUGGEST_COMMAND : ClickEvent.Action.RUN_COMMAND;
 
@@ -74,6 +85,8 @@ public class MessageBuilder {
     }
 
     public MessageBuilder addHoverUrlText(String text, String hover, String url) {
+        text = text.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
+
         TextComponent newComponent = new TextComponent(ChatColor.translateAlternateColorCodes('&', text));
 
         newComponent.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.translateAlternateColorCodes('&', hover)).create()));
@@ -106,11 +119,21 @@ public class MessageBuilder {
     }
 
     public MessageBuilder sendToPlayersPrefixVariable(Player... players) {
-        String componentText = component.getText();
-
-        componentText = componentText.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
-
-        component.setText(componentText);
+//        String componentText = component.getText();
+//
+//        Bukkit.broadcastMessage("Plain Text = "+component.toPlainText());
+//
+//        Bukkit.broadcastMessage("Legacy Text = "+component.toLegacyText());
+//
+//        players[0].spigot().sendMessage(new TextComponent(component.toString().replace("%prefix%", ChatColor.translateAlternateColorCodes('&', Up2Date.getInstance().getMainConfig().getPrefix()))));
+//
+//        //TODO test
+//        Bukkit.broadcastMessage("TEXT = "+componentText);
+//
+//        componentText = componentText.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
+//
+//        //TODO test
+//        Bukkit.broadcastMessage("TEXT = "+componentText);
 
         for (Player player : players)
             player.spigot().sendMessage(ChatMessageType.CHAT, component);

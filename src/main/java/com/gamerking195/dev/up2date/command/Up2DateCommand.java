@@ -34,6 +34,11 @@ import java.io.File;
 public class Up2DateCommand implements CommandExecutor {
     @Override
     public boolean onCommand(CommandSender sender, Command command, String s, String[] args) {
+        if (!sender.hasPermission("u2d.command") && !sender.isOp()) {
+            new MessageBuilder().addPlainText(Up2Date.getInstance().getMainConfig().getNoPermissionMessage()).sendToPlayersPrefixVariable((Player) sender);
+            return true;
+        }
+
         if (!Up2Date.getInstance().getMainConfig().isSetupComplete() && sender instanceof Player) {
             if (!(args.length > 0 && (args[0].equalsIgnoreCase("setup") || args[0].equalsIgnoreCase("s")))) {
                 new MessageBuilder().addPlainText("&dYou must complete the setup first! ").addHoverClickText("&7(Click to begin)", "&aClick to begin the setup process.", "/stp accept", false).sendToPlayersPrefixed((Player) sender);
@@ -44,8 +49,8 @@ public class Up2DateCommand implements CommandExecutor {
         if (args.length == 0) {
             if (sender instanceof Player) {
                 if (sender.hasPermission("u2d.manage") || sender.hasPermission("u2d.update") || sender.hasPermission("u2d.*"))
-                        new UpdateGUI((Player) sender).open((Player) sender);
-                 else
+                    new UpdateGUI((Player) sender).open((Player) sender);
+                else
                     new MessageBuilder().addPlainText(Up2Date.getInstance().getMainConfig().getNoPermissionMessage()).sendToPlayersPrefixVariable((Player) sender);
 
                 return true;
@@ -53,15 +58,17 @@ public class Up2DateCommand implements CommandExecutor {
             else
                 sendInfo(sender);
         } else if (args[0].equalsIgnoreCase("info") || args[0].equalsIgnoreCase("i")) {
-            if (sender.hasPermission("u2d.command") || sender.hasPermission("u2d.*"))
+            if (sender.hasPermission("u2d.command") || sender.hasPermission("u2d.*") || sender.isOp())
                 sendInfo(sender);
             else
                 new MessageBuilder().addPlainText(Up2Date.getInstance().getMainConfig().getNoPermissionMessage()).sendToPlayersPrefixVariable((Player) sender);
+
         } else if (args[0].equalsIgnoreCase("help") || args[0].equalsIgnoreCase("h")) {
-            if (sender.hasPermission("u2d.command") || sender.hasPermission("u2d.*"))
+            if (sender.hasPermission("u2d.command") || sender.hasPermission("u2d.*") || sender.isOp())
                 sendHelp(sender);
             else
                 new MessageBuilder().addPlainText(Up2Date.getInstance().getMainConfig().getNoPermissionMessage()).sendToPlayersPrefixVariable((Player) sender);
+
         } else if (args[0].equalsIgnoreCase("setup") || args[0].equalsIgnoreCase("s")) {
             if (sender instanceof Player) {
                 if (sender.hasPermission("u2d.manage") || sender.hasPermission("u2d.*")) {
@@ -109,7 +116,11 @@ public class Up2DateCommand implements CommandExecutor {
             return true;
         } else if (args[0].equalsIgnoreCase("configure") || args[0].equalsIgnoreCase("config") || args[0].equalsIgnoreCase("c")) {
             if (sender instanceof Player) {
-                new SettingsGUI(false).open((Player) sender);
+                if (sender.hasPermission("u2d.*") || sender.hasPermission("u2d.manage") || sender.isOp())
+                    new SettingsGUI(false).open((Player) sender);
+                else
+                    new MessageBuilder().addPlainText(Up2Date.getInstance().getMainConfig().getNoPermissionMessage()).sendToPlayersPrefixVariable((Player) sender);
+
             } else
                 sender.sendMessage(ChatColor.translateAlternateColorCodes('&', Up2Date.getInstance().getMainConfig().getPrefix()+"&dYou must be a player to setup the plugin!"));
         } else if (args[0].equalsIgnoreCase("reset") || args[0].equalsIgnoreCase("r")) {
@@ -119,7 +130,8 @@ public class Up2DateCommand implements CommandExecutor {
                 if (player.isOp() || player.hasPermission("u2d.manage") || player.hasPermission("u2d.*")) {
                     AutoUpdaterAPI.getInstance().resetUser();
                     player.performCommand("u2d login");
-                }
+                } else
+                    new MessageBuilder().addPlainText(Up2Date.getInstance().getMainConfig().getNoPermissionMessage()).sendToPlayersPrefixVariable((Player) sender);
             }
             return true;
         } else if (args[0].equalsIgnoreCase("u2dupdate")) {
@@ -127,10 +139,11 @@ public class Up2DateCommand implements CommandExecutor {
                 Player player = (Player) sender;
                 if (player.isOp() || player.hasPermission("u2d.update") || player.hasPermission("u2d.*")) {
                     UtilU2dUpdater.getInstance().update(player);
-                }
+                } else
+                    new MessageBuilder().addPlainText(Up2Date.getInstance().getMainConfig().getNoPermissionMessage()).sendToPlayersPrefixVariable((Player) sender);
             }
         } else if (args[0].equalsIgnoreCase("reload")) {
-            if (sender.hasPermission("u2d.manage") || sender.hasPermission("u2d.*")) {
+            if (sender.hasPermission("u2d.manage") || sender.hasPermission("u2d.*") || sender.isOp()) {
                 try {
                     Up2Date.getInstance().getMainConfig().reload();
 
@@ -144,7 +157,7 @@ public class Up2DateCommand implements CommandExecutor {
             }
         } else {
             if (sender instanceof Player) {
-                if (sender.hasPermission("u2d.manage") || sender.hasPermission("u2d.update") || sender.hasPermission("u2d.*"))
+                if (sender.hasPermission("u2d.manage") || sender.hasPermission("u2d.update") || sender.hasPermission("u2d.*") || sender.isOp())
                     new UpdateGUI((Player) sender).open((Player) sender);
                 else
                     new MessageBuilder().addPlainText(Up2Date.getInstance().getMainConfig().getNoPermissionMessage()).sendToPlayersPrefixVariable((Player) sender);
