@@ -2,6 +2,7 @@ package com.gamerking195.dev.up2date;
 
 import com.comphenix.protocol.ProtocolLibrary;
 import com.comphenix.protocol.ProtocolManager;
+import com.gamerking195.dev.autoupdaterapi.AutoUpdaterAPI;
 import com.gamerking195.dev.autoupdaterapi.util.UtilReader;
 import com.gamerking195.dev.up2date.command.SetupCommand;
 import com.gamerking195.dev.up2date.command.Up2DateCommand;
@@ -162,6 +163,9 @@ public final class Up2Date extends JavaPlugin {
 
         UtilStatisticsDatabase.getInstance().setPluginstracked(UpdateManager.getInstance().getLinkedPlugins().size());
         UtilStatisticsDatabase.getInstance().saveDataNow();
+
+        if (mainConfig.isEnableDebug())
+            AutoUpdaterAPI.getInstance().setDebug(true);
 
         //TODO Remove
         new BukkitRunnable() {

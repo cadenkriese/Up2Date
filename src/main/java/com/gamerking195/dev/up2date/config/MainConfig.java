@@ -80,6 +80,17 @@ public class MainConfig extends YamlConfig {
     @Path("General.Database-Refresh-Delay")
     private int databaseRefreshDelay = 30;
 
+    @Comments
+            ({
+                    "",
+                    "ENABLE_DEBUG",
+                    "Desc: Enabling this will spit out extensive information when performing updates (especially premium) and most plugin tasks.",
+                    "Type: boolean",
+                    "Default: false"
+            })
+    @Path("General.Enable-Debug")
+    private boolean enableDebug = false;
+
     @Comment("---------------Messages---------------")
     @Comments
             ({
