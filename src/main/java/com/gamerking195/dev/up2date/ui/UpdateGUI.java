@@ -395,8 +395,11 @@ public class UpdateGUI extends PageGUI {
                 if (event.getCurrentItem() == null || event.getCurrentItem().getType() != Material.STAINED_CLAY)
                     return;
 
-                PluginInfo pluginInfo = inventoryMap.get(event.getRawSlot());
+                int pageNumber = Integer.valueOf(ChatColor.stripColor(bukkitInventory.getItem(49).getItemMeta().getDisplayName()).replace("Page #", ""));
+
+                PluginInfo pluginInfo = inventoryMap.get(((pageNumber-1)*45)+event.getRawSlot());
                 Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginInfo.getName());
+
                 if (event.getCurrentItem().getType() == Material.STAINED_CLAY) {
                     //LEFT-CLICK, SELECT PLUGIN
                     if (event.getClick() == ClickType.LEFT) {
