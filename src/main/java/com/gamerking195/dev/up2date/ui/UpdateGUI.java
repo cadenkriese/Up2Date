@@ -395,7 +395,10 @@ public class UpdateGUI extends PageGUI {
                 if (event.getCurrentItem() == null || event.getCurrentItem().getType() != Material.STAINED_CLAY)
                     return;
 
-                PluginInfo pluginInfo = inventoryMap.get(event.getRawSlot());
+                int pageNumber = Integer.valueOf(ChatColor.stripColor(bukkitInventory.getItem(49).getItemMeta().getDisplayName()).replace("Page #", ""));
+
+                //Get the plugin from the raw slot accounting for an additional 45 plugins per page.
+                PluginInfo pluginInfo = inventoryMap.get(((pageNumber-1)*45)+event.getRawSlot());
                 Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginInfo.getName());
                 if (event.getCurrentItem().getType() == Material.STAINED_CLAY) {
                     //LEFT-CLICK, SELECT PLUGIN
@@ -462,7 +465,7 @@ public class UpdateGUI extends PageGUI {
 
                         //SHIFT-RIGHT-CLICK, REMOVE LINK
                     else if (event.getClick() == ClickType.SHIFT_RIGHT) {
-                        PluginInfo info = inventoryMap.get(event.getRawSlot());
+                        PluginInfo info = inventoryMap.get(((pageNumber-1)*45)+event.getRawSlot());
                         new ConfirmGUI("&dContinue?",
                                 () -> {
                                     UpdateManager.getInstance().removeLinkedPlugin(info);
@@ -486,7 +489,7 @@ public class UpdateGUI extends PageGUI {
 
                         UtilText.getUtil().sendActionBar("&5&lU&d&l2&5&lD &7&oChecking for updates, don't re-open the GUI.", player);
 
-                        PluginInfo info = inventoryMap.get(event.getRawSlot());
+                        PluginInfo info = inventoryMap.get(((pageNumber-1)*45)+event.getRawSlot());
 
                         ExecutorService threadPool = Up2Date.getInstance().getFixedThreadPool();
 
