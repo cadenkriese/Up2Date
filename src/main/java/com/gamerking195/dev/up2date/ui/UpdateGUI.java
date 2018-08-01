@@ -687,6 +687,11 @@ public class UpdateGUI extends PageGUI {
         //Duplicated arraylist to make sure it doesnt get modified.
         ArrayList<PluginInfo> updatesNeeded = new ArrayList<>(updates);
 
+        if (updates.size() == 0) {
+            player.closeInventory();
+            UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &c&oAll plugins already &d&oUp&5&d2&d&oDate");
+        }
+
         new ConfirmGUI(
                 "&dContinue?",
 
