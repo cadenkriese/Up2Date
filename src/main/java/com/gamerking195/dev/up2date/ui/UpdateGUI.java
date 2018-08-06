@@ -39,7 +39,6 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.net.URISyntaxException;
 import java.nio.file.FileSystems;
-import java.sql.Timestamp;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 
@@ -355,15 +354,10 @@ public class UpdateGUI extends PageGUI {
                             else
                                 resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId());
 
-                            UpdateManager.getInstance().removeLinkedPlugin(info);
                             info.setLatestVersion(resource.getLastVersion());
-                            UpdateManager.getInstance().addLinkedPlugin(info);
+                            UpdateManager.getInstance().replacePlugin(info);
 
                             updatedInfo.add(info);
-
-                            UtilSQL.getInstance().runStatement("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ('"+info.getName()+"', '"+info.getId()+"', '"+info.getAuthor()+"', '"+info.getLatestVersion()+"', '"+info.getDescription()+"', '"+info.isPremium()+"', '"+info.getSupportedMcVersions()+"', '"+new Timestamp(System.currentTimeMillis())+"')" +
-                                                                       " ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions),lastupdated=VALUES(lastupdated)");
-
 
                         } catch (ConnectionFailedException ex) {
                             Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '"+info.getName()+"'");
@@ -649,6 +643,13 @@ public class UpdateGUI extends PageGUI {
                 //Re-enable previously disabled dependers.
                 dependers.forEach(depender -> Bukkit.getPluginManager().enablePlugin(depender));
 
+                //Update info
+                pl = Bukkit.getPluginManager().getPlugin(name);
+                if (UtilPlugin.compareVersions(plugin.getDescription().getVersion(), pluginInfo.getLatestVersion())) {
+                    pluginInfo.setLatestVersion(pl.getDescription().getVersion());
+                    UpdateManager.getInstance().replacePlugin(pluginInfo);
+                }
+
                 if (!silent)
                     new UpdateGUI(player).open(player);
             } else {
@@ -837,7 +838,7 @@ public class UpdateGUI extends PageGUI {
                 FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+Up2Date.fs+"caches"+Up2Date.fs+pluginName));
 
                 if (Objects.requireNonNull(new File(Up2Date.getInstance().getDataFolder().getPath() + Up2Date.fs + "caches").listFiles()).length == 0) {
-                        FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath() + Up2Date.fs + "caches"));
+                    FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath() + Up2Date.fs + "caches"));
                 }
             } catch (IOException e) {
                 Up2Date.getInstance().printError(e, "Error occurred while clearing caches.");

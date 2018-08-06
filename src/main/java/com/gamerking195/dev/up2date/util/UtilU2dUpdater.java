@@ -170,18 +170,7 @@ public class UtilU2dUpdater {
         if (!updating) {
             updating = true;
 
-            //Do the optimal shutdown.
-            UpdateManager.getInstance().saveDataNow();
-            UtilStatisticsDatabase.getInstance().saveDataNow();
-            UpdateManager.getInstance().getCacheUpdater().cancel();
-            Up2Date.getInstance().getFixedThreadPool().shutdown();
-
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    new PremiumUpdater(player, plugin, 49313, UpdateManager.getInstance().getUpdateLocale(), false, true).update();
-                }
-            }.runTaskLater(plugin, 30L);
+            new PremiumUpdater(player, plugin, 49313, UpdateManager.getInstance().getUpdateLocale(), false, true).update();
         }
     }
 }

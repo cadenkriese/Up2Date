@@ -65,6 +65,8 @@ public class DataConfig {
         dataConfig.set(info.getName() + ".Description", info.getDescription());
         dataConfig.set(info.getName() + ".Premium", info.isPremium());
         dataConfig.set(info.getName() + ".TestedVersions", info.getSupportedMcVersions());
+
+        saveFile();
     }
 
     public boolean fileContains(String name) {

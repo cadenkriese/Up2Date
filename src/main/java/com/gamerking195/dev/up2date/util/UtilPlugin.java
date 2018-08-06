@@ -149,6 +149,13 @@ public class UtilPlugin {
         System.gc();
     }
 
+    /**
+     * Loosely compares versions of plugins to account for random differences.
+     *
+     * @param old Old version string.
+     * @param latest Latest version string.
+     * @return True if there is a significant difference between the two versions
+     */
     public static boolean compareVersions(String old, String latest) {
         latest = latest.replace("0", "").replace("v", "").replace("_", "").replace("-", "").replace(" ", "");
         old = old.replace("0", "").replace("v", "").replace("_", "").replace("-", "").replace(" ", "");

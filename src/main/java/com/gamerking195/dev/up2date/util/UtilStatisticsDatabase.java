@@ -109,6 +109,11 @@ public class UtilStatisticsDatabase {
         }.runTaskTimerAsynchronously(Up2Date.getInstance(), 60L, 10*20*60);
     }
 
+    public void shutdown() {
+        if (dataSource != null)
+            dataSource.close();
+    }
+
     public void saveDataNow() {
         runStatementSync("INSERT INTO " + statstable + " (id, downloadsize, downloadedfiles, pluginstracked) VALUES ('"+Up2Date.getInstance().getMainConfig().getServerId()+"', '"+downloadsize+"', '"+downloadedfiles+"', '"+pluginstracked+"') ON DUPLICATE KEY UPDATE downloadsize = downloadsize+"+downloadsize+", downloadedfiles = downloadedfiles+"+downloadedfiles+", pluginstracked = pluginstracked+"+pluginstracked);
     }

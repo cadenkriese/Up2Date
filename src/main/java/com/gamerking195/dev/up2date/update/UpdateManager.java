@@ -61,6 +61,9 @@ public class UpdateManager {
     @Setter
     private boolean currentTask = false;
 
+    //How many plugins get grouped in one massive statement.
+    private int entriesPerStatement = 50;
+
     public void init() {
         //Setup Linked plugins
         if (Up2Date.getInstance().getMainConfig().isEnableSQL()) {
@@ -73,10 +76,10 @@ public class UpdateManager {
                         return;
 
                     //Select everything that has changed since last query
-                    String query = "SELECT * FROM TABLENAME WHERE lastupdated > '"+latestDbUpdate.toString()+"'";
+                    String query = "SELECT * FROM TABLENAME";
 
-                    if (latestDbUpdate == null) {
-                        query = "SELECT * FROM TABLENAME";
+                    if (latestDbUpdate != null) {
+                        query = "SELECT * FROM TABLENAME WHERE lastupdated > '"+latestDbUpdate.toString()+"'";
                     }
 
                     ResultSet resultSet = UtilSQL.getInstance().runQuery(query);
@@ -163,7 +166,7 @@ public class UpdateManager {
         if (Up2Date.getInstance().getMainConfig().isEnableSQL()) {
             Iterator<PluginInfo> iterator = linkedPlugins.iterator();
 
-            StringBuilder statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions) VALUES ");
+            StringBuilder statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ");
 
             int i = 0;
 
@@ -172,94 +175,41 @@ public class UpdateManager {
 
                 String desc = info.getDescription() != null ? info.getDescription().replace("'", "") : "Description not found.";
 
+                //use ` instead of ' to easily remove all extra '
                 statement
-                        .append("('")
+                        .append("(`")
                         .append(info.getName())
-                        .append("', ")
+                        .append("`, ")
                         .append(info.getId())
-                        .append(", '")
+                        .append(", `")
                         .append(info.getAuthor())
-                        .append("', '")
+                        .append("`, `")
                         .append(info.getLatestVersion())
-                        .append("', '")
+                        .append("`, `")
                         .append(desc)
-                        .append("', '")
+                        .append("`, `")
                         .append(info.isPremium())
-                        .append("', '")
+                        .append("`, `")
                         .append(info.getSupportedMcVersions())
-                        .append("')");
+                        .append("`, `")
+                        .append(new Timestamp(System.currentTimeMillis()))
+                        .append("`)");
 
                 i++;
 
-                if (i % 25 == 0) {
-                    statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions)");
-                    UtilSQL.getInstance().runStatement(statement.toString());
+                if (i % entriesPerStatement == 0) {
+                    statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions),lastupdated=VALUES(lastupdated)");
+                    UtilSQL.getInstance().runStatement(statement.toString().replace("'", "\\'").replace("`", "'"));
 
-                    statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium) VALUES ");
-                } else if (iterator.hasNext() || i + 1 % 25 == 0) {
+                    statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ");
+                } else if (iterator.hasNext() || i + 1 % entriesPerStatement == 0) {
                     statement.append(", ");
                 }
             }
 
-            if (i % 25 != 0) {
-                statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions)");
-                UtilSQL.getInstance().runStatement(statement.toString());
-            }
-        }
-
-        //TODO Flatfile
-        else {
-            linkedPlugins.forEach((pluginInfo) -> DataConfig.getConfig().writeInfoToFile(pluginInfo));
-            DataConfig.getConfig().saveFile();
-        }
-    }
-
-    public void saveDataNow() {
-        //TODO SQL
-        if (Up2Date.getInstance().getMainConfig().isEnableSQL()) {
-            Iterator<PluginInfo> iterator = linkedPlugins.iterator();
-
-            StringBuilder statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions) VALUES ");
-
-            int i = 0;
-
-            while (iterator.hasNext()) {
-                PluginInfo info = iterator.next();
-
-                String desc = info.getDescription() != null ? info.getDescription().replace("'", "") : "Description not found.";
-
-                statement
-                        .append("('")
-                        .append(info.getName())
-                        .append("', ")
-                        .append(info.getId())
-                        .append(", '")
-                        .append(info.getAuthor())
-                        .append("', '")
-                        .append(info.getLatestVersion())
-                        .append("', '")
-                        .append(desc)
-                        .append("', '")
-                        .append(info.isPremium())
-                        .append("', '")
-                        .append(info.getSupportedMcVersions())
-                        .append("')");
-
-                i++;
-
-                if (i % 50 == 0) {
-                    statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions)");
-                    UtilSQL.getInstance().runStatementSync(statement.toString());
-
-                    statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions) VALUES ");
-                } else if (iterator.hasNext() || i + 1 % 50 == 0) {
-                    statement.append(", ");
-                }
-            }
-
-            if (i % 50 != 0) {
-                statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions)");
-                UtilSQL.getInstance().runStatementSync(statement.toString());
+            if (i % entriesPerStatement != 0) {
+                statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name), id=VALUES(id), author=VALUES(author), version=VALUES(version), description=VALUES(description), premium=VALUES(premium), testedversions=VALUES(testedversions), lastupdated=VALUES(lastupdated)");
+                UtilSQL.getInstance().runStatement(statement.toString().replace("'", "\'").replace("`", "'"));
             }
         }
 
@@ -280,7 +230,7 @@ public class UpdateManager {
 
             Iterator<PluginInfo> iterator = currentFile.iterator();
 
-            StringBuilder statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions) VALUES ");
+            StringBuilder statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ");
 
             int i = 0;
 
@@ -290,35 +240,37 @@ public class UpdateManager {
                 String desc = info.getDescription() != null ? info.getDescription().replace("'", "") : "Description not found.";
 
                 statement
-                        .append("('")
+                        .append("(`")
                         .append(info.getName())
-                        .append("', ")
+                        .append("`, ")
                         .append(info.getId())
-                        .append(", '")
+                        .append(", `")
                         .append(info.getAuthor())
-                        .append("', '")
+                        .append("`, `")
                         .append(info.getLatestVersion())
-                        .append("', '")
+                        .append("`, `")
                         .append(desc)
-                        .append("', '")
+                        .append("`, `")
                         .append(info.isPremium())
-                        .append("', '")
+                        .append("`, `")
                         .append(info.getSupportedMcVersions())
-                        .append("')");
+                        .append("`, `")
+                        .append(new Timestamp(System.currentTimeMillis()))
+                        .append("`)");
 
                 i++;
 
-                if (i % 50 == 0) {
-                    UtilSQL.getInstance().runStatement(statement.toString());
+                if (i % entriesPerStatement == 0) {
+                    UtilSQL.getInstance().runStatement(statement.toString().replace("'", "\'").replace("`", "'"));
 
-                    statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions) VALUES ");
+                    statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ");
                 } else if (iterator.hasNext() || i + 1 % 100 == 0) {
                     statement.append(", ");
                 }
             }
 
-            if (i % 50 != 0)
-                UtilSQL.getInstance().runStatement(statement.toString());
+            if (i % entriesPerStatement != 0)
+                UtilSQL.getInstance().runStatement(statement.toString().replace("'", "\'").replace("`", "'"));
 
         } else {
             DataConfig.getConfig().init();
@@ -382,13 +334,9 @@ public class UpdateManager {
                     else
                         resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(info.getId());
 
-                    removeLinkedPlugin(info);
                     info.setLatestVersion(resource.getLastVersion());
-                    addLinkedPlugin(info);
 
-                    //TODO imlpement this in refresh in updategui, also check trello.
-                    UtilSQL.getInstance().runStatement("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ('"+info.getName()+"', '"+info.getId()+"', '"+info.getAuthor()+"', '"+info.getLatestVersion()+"', '"+info.getDescription()+"', '"+info.isPremium()+"', '"+info.getSupportedMcVersions()+"', '"+new Timestamp(System.currentTimeMillis())+"')" +
-                                                               " ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions),lastupdated=VALUES(lastupdated)");
+                    replacePlugin(info);
 
                 } catch (Exception ex) {
                     Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '"+info.getName()+"'");
@@ -398,10 +346,31 @@ public class UpdateManager {
     }
 
     /*
+     * UTILITIES
+     */
+
+    public void replacePlugin(PluginInfo info) {
+        removeLinkedPlugin(getInfoFromPluginName(info.getName()));
+        addLinkedPlugin(info);
+
+        if (Up2Date.getInstance().getMainConfig().isEnableSQL())
+            UtilSQL.getInstance().runStatement("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ('"+info.getName()+"', '"+info.getId()+"', '"+info.getAuthor()+"', '"+info.getLatestVersion()+"', '"+info.getDescription()+"', '"+info.isPremium()+"', '"+info.getSupportedMcVersions()+"', '"+new Timestamp(System.currentTimeMillis())+"')" +
+                                                   " ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions),lastupdated=VALUES(lastupdated)");
+        else
+            DataConfig.getConfig().writeInfoToFile(info);
+    }
+
+    /*
      * ADDERS
      */
     public void addLinkedPlugin(PluginInfo info) {
         linkedPlugins.add(info);
+
+        if (Up2Date.getInstance().getMainConfig().isEnableSQL())
+            UtilSQL.getInstance().runStatement("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ('"+info.getName()+"', '"+info.getId()+"', '"+info.getAuthor()+"', '"+info.getLatestVersion()+"', '"+info.getDescription()+"', '"+info.isPremium()+"', '"+info.getSupportedMcVersions()+"', '"+new Timestamp(System.currentTimeMillis())+"')" +
+                                                       " ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions),lastupdated=VALUES(lastupdated)");
+        else
+            DataConfig.getConfig().writeInfoToFile(info);
     }
 
     public void addUnlinkedPlugin(Plugin plugin, ArrayList<UtilSiteSearch.SearchResult> results) {
@@ -416,15 +385,10 @@ public class UpdateManager {
      * REMOVERS
      */
     public void removeLinkedPlugin(Plugin plugin) {
-        PluginInfo info = null;
-
-        for (PluginInfo pluginInfo : linkedPlugins) {
-            if (pluginInfo.getName().equals(plugin.getName()))
-                info = pluginInfo;
-        }
+        PluginInfo info = getInfoFromPlugin(plugin);
 
         if (info != null)
-            linkedPlugins.remove(info);
+            removeLinkedPlugin(info);
     }
 
     public void removeLinkedPlugin(PluginInfo info) {
@@ -432,6 +396,7 @@ public class UpdateManager {
             UtilSQL.getInstance().runStatement("DELETE FROM TABLENAME WHERE id='"+info.getId()+"'");
         } else {
             DataConfig.getConfig().deletePath(info.getName());
+            DataConfig.getConfig().saveFile();
         }
 
         linkedPlugins.remove(info);

@@ -8,6 +8,7 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 
 /**
@@ -45,6 +46,11 @@ public class UtilSQL {
         runStatementSync("CREATE TABLE IF NOT EXISTS TABLENAME (id varchar(6) NOT NULL, name TEXT, author TEXT, description TEXT, version TEXT, premium TEXT, testedversions TEXT, lastupdated TIMESTAMP, PRIMARY KEY(id))");
     }
 
+    public void shutdown() {
+        if (dataSource != null)
+            dataSource.close();
+    }
+
     public void runStatement(String statement) {
         final String updatedStatement = statement.replace("TABLENAME", Up2Date.getInstance().getMainConfig().getTablename());
 
@@ -62,15 +68,22 @@ public class UtilSQL {
             pool.submit(() -> {
                 try {
                     preparedStatement.execute();
+                    preparedStatement.close();
 
                     connection.close();
+
                 } catch (Exception ex) {
-                    //cant do fancy error logging bc it does bukkit calls ;-;
-                    ex.printStackTrace();
+                    Up2Date.getInstance().printError(ex, "Error occurred while running MySQL statement.");
+                } finally {
+                    try {
+                        preparedStatement.close();
+                        connection.close();
+                    } catch (SQLException ex) {
+                        Up2Date.getInstance().printError(ex, "Error occurred while running MySQL statement.");
+                    }
                 }
             });
-        }
-        catch(Exception ex) {
+        } catch(Exception ex) {
             Up2Date.getInstance().printError(ex, "Error occurred while running MySQL statement.");
         }
     }
@@ -92,15 +105,21 @@ public class UtilSQL {
             pool.submit(() -> {
                 try {
                     preparedStatement.execute();
+                    preparedStatement.close();
 
                     connection.close();
                 } catch (Exception ex) {
-                    //cant do fancy error logging bc it does bukkit calls ;-;
-                    ex.printStackTrace();
+                    Up2Date.getInstance().printError(ex, "Error occurred while running MySQL statement.");
+                } finally {
+                    try {
+                        preparedStatement.close();
+                        connection.close();
+                    } catch (Exception ex) {
+                        Up2Date.getInstance().printError(ex, "Error occurred while running MySQL statement.");
+                    }
                 }
             });
-        }
-        catch(Exception ex) {
+        } catch(Exception ex) {
             if (supressErrors)
                 return;
 
@@ -122,10 +141,14 @@ public class UtilSQL {
 
             try {
                 preparedStatement.execute();
+                preparedStatement.close();
 
                 connection.close();
             } catch (Exception ex) {
                 Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while closing connection.");
+            } finally {
+                preparedStatement.close();
+                connection.close();
             }
         }
         catch(Exception ex) {
@@ -147,6 +170,7 @@ public class UtilSQL {
 
             try {
                 preparedStatement.execute();
+                preparedStatement.close();
 
                 connection.close();
             } catch (Exception ex) {
@@ -154,6 +178,9 @@ public class UtilSQL {
                     return;
 
                 Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while closing connection.");
+            } finally {
+                preparedStatement.close();
+                connection.close();
             }
         }
         catch(Exception ex) {
@@ -186,8 +213,7 @@ public class UtilSQL {
             }.runTaskLater(Up2Date.getInstance(), 40L);
 
             return preparedStatement.executeQuery();
-        }
-        catch(Exception ex) {
+        } catch(Exception ex) {
             Up2Date.getInstance().printError(ex, "Error occurred while running query '"+updatedQuery+"'.");
         }
 

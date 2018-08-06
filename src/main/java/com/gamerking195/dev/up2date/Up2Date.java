@@ -9,6 +9,7 @@ import com.gamerking195.dev.up2date.command.Up2DateCommand;
 import com.gamerking195.dev.up2date.config.MainConfig;
 import com.gamerking195.dev.up2date.listener.PlayerJoinListener;
 import com.gamerking195.dev.up2date.update.UpdateManager;
+import com.gamerking195.dev.up2date.util.UtilSQL;
 import com.gamerking195.dev.up2date.util.UtilStatisticsDatabase;
 import com.gamerking195.dev.up2date.util.UtilPlugin;
 import com.gamerking195.dev.up2date.util.UtilU2dUpdater;
@@ -196,15 +197,21 @@ public final class Up2Date extends JavaPlugin {
 
     @Override
     public void onDisable() {
+        //Shutdown tasks
         UtilStatisticsDatabase.getInstance().saveDataNow();
         UpdateManager.getInstance().getCacheUpdater().cancel();
         fixedThreadPool.shutdownNow();
+        UtilSQL.getInstance().shutdown();
+        UtilStatisticsDatabase.getInstance().shutdown();
 
         try {
+            mainConfig.reload();
             mainConfig.save();
         } catch (InvalidConfigurationException ex) {
             printError(ex, "Error occurred while saving config.yml");
         }
+
+        getLogger().info("Successfully shutdown all operations. Goodbye!");
     }
 
     public void printError(Exception ex, String extraInfo) {
@@ -239,17 +246,17 @@ public final class Up2Date extends JavaPlugin {
         System.out.println("A severe error has occurred with the Up2Date plugin.");
         System.out.println("If you cannot figure out this error on your own (e.g. a config error) please copy and paste everything from here to END ERROR and post it at https://github.com/GamerKing195/Up2Date/issues.");
         System.out.println("Or on spigot at https://spigotmc.org/threads/284883/");
-        System.out.println("");
+        System.out.println();
         System.out.println("============== BEGIN ERROR ==============");
         System.out.println("PLUGIN VERSION: V" + getDescription().getVersion() + " " + latest);
-        System.out.println("");
+        System.out.println();
         System.out.println("PLUGIN MESSAGE: " + extraInfo);
-        System.out.println("");
+        System.out.println();
         System.out.println("MESSAGE: " + ex.getMessage());
-        System.out.println("");
+        System.out.println();
         System.out.println("STACKTRACE: ");
         ex.printStackTrace();
-        System.out.println("");
+        System.out.println();
         System.out.println("============== END ERROR ==============");
     }
 
