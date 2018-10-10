@@ -1,6 +1,7 @@
 package com.gamerking195.dev.up2date.util;
 
 import com.gamerking195.dev.up2date.Up2Date;
+import com.gamerking195.dev.up2date.config.MainConfig;
 import com.gamerking195.dev.up2date.update.PluginInfo;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
@@ -16,16 +17,16 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
 /**
- * Created by Caden Kriese (GamerKing195) on 10/21/17.
+ * @author Caden Kriese (flogic)
  * <p>
- * License is specified by the distributor which this
- * file was written for. Otherwise it can be found in the LICENSE file.
- * If there is no license file the code is then completely copyrighted
- * and you must contact me before using it IN ANY WAY.
+ * Created on 10/21/17
  */
 public class UtilStatisticsDatabase {
-    private UtilStatisticsDatabase() {}
+    private UtilStatisticsDatabase() {
+    }
+
     private static UtilStatisticsDatabase instance = new UtilStatisticsDatabase();
+
     public static UtilStatisticsDatabase getInstance() {
         return instance;
     }
@@ -66,18 +67,18 @@ public class UtilStatisticsDatabase {
                 new BukkitRunnable() {
                     @Override
                     public void run() {
-                        runStatementSync("CREATE TABLE IF NOT EXISTS "+tablename+" (id varchar(6) NOT NULL, name TEXT, author TEXT, description TEXT, version TEXT, premium TEXT, notified TEXT, disabled TEXT, PRIMARY KEY(id))");
+                        runStatementSync("CREATE TABLE IF NOT EXISTS " + tablename + " (id varchar(6) NOT NULL, name TEXT, author TEXT, description TEXT, version TEXT, premium TEXT, notified TEXT, disabled TEXT, PRIMARY KEY(id))");
                         runStatementSync("CREATE TABLE IF NOT EXISTS " + statstable + " (id INT NOT NULL AUTO_INCREMENT PRIMARY KEY, downloadsize INT, downloadedfiles INT, pluginstracked INT)");
 
-                        if (Up2Date.getInstance().getMainConfig().getServerId() == 0) {
+                        if (MainConfig.getConf().getServerId() == 0) {
                             int serverId;
-                            ResultSet rs = runQuery("SELECT MAX(id) FROM "+statstable);
+                            ResultSet rs = runQuery("SELECT MAX(id) FROM " + statstable);
                             if (rs != null) {
                                 try {
                                     rs.first();
 
                                     serverId = rs.getInt(1) + 1;
-                                    Up2Date.getInstance().getMainConfig().setServerId(serverId);
+                                    MainConfig.getConf().setServerId(serverId);
                                 } catch (SQLException e) {
                                     Up2Date.getInstance().systemOutPrintError(e, "Error occurred while retrieving server ID from database.");
                                 }
@@ -94,19 +95,19 @@ public class UtilStatisticsDatabase {
             @Override
             public void run() {
                 /*INSERT INTO statistics
-                *
-                * (id, downloadsize, downloadedfiles, pluginstracked)
-                * VALUES(1, 1, 1, 1)
-                *
-                * ON DUPLICATE KEY UPDATE
-                *
-                * downloadsize = downloadsize+1,
-                * downloadedfiles = downloadedfiles+1,
-                * pluginstracked = pluginstracked+1
-                */
-                runStatementSync("INSERT INTO " + statstable + " (id, downloadsize, downloadedfiles, pluginstracked) VALUES ('"+Up2Date.getInstance().getMainConfig().getServerId()+"', '"+downloadsize+"', '"+downloadedfiles+"', '"+pluginstracked+"') ON DUPLICATE KEY UPDATE downloadsize = downloadsize+"+downloadsize+", downloadedfiles = downloadedfiles+"+downloadedfiles+", pluginstracked = "+pluginstracked);
+                 *
+                 * (id, downloadsize, downloadedfiles, pluginstracked)
+                 * VALUES(1, 1, 1, 1)
+                 *
+                 * ON DUPLICATE KEY UPDATE
+                 *
+                 * downloadsize = downloadsize+1,
+                 * downloadedfiles = downloadedfiles+1,
+                 * pluginstracked = pluginstracked+1
+                 */
+                runStatementSync("INSERT INTO " + statstable + " (id, downloadsize, downloadedfiles, pluginstracked) VALUES ('" + MainConfig.getConf().getServerId() + "', '" + downloadsize + "', '" + downloadedfiles + "', '" + pluginstracked + "') ON DUPLICATE KEY UPDATE downloadsize = downloadsize+" + downloadsize + ", downloadedfiles = downloadedfiles+" + downloadedfiles + ", pluginstracked = " + pluginstracked);
             }
-        }.runTaskTimerAsynchronously(Up2Date.getInstance(), 60L, 10*20*60);
+        }.runTaskTimerAsynchronously(Up2Date.getInstance(), 60L, 10 * 20 * 60);
     }
 
     public void shutdown() {
@@ -115,7 +116,7 @@ public class UtilStatisticsDatabase {
     }
 
     public void saveDataNow() {
-        runStatementSync("INSERT INTO " + statstable + " (id, downloadsize, downloadedfiles, pluginstracked) VALUES ('"+Up2Date.getInstance().getMainConfig().getServerId()+"', '"+downloadsize+"', '"+downloadedfiles+"', '"+pluginstracked+"') ON DUPLICATE KEY UPDATE downloadsize = downloadsize+"+downloadsize+", downloadedfiles = downloadedfiles+"+downloadedfiles+", pluginstracked = pluginstracked+"+pluginstracked);
+        runStatementSync("INSERT INTO " + statstable + " (id, downloadsize, downloadedfiles, pluginstracked) VALUES ('" + MainConfig.getConf().getServerId() + "', '" + downloadsize + "', '" + downloadedfiles + "', '" + pluginstracked + "') ON DUPLICATE KEY UPDATE downloadsize = downloadsize+" + downloadsize + ", downloadedfiles = downloadedfiles+" + downloadedfiles + ", pluginstracked = pluginstracked+" + pluginstracked);
     }
 
     public void addIncompatiblePlugin(PluginInfo info) {
@@ -125,7 +126,7 @@ public class UtilStatisticsDatabase {
                 try {
                     boolean notified = false;
 
-                    ResultSet rs = runQuery("SELECT version FROM TABLENAME WHERE id = '"+info.getId()+"'");
+                    ResultSet rs = runQuery("SELECT version FROM TABLENAME WHERE id = '" + info.getId() + "'");
                     if (rs != null && rs.first() && !rs.isClosed()) {
                         String version = rs.getString("version");
                         if (!version.equalsIgnoreCase(info.getLatestVersion())) {
@@ -133,7 +134,7 @@ public class UtilStatisticsDatabase {
                         }
                     }
 
-                    runStatement("INSERT INTO TABLENAME (id, name, author, version, description, premium, notified) VALUES ('" + info.getId() + "','" + info.getName() + "', '" + info.getAuthor() + "', '" + info.getLatestVersion() + "', '" + info.getDescription() + "', '" + info.isPremium() + "', 'true') ON DUPLICATE KEY UPDATE notified = '"+notified+"'");
+                    runStatement("INSERT INTO TABLENAME (id, name, author, version, description, premium, notified) VALUES ('" + info.getId() + "','" + info.getName() + "', '" + info.getAuthor() + "', '" + info.getLatestVersion() + "', '" + info.getDescription() + "', '" + info.isPremium() + "', 'true') ON DUPLICATE KEY UPDATE notified = '" + notified + "'");
                 } catch (Exception ex) {
                     Up2Date.getInstance().printError(ex, "Error occurred while checking version difference.");
                 }
@@ -207,8 +208,7 @@ public class UtilStatisticsDatabase {
                     Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while executing statement to private DB.");
                 }
             });
-        }
-        catch(Exception ex) {
+        } catch (Exception ex) {
             Up2Date.getInstance().printError(ex, "Error occurred while running MySQL statement");
         }
     }
@@ -234,15 +234,14 @@ public class UtilStatisticsDatabase {
             } finally {
                 connection.close();
             }
-        }
-        catch(Exception ex) {
+        } catch (Exception ex) {
             Up2Date.getInstance().printError(ex, "Error occurred while running MySQL statement.");
         } finally {
             try {
                 if (connection != null)
                     connection.close();
             } catch (SQLException ex) {
-               Up2Date.getInstance().printError(ex, "Error occurred while closing SQL connection!");
+                Up2Date.getInstance().printError(ex, "Error occurred while closing SQL connection!");
             }
         }
     }
@@ -267,16 +266,15 @@ public class UtilStatisticsDatabase {
                 public void run() {
                     try {
                         connection.close();
-                    }
-                    catch(Exception ex) {
+                    } catch (Exception ex) {
                         Up2Date.getInstance().printError(ex, "Error occurred while closing connection");
                     }
                 }
             }.runTaskLater(Up2Date.getInstance(), 40L);
 
             return preparedStatement.executeQuery();
-        } catch(Exception ex) {
-            Up2Date.getInstance().printError(ex, "Error occurred while running query '"+updatedQuery+"'.");
+        } catch (Exception ex) {
+            Up2Date.getInstance().printError(ex, "Error occurred while running query '" + updatedQuery + "'.");
         }
 
         return null;
@@ -287,7 +285,7 @@ public class UtilStatisticsDatabase {
      */
 
     public void addDownloadsize(float downloadsize) {
-        this.downloadsize += Double.valueOf(String.format("%.3f", downloadsize/1024).replace(",", ""));
+        this.downloadsize += Double.valueOf(String.format("%.3f", downloadsize / 1024).replace(",", ""));
     }
 
     public void addDownloadedFiles(int downloadedfiles) {
@@ -299,7 +297,7 @@ public class UtilStatisticsDatabase {
 
 
 
-                            ResultSet rs = runQuery("SELECT * FROM "+statstable+" WHERE id ='" + Up2Date.getInstance().getMainConfig().getServerId() + "'");
+                            ResultSet rs = runQuery("SELECT * FROM "+statstable+" WHERE id ='" + MainConfig.getConf().getServerId() + "'");
                             try {
                                 if (rs != null && !rs.isClosed()) {
                                     rs.first();

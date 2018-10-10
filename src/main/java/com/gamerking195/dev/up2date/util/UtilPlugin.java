@@ -21,11 +21,11 @@ import java.util.SortedSet;
 public class UtilPlugin {
     /**
      * Method is from PlugMan, developed by Ryan Clancy "rylinaux"
-     *
+     * <p>
      * Copyright (c) 2014 Ryan Clancy
-     *
+     * <p>
      * Licensed under the MIT License
-     *
+     * <p>
      * PlugMan https://dev.bukkit.org/projects/plugman
      *
      * @param plugin The plugin that needs to be unloaded.
@@ -152,7 +152,7 @@ public class UtilPlugin {
     /**
      * Loosely compares versions of plugins to account for random differences.
      *
-     * @param old Old version string.
+     * @param old    Old version string.
      * @param latest Latest version string.
      * @return True if there is a significant difference between the two versions
      */

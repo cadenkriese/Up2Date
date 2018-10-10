@@ -6,6 +6,7 @@ import com.gamerking195.dev.autoupdaterapi.UpdateLocale;
 import com.gamerking195.dev.up2date.Up2Date;
 import com.gamerking195.dev.up2date.command.SetupCommand;
 import com.gamerking195.dev.up2date.config.DataConfig;
+import com.gamerking195.dev.up2date.config.MainConfig;
 import com.gamerking195.dev.up2date.util.UtilPlugin;
 import com.gamerking195.dev.up2date.util.UtilSQL;
 import com.gamerking195.dev.up2date.util.UtilSiteSearch;
@@ -23,50 +24,33 @@ import java.util.Iterator;
 import java.util.concurrent.ExecutorService;
 
 /**
- * Created by Caden Kriese (GamerKing195) on 9/2/17.
+ * @author Caden Kriese (flogic)
  * <p>
- * License is specified by the distributor which this
- * file was written for. Otherwise it can be found in the LICENSE file.
- * If there is no license file the code is then completely copyrighted
- * and you must contact me before using it IN ANY WAY.
+ * Created on 9/2/17
  */
 public class UpdateManager {
 
-    private UpdateManager() {}
+    private UpdateManager() {
+    }
 
-    @Getter
-    public boolean initialized = false;
+    public @Getter boolean initialized = false;
+    public @Getter Timestamp latestDbUpdate;
+    private @Getter static UpdateManager instance = new UpdateManager();
 
-    @Getter
-    public Timestamp latestDbUpdate;
-
-    @Getter
-    private static UpdateManager instance = new UpdateManager();
-
-    @Getter
-    @Setter
-    private ArrayList<PluginInfo> linkedPlugins = new ArrayList<>();
-    @Getter
-    @Setter
-    private HashMap<Plugin, ArrayList<UtilSiteSearch.SearchResult>> unlinkedPlugins = new HashMap<>();
-    @Getter
-    @Setter
-    private ArrayList<Plugin> unknownPlugins = new ArrayList<>();
+    private @Getter @Setter ArrayList<PluginInfo> linkedPlugins = new ArrayList<>();
+    private @Getter @Setter HashMap<Plugin, ArrayList<UtilSiteSearch.SearchResult>> unlinkedPlugins = new HashMap<>();
+    private @Getter @Setter ArrayList<Plugin> unknownPlugins = new ArrayList<>();
 
     //Total refresh time is basedelay+(count*60)
-    @Getter
-    private BukkitRunnable cacheUpdater;
-
-    @Getter
-    @Setter
-    private boolean currentTask = false;
+    private @Getter BukkitRunnable cacheUpdater;
+    private @Getter @Setter boolean currentTask = false;
 
     //How many plugins get grouped in one massive statement.
     private int entriesPerStatement = 50;
 
     public void init() {
         //Setup Linked plugins
-        if (Up2Date.getInstance().getMainConfig().isEnableSQL()) {
+        if (MainConfig.getConf().isEnableSQL()) {
             UtilSQL.getInstance().init();
 
             new BukkitRunnable() {
@@ -79,7 +63,7 @@ public class UpdateManager {
                     String query = "SELECT * FROM TABLENAME";
 
                     if (latestDbUpdate != null) {
-                        query = "SELECT * FROM TABLENAME WHERE lastupdated > '"+latestDbUpdate.toString()+"'";
+                        query = "SELECT * FROM TABLENAME WHERE lastupdated > '" + latestDbUpdate.toString() + "'";
                     }
 
                     ResultSet resultSet = UtilSQL.getInstance().runQuery(query);
@@ -109,7 +93,7 @@ public class UpdateManager {
 
                     latestDbUpdate = new Timestamp(System.currentTimeMillis());
                 }
-            }.runTaskTimerAsynchronously(Up2Date.getInstance(), 0, Up2Date.getInstance().getMainConfig().getDatabaseRefreshDelay()*20*60);
+            }.runTaskTimerAsynchronously(Up2Date.getInstance(), 0, MainConfig.getConf().getDatabaseRefreshDelay() * 20 * 60);
         } else {
             DataConfig.getConfig().init();
             linkedPlugins = DataConfig.getConfig().getFile();
@@ -124,13 +108,13 @@ public class UpdateManager {
                     linked = true;
             }
 
-            if (Up2Date.getInstance().getMainConfig().isSetupComplete() && !linked && !plugin.getName().equals("Up2Date") && !plugin.getName().equals("AutoUpdaterAPI"))
+            if (MainConfig.getConf().isSetupComplete() && !linked && !plugin.getName().equals("Up2Date") && !plugin.getName().equals("AutoUpdaterAPI"))
                 unknownPlugins.add(plugin);
         }
 
         //Refreshing
         int startDelay = 100;
-        if (!Up2Date.getInstance().getMainConfig().isSetupComplete()) {
+        if (!MainConfig.getConf().isSetupComplete()) {
             startDelay += 2400;
         }
 
@@ -141,7 +125,7 @@ public class UpdateManager {
             }
         };
 
-        cacheUpdater.runTaskTimerAsynchronously(Up2Date.getInstance(), Up2Date.getInstance().getMainConfig().getCacheRefreshDelay()*20*60+startDelay, (Up2Date.getInstance().getMainConfig().getCacheRefreshDelay()*20*60));
+        cacheUpdater.runTaskTimerAsynchronously(Up2Date.getInstance(), MainConfig.getConf().getCacheRefreshDelay() * 20 * 60 + startDelay, (MainConfig.getConf().getCacheRefreshDelay() * 20 * 60));
 
         PluginInfo bad = null;
 
@@ -163,7 +147,7 @@ public class UpdateManager {
 
     public void saveData() {
         //TODO SQL
-        if (Up2Date.getInstance().getMainConfig().isEnableSQL()) {
+        if (MainConfig.getConf().isEnableSQL()) {
             Iterator<PluginInfo> iterator = linkedPlugins.iterator();
 
             StringBuilder statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ");
@@ -339,7 +323,7 @@ public class UpdateManager {
                     replacePlugin(info);
 
                 } catch (Exception ex) {
-                    Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '"+info.getName()+"'");
+                    Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '" + info.getName() + "'");
                 }
             });
         }
@@ -353,9 +337,9 @@ public class UpdateManager {
         removeLinkedPlugin(getInfoFromPluginName(info.getName()));
         addLinkedPlugin(info);
 
-        if (Up2Date.getInstance().getMainConfig().isEnableSQL())
-            UtilSQL.getInstance().runStatement("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ('"+info.getName()+"', '"+info.getId()+"', '"+info.getAuthor()+"', '"+info.getLatestVersion()+"', '"+info.getDescription()+"', '"+info.isPremium()+"', '"+info.getSupportedMcVersions()+"', '"+new Timestamp(System.currentTimeMillis())+"')" +
-                                                   " ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions),lastupdated=VALUES(lastupdated)");
+        if (MainConfig.getConf().isEnableSQL())
+            UtilSQL.getInstance().runStatement("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ('" + info.getName() + "', '" + info.getId() + "', '" + info.getAuthor() + "', '" + info.getLatestVersion() + "', '" + info.getDescription() + "', '" + info.isPremium() + "', '" + info.getSupportedMcVersions() + "', '" + new Timestamp(System.currentTimeMillis()) + "')" +
+                                                       " ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions),lastupdated=VALUES(lastupdated)");
         else
             DataConfig.getConfig().writeInfoToFile(info);
     }
@@ -366,8 +350,8 @@ public class UpdateManager {
     public void addLinkedPlugin(PluginInfo info) {
         linkedPlugins.add(info);
 
-        if (Up2Date.getInstance().getMainConfig().isEnableSQL())
-            UtilSQL.getInstance().runStatement("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ('"+info.getName()+"', '"+info.getId()+"', '"+info.getAuthor()+"', '"+info.getLatestVersion()+"', '"+info.getDescription()+"', '"+info.isPremium()+"', '"+info.getSupportedMcVersions()+"', '"+new Timestamp(System.currentTimeMillis())+"')" +
+        if (MainConfig.getConf().isEnableSQL())
+            UtilSQL.getInstance().runStatement("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ('" + info.getName() + "', '" + info.getId() + "', '" + info.getAuthor() + "', '" + info.getLatestVersion() + "', '" + info.getDescription() + "', '" + info.isPremium() + "', '" + info.getSupportedMcVersions() + "', '" + new Timestamp(System.currentTimeMillis()) + "')" +
                                                        " ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions),lastupdated=VALUES(lastupdated)");
         else
             DataConfig.getConfig().writeInfoToFile(info);
@@ -392,8 +376,8 @@ public class UpdateManager {
     }
 
     public void removeLinkedPlugin(PluginInfo info) {
-        if (Up2Date.getInstance().getMainConfig().isEnableSQL()) {
-            UtilSQL.getInstance().runStatement("DELETE FROM TABLENAME WHERE id='"+info.getId()+"'");
+        if (MainConfig.getConf().isEnableSQL()) {
+            UtilSQL.getInstance().runStatement("DELETE FROM TABLENAME WHERE id='" + info.getId() + "'");
         } else {
             DataConfig.getConfig().deletePath(info.getName());
             DataConfig.getConfig().saveFile();

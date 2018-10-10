@@ -5,9 +5,13 @@ import be.maximvdw.spigotsite.api.resource.Resource;
 import com.gamerking195.dev.autoupdaterapi.*;
 import com.gamerking195.dev.autoupdaterapi.util.UtilReader;
 import com.gamerking195.dev.up2date.Up2Date;
+import com.gamerking195.dev.up2date.config.MainConfig;
 import com.gamerking195.dev.up2date.update.PluginInfo;
 import com.gamerking195.dev.up2date.update.UpdateManager;
-import com.gamerking195.dev.up2date.util.*;
+import com.gamerking195.dev.up2date.util.UtilPlugin;
+import com.gamerking195.dev.up2date.util.UtilSiteSearch;
+import com.gamerking195.dev.up2date.util.UtilStatisticsDatabase;
+import com.gamerking195.dev.up2date.util.UtilText;
 import com.gamerking195.dev.up2date.util.gui.ConfirmGUI;
 import com.gamerking195.dev.up2date.util.gui.PageGUI;
 import com.gamerking195.dev.up2date.util.item.ItemStackBuilder;
@@ -43,12 +47,9 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 /**
- * Created by Caden Kriese (GamerKing195) on 10/9/17.
+ * @author Caden Kriese (flogic)
  * <p>
- * License is specified by the distributor which this
- * file was written for. Otherwise it can be found in the LICENSE file.
- * If there is no license file the code is then completely copyrighted
- * and you must contact me before using it IN ANY WAY.
+ * Created on 10/9/17
  */
 public class UpdateGUI extends PageGUI {
     private HashMap<Integer, PluginInfo> inventoryMap = new HashMap<>();
@@ -89,7 +90,7 @@ public class UpdateGUI extends PageGUI {
 
             if (plugin == null) {
                 badPlugins.add(pluginInfo);
-                new MessageBuilder().addPlainText("&dThe plugin '&5"+pluginInfo.getName()+"&d' is missing, it &dhas &dbeen &dunlinked.").sendToPlayersPrefixed(player);
+                new MessageBuilder().addPlainText("&dThe plugin '&5" + pluginInfo.getName() + "&d' is missing, it &dhas &dbeen &dunlinked.").sendToPlayersPrefixed(player);
                 continue;
             }
 
@@ -109,7 +110,7 @@ public class UpdateGUI extends PageGUI {
                                       .setName("&f&l" + plugin.getName().toUpperCase())
                                       .setLore(getLore(WordUtils.wrap(pluginInfo.getDescription() != null ? pluginInfo.getDescription() : "None", 40, "%new%", false).split("%new%"),
                                               "",
-                                              "&7&lAuthor: &d&l"+pluginInfo.getAuthor(),
+                                              "&7&lAuthor: &d&l" + pluginInfo.getAuthor(),
                                               "&7&lID: &d&l" + pluginInfo.getId(),
                                               "&7&lServer Version: &d&l" + plugin.getDescription().getVersion(),
                                               "&7&lSpigot Version: &d&l" + pluginInfo.getLatestVersion(),
@@ -126,9 +127,9 @@ public class UpdateGUI extends PageGUI {
                                               "&8DOUBLE-CLICK &f| &aCheck for Update"))
                                       .build());
 
-                inventoryMap.put(stackList.size()-1, pluginInfo);
+                inventoryMap.put(stackList.size() - 1, pluginInfo);
             } catch (Exception ex) {
-                Up2Date.getInstance().printError(ex, "Error occurred while retrieving extra information for '"+pluginInfo.getName()+"' #1");
+                Up2Date.getInstance().printError(ex, "Error occurred while retrieving extra information for '" + pluginInfo.getName() + "' #1");
             }
         }
 
@@ -189,13 +190,13 @@ public class UpdateGUI extends PageGUI {
                             },
 
                             "&7Click '&a&lCONFIRM&7' if you want U2D",
-                            "to stop tracking the &d"+selection.size()+"&7 selected plugins.",
+                            "to stop tracking the &d" + selection.size() + "&7 selected plugins.",
                             "&7You can always add them back later!"
                     ).open(player);
                     selection.forEach(info -> UpdateManager.getInstance().removeLinkedPlugin(info));
                     //SHIFT-RIGHT-CLICK, TOGGLE ENTIRE SELECTION
                 } else if (event.getClick() == ClickType.SHIFT_RIGHT) {
-                    for (int i = 0; i < inventory.getSize()-9; i++) {
+                    for (int i = 0; i < inventory.getSize() - 9; i++) {
                         PluginInfo info = inventoryMap.get(i);
                         if (info == null || inventory.getItem(i) == null)
                             continue;
@@ -212,7 +213,7 @@ public class UpdateGUI extends PageGUI {
                     }
                     //SHIFT-LEFT-CLICK, SELECT EVERYTHING
                 } else if (event.getClick() == ClickType.SHIFT_LEFT) {
-                    for (int i = 0; i < inventory.getSize()-9; i++) {
+                    for (int i = 0; i < inventory.getSize() - 9; i++) {
                         if (player.getOpenInventory().getItem(i) == null)
                             continue;
 
@@ -246,7 +247,7 @@ public class UpdateGUI extends PageGUI {
                         try {
                             player.closeInventory();
                             UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oRetrieving info...", player);
-                            String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources"+Up2Date.fs + pluginId);
+                            String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources/" + pluginId);
 
                             boolean premium = pluginJson.contains("\"premium\": true");
 
@@ -267,7 +268,8 @@ public class UpdateGUI extends PageGUI {
                                 return "Resource download must be a jar!";
                             }
 
-                            Type type = new TypeToken<JsonObject>(){}.getType();
+                            Type type = new TypeToken<JsonObject>() {
+                            }.getType();
                             JsonObject object = new Gson().fromJson(pluginJson, type);
 
                             ArrayList<String> testedVersions = new ArrayList<>();
@@ -283,7 +285,7 @@ public class UpdateGUI extends PageGUI {
                             locale.setUpdateFailed(locale.getUpdateFailed().replace("%plugin%", result.getName()));
 
                             locale.setPluginName(null);
-                            locale.setFileName(result.getName()+"-%new_version%");
+                            locale.setFileName(result.getName() + "-%new_version%");
 
                             Resource resource;
                             if (AutoUpdaterAPI.getInstance().getCurrentUser() != null)
@@ -360,7 +362,7 @@ public class UpdateGUI extends PageGUI {
                             updatedInfo.add(info);
 
                         } catch (ConnectionFailedException ex) {
-                            Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '"+info.getName()+"'");
+                            Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '" + info.getName() + "'");
                         }
                     });
                 }
@@ -370,12 +372,12 @@ public class UpdateGUI extends PageGUI {
                     @Override
                     public void run() {
 
-                        double percent = ((double) 100/plugins.size()) * updatedInfo.size();
-                        UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oUpdated information for "+updatedInfo.size()+"/"+plugins.size()+" plugins ("+String.format("%.2f", percent)+"%)", player);
+                        double percent = ((double) 100 / plugins.size()) * updatedInfo.size();
+                        UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oUpdated information for " + updatedInfo.size() + "/" + plugins.size() + " plugins (" + String.format("%.2f", percent) + "%)", player);
 
                         if (updatedInfo.size() == plugins.size()) {
                             player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
-                            UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oUpdated information for "+plugins.size()+" plugins in "+String.format("%.2f", ((double) (System.currentTimeMillis() - startingTime) / 1000))+" seconds.", player);
+                            UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oUpdated information for " + plugins.size() + " plugins in " + String.format("%.2f", ((double) (System.currentTimeMillis() - startingTime) / 1000)) + " seconds.", player);
 
                             updatesAvailable = UpdateManager.getInstance().getAvailableUpdates();
 
@@ -392,7 +394,7 @@ public class UpdateGUI extends PageGUI {
                 int pageNumber = Integer.valueOf(ChatColor.stripColor(bukkitInventory.getItem(49).getItemMeta().getDisplayName()).replace("Page #", ""));
 
                 //Get the plugin from the raw slot accounting for an additional 45 plugins per page.
-                PluginInfo pluginInfo = inventoryMap.get(((pageNumber-1)*45)+event.getRawSlot());
+                PluginInfo pluginInfo = inventoryMap.get(((pageNumber - 1) * 45) + event.getRawSlot());
                 Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginInfo.getName());
 
                 if (event.getCurrentItem().getType() == Material.STAINED_CLAY) {
@@ -410,7 +412,7 @@ public class UpdateGUI extends PageGUI {
                         new AnvilGUI(Up2Date.getInstance(), player, "Enter plugin ID", (player, reply) -> {
                             if (NumberUtils.isNumber(reply)) {
                                 try {
-                                    String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources"+Up2Date.fs+reply);
+                                    String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources/" + reply);
 
                                     boolean premium = pluginJson.contains("\"premium\": true");
 
@@ -448,7 +450,7 @@ public class UpdateGUI extends PageGUI {
                                         return "Resource info not found.";
                                     }
                                 } catch (Exception ex) {
-                                    Up2Date.getInstance().printError(ex, "Error occurred while authenticating plugin with potential id '"+reply+"'");
+                                    Up2Date.getInstance().printError(ex, "Error occurred while authenticating plugin with potential id '" + reply + "'");
                                 }
                             }
 
@@ -460,7 +462,7 @@ public class UpdateGUI extends PageGUI {
 
                         //SHIFT-RIGHT-CLICK, REMOVE LINK
                     else if (event.getClick() == ClickType.SHIFT_RIGHT) {
-                        PluginInfo info = inventoryMap.get(((pageNumber-1)*45)+event.getRawSlot());
+                        PluginInfo info = inventoryMap.get(((pageNumber - 1) * 45) + event.getRawSlot());
                         new ConfirmGUI("&dContinue?",
                                 () -> {
                                     UpdateManager.getInstance().removeLinkedPlugin(info);
@@ -475,7 +477,7 @@ public class UpdateGUI extends PageGUI {
                                 },
 
                                 "&7Click '&a&lCONFIRM&7' if you want U2D",
-                                "to stop tracking '&d"+info.getName()+"'",
+                                "to stop tracking '&d" + info.getName() + "'",
                                 "&7You can always add it back later!"
                         ).open(player);
                         //DOUBLE-CLICK Check for single update.
@@ -484,7 +486,7 @@ public class UpdateGUI extends PageGUI {
 
                         UtilText.getUtil().sendActionBar("&5&lU&d&l2&5&lD &7&oChecking for updates, don't re-open the GUI.", player);
 
-                        PluginInfo info = inventoryMap.get(((pageNumber-1)*45)+event.getRawSlot());
+                        PluginInfo info = inventoryMap.get(((pageNumber - 1) * 45) + event.getRawSlot());
 
                         ExecutorService threadPool = Up2Date.getInstance().getFixedThreadPool();
 
@@ -514,7 +516,7 @@ public class UpdateGUI extends PageGUI {
                                     }
                                 }.runTask(Up2Date.getInstance());
                             } catch (ConnectionFailedException ex) {
-                                Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '"+info.getName()+"'");
+                                Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while updating info for '" + info.getName() + "'");
                             }
                         });
                     }
@@ -553,13 +555,13 @@ public class UpdateGUI extends PageGUI {
                                       .setDurability((short) 14)
                                       .build());
 
-        String dataStorage = Up2Date.getInstance().getMainConfig().isEnableSQL() ? "database" : "file";
+        String dataStorage = MainConfig.getConf().isEnableSQL() ? "database" : "file";
 
         inventory.setItem(51, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
                                       .setName("&2&lSAVE ALL DATA")
                                       .setLore(
                                               "",
-                                              "&8CLICK &f| &a&oSave all data to the "+dataStorage+".")
+                                              "&8CLICK &f| &a&oSave all data to the " + dataStorage + ".")
                                       .setDurability((short) 11)
                                       .build());
 
@@ -575,7 +577,7 @@ public class UpdateGUI extends PageGUI {
                                       .setName("&d&lFORCE REFRESH")
                                       .setLore(
                                               "",
-                                              "&8CLICK &f| &a&oRetrieve latest plugin info from Spigot. (ETA "+UpdateManager.getInstance().getLinkedPlugins().size()*4+" Sec)")
+                                              "&8CLICK &f| &a&oRetrieve latest plugin info from Spigot. (ETA " + UpdateManager.getInstance().getLinkedPlugins().size() * 4 + " Sec)")
                                       .setDurability((short) 6)
                                       .build());
     }
@@ -611,7 +613,7 @@ public class UpdateGUI extends PageGUI {
         try {
             File oldJar = new File(plugin.getClass().getProtectionDomain().getCodeSource().getLocation().toURI().getPath());
             oldFile = oldJar.getName();
-            File cacheFile = new File(Up2Date.getInstance().getDataFolder().getAbsolutePath()+Up2Date.fs+"caches"+Up2Date.fs+plugin.getName()+Up2Date.fs+oldJar.getName());
+            File cacheFile = new File(Up2Date.getInstance().getDataFolder().getAbsolutePath() + "/caches/" + plugin.getName() + oldJar.getName());
 
             if (cacheFile.getParentFile().exists())
                 FileUtils.deleteDirectory(cacheFile.getParentFile());
@@ -683,7 +685,8 @@ public class UpdateGUI extends PageGUI {
     }
 
     private void updatePlugin(PluginInfo pluginInfo, Plugin plugin, boolean silent) {
-        updatePlugin(pluginInfo, plugin, (b, e, plugin1, name) -> {}, silent);
+        updatePlugin(pluginInfo, plugin, (b, e, plugin1, name) -> {
+        }, silent);
     }
 
     private int previousUpdateCount = 0;
@@ -729,7 +732,7 @@ public class UpdateGUI extends PageGUI {
                         public void run() {
 
                             //Check if a plugin has been updated if so start another one to never have more than one running at once. && Make sure we're not trying to start another update after we're done.
-                            if (previousUpdateCount < (successfulUpdates.size() + failedUpdates.size()) && failedUpdates.size()+successfulUpdates.size() < totalUpdateCount) {
+                            if (previousUpdateCount < (successfulUpdates.size() + failedUpdates.size()) && failedUpdates.size() + successfulUpdates.size() < totalUpdateCount) {
                                 //Add one to the count
                                 previousUpdateCount = (successfulUpdates.size() + failedUpdates.size());
 
@@ -738,21 +741,21 @@ public class UpdateGUI extends PageGUI {
                                 updatePlugin(info, plugin, runnable, true);
                             }
 
-                            double percent = ((double) 100/totalUpdateCount) * (successfulUpdates.size() + failedUpdates.size());
-                            UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oUpdated "+(successfulUpdates.size()+failedUpdates.size())+"/"+totalUpdateCount+" plugins ("+String.format("%.2f", percent)+"%)", player);
+                            double percent = ((double) 100 / totalUpdateCount) * (successfulUpdates.size() + failedUpdates.size());
+                            UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oUpdated " + (successfulUpdates.size() + failedUpdates.size()) + "/" + totalUpdateCount + " plugins (" + String.format("%.2f", percent) + "%)", player);
 
-                            if (failedUpdates.size()+successfulUpdates.size() >= totalUpdateCount) {
+                            if (failedUpdates.size() + successfulUpdates.size() >= totalUpdateCount) {
                                 UpdateManager.getInstance().setCurrentTask(false);
                                 if (successfulUpdates.size() == totalUpdateCount) {
                                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                                     UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated all " + totalUpdateCount + " plugins in " + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds.", player);
                                 } else {
                                     player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                                    UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated " + successfulUpdates.size() + " plugins and " + failedUpdates.size() + " "+UtilText.getUtil().getEnding("update", failedUpdates.size(), false)+" failed in " + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds. &c&o(Check Console.)", player);
+                                    UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated " + successfulUpdates.size() + " plugins and " + failedUpdates.size() + " " + UtilText.getUtil().getEnding("update", failedUpdates.size(), false) + " failed in " + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds. &c&o(Check Console.)", player);
                                 }
 
                                 try {
-                                    FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+Up2Date.fs+"caches"));
+                                    FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath() + "/caches"));
                                 } catch (IOException ex) {
                                     Up2Date.getInstance().printError(ex, "Error occurred while deleting caches directory recursively.");
                                 }
@@ -772,7 +775,7 @@ public class UpdateGUI extends PageGUI {
                 () -> new UpdateGUI(player).open(player),
 
                 "&7By clicking '&a&lCONFIRM&7' the server",
-                "&7will download and install &d"+updatesNeeded.size()+"&7 updates &osimultaneously&7.",
+                "&7will download and install &d" + updatesNeeded.size() + "&7 updates &osimultaneously&7.",
                 "&7we've made this as efficient as possible",
                 "&7but still use common sense!"
         ).open(player);
@@ -802,7 +805,7 @@ public class UpdateGUI extends PageGUI {
             File cachedPlugin = null;
 
             //Find cached jar
-            File cacheDirectory = new File (Up2Date.getInstance().getDataFolder().getAbsolutePath()+Up2Date.fs+"caches"+Up2Date.fs+pluginName);
+            File cacheDirectory = new File(Up2Date.getInstance().getDataFolder().getAbsolutePath() + "/caches/" + pluginName);
             for (File file : Objects.requireNonNull(cacheDirectory.listFiles())) {
                 if (file.getName().contains(pluginName)) {
                     cachedPlugin = file;
@@ -812,13 +815,13 @@ public class UpdateGUI extends PageGUI {
             if (cachedPlugin == null)
                 return;
 
-            File movedPlugin = new File(Up2Date.getInstance().getDataFolder().getParentFile().getAbsolutePath()+Up2Date.fs+cachedPlugin.getName());
+            File movedPlugin = new File(Up2Date.getInstance().getDataFolder().getParentFile().getAbsolutePath() + "/" + cachedPlugin.getName());
 
             //Rename cached jar, putting it into the plugins folder.
             try {
                 FileUtils.moveFile(cachedPlugin, movedPlugin);
             } catch (IOException e) {
-                Up2Date.getInstance().printError(e, "Failed to move '" + cachedPlugin.getAbsolutePath() + "' to '"+movedPlugin.getAbsolutePath()+"'.");
+                Up2Date.getInstance().printError(e, "Failed to move '" + cachedPlugin.getAbsolutePath() + "' to '" + movedPlugin.getAbsolutePath() + "'.");
             }
 
             //Initialize moved plugin.
@@ -835,10 +838,10 @@ public class UpdateGUI extends PageGUI {
 
             //Clean up the cache
             try {
-                FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+Up2Date.fs+"caches"+Up2Date.fs+pluginName));
+                FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath() + "/caches/" + pluginName));
 
-                if (Objects.requireNonNull(new File(Up2Date.getInstance().getDataFolder().getPath() + Up2Date.fs + "caches").listFiles()).length == 0) {
-                    FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath() + Up2Date.fs + "caches"));
+                if (Objects.requireNonNull(new File(Up2Date.getInstance().getDataFolder().getPath() + "/caches").listFiles()).length == 0) {
+                    FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath() + "/caches"));
                 }
             } catch (IOException e) {
                 Up2Date.getInstance().printError(e, "Error occurred while clearing caches.");
@@ -849,10 +852,10 @@ public class UpdateGUI extends PageGUI {
     private void updateSuccess(PluginInfo pluginInfo, Plugin plugin, boolean silent) {
         //Clean up the cache
         try {
-            FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath()+Up2Date.fs+"caches"+Up2Date.fs+plugin.getName()));
+            FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath() + "/caches/" + plugin.getName()));
 
-            if (Objects.requireNonNull(new File(Up2Date.getInstance().getDataFolder().getPath() + Up2Date.fs + "caches").listFiles()).length == 0) {
-                FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath() + Up2Date.fs + "caches"));
+            if (Objects.requireNonNull(new File(Up2Date.getInstance().getDataFolder().getPath() + "/caches/").listFiles()).length == 0) {
+                FileUtils.deleteDirectory(new File(Up2Date.getInstance().getDataFolder().getPath() + "caches/"));
             }
         } catch (IOException e) {
             Up2Date.getInstance().printError(e, "Error occurred while clearing caches.");
@@ -871,7 +874,7 @@ public class UpdateGUI extends PageGUI {
     }
 
     private float getFileSize(String pluginName, String newVersion) {
-        return (float) new File(Up2Date.getInstance().getDataFolder().getParent() + FileSystems.getDefault().getSeparator() + UpdateManager.getInstance().getUpdateLocale().getFileName().replace("%plugin%", pluginName).replace("%new_version%", newVersion)+".jar").length();
+        return (float) new File(Up2Date.getInstance().getDataFolder().getParent() + FileSystems.getDefault().getSeparator() + UpdateManager.getInstance().getUpdateLocale().getFileName().replace("%plugin%", pluginName).replace("%new_version%", newVersion) + ".jar").length();
     }
 
     private float getFileSize(String pluginName) {
@@ -889,7 +892,7 @@ public class UpdateGUI extends PageGUI {
         for (String line : description) {
             if (line.contains("%description%")) {
                 for (String varArgLine : varArgLines)
-                    lines.add("&d&l"+varArgLine);
+                    lines.add("&d&l" + varArgLine);
             } else
                 lines.add(line);
         }

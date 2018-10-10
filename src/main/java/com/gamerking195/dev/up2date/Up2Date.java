@@ -9,9 +9,9 @@ import com.gamerking195.dev.up2date.command.Up2DateCommand;
 import com.gamerking195.dev.up2date.config.MainConfig;
 import com.gamerking195.dev.up2date.listener.PlayerJoinListener;
 import com.gamerking195.dev.up2date.update.UpdateManager;
+import com.gamerking195.dev.up2date.util.UtilPlugin;
 import com.gamerking195.dev.up2date.util.UtilSQL;
 import com.gamerking195.dev.up2date.util.UtilStatisticsDatabase;
-import com.gamerking195.dev.up2date.util.UtilPlugin;
 import com.gamerking195.dev.up2date.util.UtilU2dUpdater;
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
@@ -32,42 +32,26 @@ import java.io.FileOutputStream;
 import java.lang.reflect.Type;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.file.FileSystems;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
 /**
- * This code is fully copyright by GamerKing195 (Caden Kriese)
- * If you are viewing this message you have already violated that rule (unless you're a spigot resource staff <3)
- * by decompiling the plugin.
- *
- * THIS IS NOT A SCARE MESSAGE
- * By default, any code without a license specifying otherwise
- * is automatically copyrighted by its creator.
+ * @author Caden Kriese (flogic)
+ * <p>
+ * Created on 8/13/17
+ * <p>
+ * Copyright © Caden Kriese 2018
+ * All rights reserved.
  */
 
 public final class Up2Date extends JavaPlugin {
-
-    public static String fs = FileSystems.getDefault().getSeparator();
-
-    @Getter
-    private static Up2Date instance;
-
-    @Getter
-    private ProtocolManager protocolManager;
-
-    @Getter
-    private Metrics metrics;
-
-    @Getter
-    private MainConfig mainConfig;
-
-    @Getter
-    private ExecutorService fixedThreadPool;
-
-    private Logger log;
+    private @Getter static Up2Date instance;
+    private @Getter ProtocolManager protocolManager;
+    private @Getter Metrics metrics;
+    private @Getter ExecutorService fixedThreadPool;
+    private @Getter Logger log;
 
     @Override
     public void onEnable() {
@@ -78,11 +62,11 @@ public final class Up2Date extends JavaPlugin {
 
         //Config
         try {
-            mainConfig = new MainConfig(instance);
-            mainConfig.init();
+            new MainConfig(instance).init();
         } catch (Exception ex) {
             printError(ex, "Error occurred while initializing config.yml");
         }
+        MainConfig mainConfig = MainConfig.getConf();
 
         if (mainConfig.getCacheRefreshDelay() < 5)
             mainConfig.setCacheRefreshDelay(5);
@@ -124,13 +108,14 @@ public final class Up2Date extends JavaPlugin {
                 //Latest version number.
                 String latestVersionInfo = UtilReader.readFrom("https://api.spiget.org/v2/resources/39719/versions/latest");
 
-                Type type = new TypeToken<JsonObject>() {}.getType();
+                Type type = new TypeToken<JsonObject>() {
+                }.getType();
                 JsonObject object = new Gson().fromJson(latestVersionInfo, type);
 
                 //if update available
                 Plugin plugin = Bukkit.getPluginManager().getPlugin("AutoUpdaterAPI");
                 if (!object.get("name").getAsString().equals(plugin.getDescription().getVersion()) && (!plugin.getDescription().getVersion().contains("SNAPSHOT") && !plugin.getDescription().getVersion().contains("PRERELEASE"))) {
-                    log.info("Updating AutoUpdaterAPI V"+plugin.getDescription().getVersion()+" » "+object.get("name").getAsString()+".");
+                    log.info("Updating AutoUpdaterAPI V" + plugin.getDescription().getVersion() + " » " + object.get("name").getAsString() + ".");
 
                     Bukkit.getPluginManager().disablePlugin(plugin);
                     UtilPlugin.unload(Bukkit.getPluginManager().getPlugin("AutoUpdaterAPI"));
@@ -141,7 +126,7 @@ public final class Up2Date extends JavaPlugin {
                     httpConnection.setRequestProperty("User-Agent", "SpigetResourceUpdater");
 
                     BufferedInputStream in = new BufferedInputStream(httpConnection.getInputStream());
-                    FileOutputStream fos = new FileOutputStream(new File(plugin.getDataFolder().getPath().substring(0, plugin.getDataFolder().getPath().lastIndexOf(fs)) + fs + "AutoUpdaterAPI.jar"));
+                    FileOutputStream fos = new FileOutputStream(new File(plugin.getDataFolder().getPath().substring(0, plugin.getDataFolder().getPath().lastIndexOf("/")) + "/AutoUpdaterAPI.jar"));
                     BufferedOutputStream bout = new BufferedOutputStream(fos, 1024);
 
                     byte[] data = new byte[1024];
@@ -152,12 +137,11 @@ public final class Up2Date extends JavaPlugin {
                     bout.close();
                     in.close();
 
-                    Plugin target = Bukkit.getPluginManager().loadPlugin(new File(plugin.getDataFolder().getPath().substring(0, plugin.getDataFolder().getPath().lastIndexOf(fs)) + fs + "AutoUpdaterAPI.jar"));
+                    Plugin target = Bukkit.getPluginManager().loadPlugin(new File(plugin.getDataFolder().getPath().substring(0, plugin.getDataFolder().getPath().lastIndexOf("/")) + "/AutoUpdaterAPI.jar"));
                     target.onLoad();
                     Bukkit.getPluginManager().enablePlugin(target);
                 }
-            }
-            catch (Exception ex) {
+            } catch (Exception ex) {
                 printError(ex, "Error occurred while checking for AutoUpdaterAPI updates.");
             }
         });
@@ -191,7 +175,7 @@ public final class Up2Date extends JavaPlugin {
                 "&f|                                            |",
                 "&f┗--------------------------------------------┛",
                 "&a",
-                "&bWelcome to Up2Date V"+getDescription().getVersion()+" by "+getDescription().getAuthors().toString().replace("[", "").replace("]", "")+"!"
+                "&bWelcome to Up2Date V" + getDescription().getVersion() + " by " + getDescription().getAuthors().toString().replace("[", "").replace("]", "") + "!"
         ).forEach(string -> getServer().getConsoleSender().sendMessage(ChatColor.translateAlternateColorCodes('&', string)));
     }
 
@@ -205,8 +189,7 @@ public final class Up2Date extends JavaPlugin {
         UtilStatisticsDatabase.getInstance().shutdown();
 
         try {
-            mainConfig.reload();
-            mainConfig.save();
+            MainConfig.getConf().save();
         } catch (InvalidConfigurationException ex) {
             printError(ex, "Error occurred while saving config.yml");
         }

@@ -97,7 +97,7 @@ public abstract class PageGUI extends GUI {
             this.inventory.setItem(internalSize + 5, SkullUtil.makeSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvMWE0ZjY4YzhmYjI3OWU1MGFiNzg2ZjlmYTU0Yzg4Y2E0ZWNmZTFlYjVmZDVmMGMzOGM1NGM5YjFjNzIwM2Q3YSJ9fX0=", ChatColor.translateAlternateColorCodes('&', "&aNEXT &2&m---&l»"), null));
         }
 
-        this.inventory.setItem(internalSize + 4, SkullUtil.makeSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZWNhNmFiNzJlMDdiN2E1NTcwNGJkN2NjZjNkODJkYTBhNzM0NDNiZWViZGM1M2FjN2M5MDE0NDI3OWYwIn19fQ==", ChatColor.LIGHT_PURPLE + "Page " + ChatColor.DARK_PURPLE.toString()+ChatColor.ITALIC+"#" + (page + 1), null));
+        this.inventory.setItem(internalSize + 4, SkullUtil.makeSkull("eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvZWNhNmFiNzJlMDdiN2E1NTcwNGJkN2NjZjNkODJkYTBhNzM0NDNiZWViZGM1M2FjN2M5MDE0NDI3OWYwIn19fQ==", ChatColor.LIGHT_PURPLE + "Page " + ChatColor.DARK_PURPLE.toString() + ChatColor.ITALIC + "#" + (page + 1), null));
 
         this.populateSpecial();
     }

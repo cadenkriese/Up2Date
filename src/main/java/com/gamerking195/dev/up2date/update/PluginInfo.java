@@ -8,17 +8,13 @@ import org.apache.commons.lang.StringUtils;
 import org.bukkit.plugin.Plugin;
 
 /**
- * Created by Caden Kriese (GamerKing195) on 9/6/17.
+ * @author Caden Kriese (flogic)
  * <p>
- * License is specified by the distributor which this
- * file was written for. Otherwise it can be found in the LICENSE file.
- * If there is no license file the code is then completely copyrighted
- * and you must contact me before using it IN ANY WAY.
+ * Created on 9/6/17
  */
-
-@Getter
+public @Getter
 @Setter
-public class PluginInfo {
+class PluginInfo {
     private String name;
     private int id;
     private String author;

@@ -29,17 +29,17 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * Created by Caden Kriese (GamerKing195) on 12/26/17.
+ * @author Caden Kriese (flogic)
  * <p>
- * License is specified by the distributor which this
- * file was written for. Otherwise it can be found in the LICENSE file.
- * If there is no license file the code is then completely copyrighted
- * and you must contact me before using it IN ANY WAY.
+ * Created on 12/26/17
  */
 public class UtilU2dUpdater {
 
-    private UtilU2dUpdater() {}
+    private UtilU2dUpdater() {
+    }
+
     private static UtilU2dUpdater instance = new UtilU2dUpdater();
+
     public static UtilU2dUpdater getInstance() {
         return instance;
     }
@@ -79,24 +79,24 @@ public class UtilU2dUpdater {
                     String currentVersion = Up2Date.getInstance().getDescription().getVersion();
                     String mcVersion = Bukkit.getServer().getClass().getPackage().getName();
                     mcVersion = mcVersion.substring(mcVersion.lastIndexOf(".") + 1);
-                    mcVersion = mcVersion.substring(1, mcVersion.length()-3).replace("_", ".");
+                    mcVersion = mcVersion.substring(1, mcVersion.length() - 3).replace("_", ".");
 
                     updateMessage.add(ChatColor.translateAlternateColorCodes('&', "&f&m------------------------------"));
-                    updateMessage.add(ChatColor.translateAlternateColorCodes('&', "&d&lUp&5&l2&d&lDate &5V"+ Up2Date.getInstance().getDescription().getVersion()+" &dby &5"+ Up2Date.getInstance().getDescription().getAuthors().toString().replace("[", "").replace("]", "")));
+                    updateMessage.add(ChatColor.translateAlternateColorCodes('&', "&d&lUp&5&l2&d&lDate &5V" + Up2Date.getInstance().getDescription().getVersion() + " &dby &5" + Up2Date.getInstance().getDescription().getAuthors().toString().replace("[", "").replace("]", "")));
                     updateMessage.add("");
                     updateMessage.add(ChatColor.translateAlternateColorCodes('&', "&7There is an &dUp&52&dDate &7update available!"));
                     updateMessage.add(ChatColor.translateAlternateColorCodes('&', "&7Version: &d" + latestVersion));
                     updateMessage.add(ChatColor.translateAlternateColorCodes('&', "&7Updates: \n" + updateInfo));
                     updateMessage.add(ChatColor.translateAlternateColorCodes('&', "&7Supported MC Versions: &d" + StringUtils.join(testedVersions, ", ")));
                     if (!testedVersions.contains(mcVersion))
-                        updateMessage.add(ChatColor.DARK_RED+"Warning your current version, "+mcVersion+", is not supported by this update, there may be unexpected bugs!");
+                        updateMessage.add(ChatColor.DARK_RED + "Warning your current version, " + mcVersion + ", is not supported by this update, there may be unexpected bugs!");
                     updateMessage.add("");
 
                     accept = new TextComponent("[CLICK TO UPDATE]");
                     accept.setColor(ChatColor.DARK_PURPLE);
                     accept.setBold(true);
                     accept.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/u2d u2dupdate"));
-                    accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.translateAlternateColorCodes('&', "&d&lUP&5&l2&d&lDATE &dV" + currentVersion + " &a&l» &dV" + latestVersion+"\n&b\n&d    CLICK TO UPDATE")).create()));
+                    accept.setHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new ComponentBuilder(ChatColor.translateAlternateColorCodes('&', "&d&lUP&5&l2&d&lDATE &dV" + currentVersion + " &a&l» &dV" + latestVersion + "\n&b\n&d    CLICK TO UPDATE")).create()));
 
                     updateMessage.add("ACCEPT");
 
@@ -117,7 +117,7 @@ public class UtilU2dUpdater {
                 }
                 //Do update check once every 90 minutes.
             }
-        }.runTaskTimer(plugin, 240L, 90*(20*60));
+        }.runTaskTimer(plugin, 240L, 90 * (20 * 60));
     }
 
     private void checkForUpdate() {
@@ -130,19 +130,23 @@ public class UtilU2dUpdater {
             if (updateAvailable) {
                 //Supported mc versions
 
-                Type objectType = new TypeToken<JsonObject>(){}.getType();
+                Type objectType = new TypeToken<JsonObject>() {
+                }.getType();
 
                 JsonObject pluginInfoObject = gson.fromJson(UtilReader.readFrom("https://api.spiget.org/v2/resources/49313/"), objectType);
 
-                testedVersions = gson.fromJson(pluginInfoObject.get("testedVersions"), new TypeToken<List<String>>(){}.getType());
+                testedVersions = gson.fromJson(pluginInfoObject.get("testedVersions"), new TypeToken<List<String>>() {
+                }.getType());
 
                 //Update description
 
-                Type arrayType = new TypeToken<JsonArray>(){}.getType();
+                Type arrayType = new TypeToken<JsonArray>() {
+                }.getType();
 
                 JsonArray latestUpdateObject = gson.fromJson(UtilReader.readFrom("https://api.spiget.org/v2/resources/49313/updates?size=1&sort=-date"), arrayType);
 
-                String descriptionBase64 = gson.fromJson(latestUpdateObject.get(0).getAsJsonObject().get("description"), new TypeToken<String>(){}.getType());
+                String descriptionBase64 = gson.fromJson(latestUpdateObject.get(0).getAsJsonObject().get("description"), new TypeToken<String>() {
+                }.getType());
                 String decodedDescription = new String(Base64.getDecoder().decode(descriptionBase64));
 
                 Pattern pat = Pattern.compile("<li>(.*)</li>");
@@ -162,7 +166,8 @@ public class UtilU2dUpdater {
             Up2Date.getInstance().printError(exception, "Error occurred whilst pinging spiget.");
             try {
                 Up2Date.getInstance().printPluginError("Json received from spigot.", UtilReader.readFrom("https://api.spiget.org/v2/resources/49313/"));
-            } catch (Exception ignored) {}
+            } catch (Exception ignored) {
+            }
         }
     }
 

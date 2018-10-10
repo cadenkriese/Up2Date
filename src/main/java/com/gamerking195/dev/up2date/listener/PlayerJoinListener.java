@@ -2,6 +2,7 @@ package com.gamerking195.dev.up2date.listener;
 
 import com.gamerking195.dev.autoupdaterapi.AutoUpdaterAPI;
 import com.gamerking195.dev.up2date.Up2Date;
+import com.gamerking195.dev.up2date.config.MainConfig;
 import com.gamerking195.dev.up2date.update.PluginInfo;
 import com.gamerking195.dev.up2date.update.UpdateManager;
 import com.gamerking195.dev.up2date.util.UtilText;
@@ -17,25 +18,24 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.util.ArrayList;
 
 /**
- * Created by GamerKing195 on 8/13/17.
+ * @author Caden Kriese (flogic)
  * <p>
- * License is specified by the distributor which this
- * file was written for. Otherwise it can be found in the LICENSE file.
+ * Created on 8/13/17
  */
 
 public class PlayerJoinListener implements Listener {
     @EventHandler
     public void onPlayerJoin(PlayerJoinEvent event) {
         if (event.getPlayer().isOp() || event.getPlayer().hasPermission("u2d.setup") || event.getPlayer().hasPermission("u2d.*")) {
-            if (!Up2Date.getInstance().getMainConfig().isSetupComplete()) {
+            if (!MainConfig.getConf().isSetupComplete()) {
                 if (UpdateManager.getInstance().getLinkedPlugins().size() > 0) {
                     if (Bukkit.getPluginManager().getPlugin("AutoUpdaterAPI") != null && AutoUpdaterAPI.getInstance().getCurrentUser() != null) {
                         Up2Date.getInstance().getLogger().info("Dependencies already setup, skipping tutorial.");
-                        Up2Date.getInstance().getMainConfig().setSetupComplete(true);
+                        MainConfig.getConf().setSetupComplete(true);
                         return;
                     }
                 } else
-                    Up2Date.getInstance().getMainConfig().setSetupComplete(false);
+                    MainConfig.getConf().setSetupComplete(false);
 
                 new BukkitRunnable() {
                     @Override

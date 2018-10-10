@@ -25,12 +25,9 @@ import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
 
 /**
- * Created by Caden Kriese (GamerKing195) on 9/3/17.
+ * @author Caden Kriese (flogic)
  * <p>
- * License is specified by the distributor which this
- * file was written for. Otherwise it can be found in the LICENSE file.
- * If there is no license file the code is then completely copyrighted
- * and you must contact me before using it IN ANY WAY.
+ * Created on 9/3/17
  */
 public class SelectResultGUI extends GUI {
 
@@ -39,7 +36,7 @@ public class SelectResultGUI extends GUI {
     private ArrayList<UtilSiteSearch.SearchResult> results;
 
     SelectResultGUI(Player player, Plugin plugin) {
-        super("&d&lU&5&l2&d&lD &8- &dSetup &5"+plugin.getName(), 36);
+        super("&d&lU&5&l2&d&lD &8- &dSetup &5" + plugin.getName(), 36);
 
         this.player = player;
         this.plugin = plugin;
@@ -62,7 +59,7 @@ public class SelectResultGUI extends GUI {
                 UpdateManager.getInstance().addLinkedPlugin(new PluginInfo(plugin, resource, result));
                 UpdateManager.getInstance().removeUnlinkedPlugin(plugin);
             } catch (ConnectionFailedException e) {
-                Up2Date.getInstance().printError(e, "Error occurred while getting extra information on '"+plugin.getName()+"' #4");
+                Up2Date.getInstance().printError(e, "Error occurred while getting extra information on '" + plugin.getName() + "' #4");
             }
 
             new PluginLinkGUI(player).open(player);
@@ -74,10 +71,10 @@ public class SelectResultGUI extends GUI {
     @Override
     protected void populate() {
         inventory.setItem(0, new ItemStackBuilder(Material.DOUBLE_PLANT)
-                                     .setName("&f&l"+plugin.getName().toUpperCase())
+                                     .setName("&f&l" + plugin.getName().toUpperCase())
                                      .setLore(getLore(WordUtils.wrap(plugin.getDescription().getDescription() != null ? plugin.getDescription().getDescription() : "None", 40, "%new%", false).split("%new%"),
                                              "",
-                                             "&7&lSearch Results: &d&l"+results.size(),
+                                             "&7&lSearch Results: &d&l" + results.size(),
                                              "&7&lDescription: ",
                                              "%description%",
                                              "",
@@ -87,7 +84,7 @@ public class SelectResultGUI extends GUI {
         inventory.setItem(31, new ItemStackBuilder(Material.BARRIER).setName("&c&l«&m---&r &4&lBACK").build());
 
         for (int i = 0; i < 5; i++)
-            inventory.setItem(11+i, new ItemStackBuilder(Material.STAINED_CLAY).setDurability((short) 9).setName("&8&oLoading results...").build());
+            inventory.setItem(11 + i, new ItemStackBuilder(Material.STAINED_CLAY).setDurability((short) 9).setName("&8&oLoading results...").build());
 
         if (inventory.getItem(11) != null && inventory.getItem(11).getDurability() != (short) 5)
             loadItems();
@@ -105,7 +102,7 @@ public class SelectResultGUI extends GUI {
                     boolean premium = false;
 
                     try {
-                        String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources/"+result.getId());
+                        String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources/" + result.getId());
 
                         premium = pluginJson.contains("\"premium\": true");
 
@@ -118,7 +115,7 @@ public class SelectResultGUI extends GUI {
                             results.remove(result);
                         }
                     } catch (IOException ex) {
-                        Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while retrieving extra information for search result for "+plugin.getName());
+                        Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while retrieving extra information for search result for " + plugin.getName());
                     }
 
                     final Resource resource = AutoUpdaterAPI.getInstance().getApi().getResourceManager().getResourceById(result.getId(), AutoUpdaterAPI.getInstance().getCurrentUser());
@@ -135,7 +132,7 @@ public class SelectResultGUI extends GUI {
 
                             if (results.contains(result) && playerInventory.getTitle().equals(inventory.getTitle())) {
                                 for (int j = 0; j < 5; j++) {
-                                    if (playerInventory.getItem(11+j).getDurability() == (short) 9) {
+                                    if (playerInventory.getItem(11 + j).getDurability() == (short) 9) {
                                         playerInventory.setItem(j + 11, new ItemStackBuilder(Material.STAINED_CLAY)
                                                                                 .setDurability((short) 5)
                                                                                 .setName("&f&l" + plugin.getName().toUpperCase())
@@ -143,7 +140,7 @@ public class SelectResultGUI extends GUI {
                                                                                         "",
                                                                                         "&7&lAuthor: &d&l" + resource.getAuthor().getUsername(),
                                                                                         "&7&lID: &d&l" + resource.getResourceId(),
-                                                                                        "&7&lPremium: &d&l"+String.valueOf(premiumResult).toUpperCase(),
+                                                                                        "&7&lPremium: &d&l" + String.valueOf(premiumResult).toUpperCase(),
                                                                                         "&7&lDescription: ",
                                                                                         "%description%",
                                                                                         "",
@@ -155,10 +152,10 @@ public class SelectResultGUI extends GUI {
 
                                 //update info item
                                 playerInventory.setItem(0, new ItemStackBuilder(Material.DOUBLE_PLANT)
-                                                                   .setName("&f&l"+plugin.getName().toUpperCase())
+                                                                   .setName("&f&l" + plugin.getName().toUpperCase())
                                                                    .setLore(getLore(WordUtils.wrap(plugin.getDescription().getDescription() != null ? plugin.getDescription().getDescription() : "None", 40, "%new%", false).split("%new%"),
                                                                            "",
-                                                                           "&7&lSearch Results: &d&l"+results.size(),
+                                                                           "&7&lSearch Results: &d&l" + results.size(),
                                                                            "&7&lDescription: ",
                                                                            "%description%",
                                                                            "",
@@ -169,7 +166,7 @@ public class SelectResultGUI extends GUI {
                             //Loop through in reverse (start at 15 and go backwards) and set the clay to "no results"
                             int difference = 5 - results.size();
                             for (int i = 0; i < difference; i++) {
-                                if (playerInventory.getTitle().equals(inventory.getTitle()) && playerInventory.getItem(15-i).getDurability() != (short) 5)
+                                if (playerInventory.getTitle().equals(inventory.getTitle()) && playerInventory.getItem(15 - i).getDurability() != (short) 5)
                                     playerInventory.setItem(15 - i, new ItemStackBuilder(Material.STAINED_CLAY).setDurability((short) 14).setName("&4&lNO RESULT").build());
                             }
                         }
@@ -212,7 +209,7 @@ public class SelectResultGUI extends GUI {
                                 }
                             }.runTask(Up2Date.getInstance());
                         } catch (ConnectionFailedException e) {
-                            Up2Date.getInstance().printError(e, "Error occurred while getting extra information on '"+plugin.getName()+"' #6");
+                            Up2Date.getInstance().printError(e, "Error occurred while getting extra information on '" + plugin.getName() + "' #6");
                         }
                     } else {
                         UpdateManager.getInstance().addUnlinkedPlugin(plugin, results);
@@ -228,7 +225,7 @@ public class SelectResultGUI extends GUI {
         for (String line : description) {
             if (line.contains("%description%")) {
                 for (String varArgLine : varArgLines)
-                    lines.add("&d&d&l"+varArgLine);
+                    lines.add("&d&d&l" + varArgLine);
             } else
                 lines.add(line);
         }

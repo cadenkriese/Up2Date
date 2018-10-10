@@ -52,6 +52,7 @@ public class ConfirmGUI extends GUI {
 
         this.description = strings;
     }
+
     public ConfirmGUI(String title, List<String> description, Runnable confirmAction, Runnable cancelAction) {
         super(ChatColor.translateAlternateColorCodes('&', "&d&lU&5&l2&d&lD &8- &dConfirm"), 27);
         this.title = ChatColor.translateAlternateColorCodes('&', title);

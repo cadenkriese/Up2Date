@@ -6,6 +6,7 @@ import com.gamerking195.dev.autoupdaterapi.PremiumUpdater;
 import com.gamerking195.dev.autoupdaterapi.UpdateLocale;
 import com.gamerking195.dev.autoupdaterapi.util.UtilReader;
 import com.gamerking195.dev.up2date.Up2Date;
+import com.gamerking195.dev.up2date.config.MainConfig;
 import com.gamerking195.dev.up2date.ui.PluginLinkGUI;
 import com.gamerking195.dev.up2date.update.PluginInfo;
 import com.gamerking195.dev.up2date.update.UpdateManager;
@@ -29,10 +30,9 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 
 /**
- * Created by Caden Kriese (flogic) on 8/14/17.
+ * @author Caden Kriese (flogic)
  * <p>
- * License is specified by the distributor which this
- * file was written for. Otherwise it can be found in the LICENSE file.
+ * Created on 8/14/17
  */
 public class SetupCommand implements CommandExecutor {
 
@@ -52,7 +52,7 @@ public class SetupCommand implements CommandExecutor {
 
             if (args.length > 0) {
 
-                if (Up2Date.getInstance().getMainConfig().isSetupComplete()) {
+                if (MainConfig.getConf().isSetupComplete()) {
                     new MessageBuilder().addPlainText("&c&oSetup already complete!").sendToPlayersPrefixed(player);
                     return true;
                 }
@@ -124,7 +124,7 @@ public class SetupCommand implements CommandExecutor {
                     new BukkitRunnable() {
                         @Override
                         public void run() {
-                            if (new File(Up2Date.getInstance().getDataFolder().getParentFile().getPath()+Up2Date.fs+".creds").exists() && AutoUpdaterAPI.getInstance().getCurrentUser() != null) {
+                            if (new File(Up2Date.getInstance().getDataFolder().getParentFile().getPath() + "/.creds").exists() && AutoUpdaterAPI.getInstance().getCurrentUser() != null) {
                                 beginStepThree(player);
 
                                 cancel();
@@ -150,11 +150,11 @@ public class SetupCommand implements CommandExecutor {
     private void finishSetup(Player player) {
         inSetup = false;
         UtilText.getUtil().sendTitle("&d&lU&5&l2&d&lD &8- &a&oSetup complete!", "&7Thanks for downloading &dUp&52&dDate&7!", 20, 60, 20, player);
-        Up2Date.getInstance().getMainConfig().setSetupComplete(true);
+        MainConfig.getConf().setSetupComplete(true);
         player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
 
         for (int i = 0; i < 100; i++)
-            player.sendMessage(ChatColor.RED+"");
+            player.sendMessage(ChatColor.RED + "");
 
 
         new MessageBuilder().addPlainText("&dThanks again for purchasing Up2Date! The plugin is now &dfully setup and ready to roll.").sendToPlayersPrefixed(player);
@@ -226,7 +226,7 @@ public class SetupCommand implements CommandExecutor {
                         priority += 1;
 
                     try {
-                        String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources/"+result.getId());
+                        String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources/" + result.getId());
 
                         if (pluginJson.contains("\"external\": true")) {
                             priority = -1;
@@ -240,7 +240,7 @@ public class SetupCommand implements CommandExecutor {
                             priority = -1;
                         }
                     } catch (IOException ex) {
-                        Up2Date.getInstance().printError(ex, "Error occurred while validating search result for '"+plugin.getName()+"'");
+                        Up2Date.getInstance().printError(ex, "Error occurred while validating search result for '" + plugin.getName() + "'");
                     }
 
                     priorities.put(result, priority);
@@ -253,11 +253,11 @@ public class SetupCommand implements CommandExecutor {
         new BukkitRunnable() {
             @Override
             public void run() {
-                double percent = ((double) 100/currentPlugins.size()) * (unlinkedPlugins.size() + linkedPlugins.size() + unknownPlugins.size());
-                UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oRetrieved plugin data for "+(unlinkedPlugins.size()+linkedPlugins.size()+unknownPlugins.size())+"/"+(currentPlugins.size())+" plugins ("+String.format("%.2f", percent)+"%)", player);
-                if (unlinkedPlugins.size()+linkedPlugins.size()+unknownPlugins.size() == currentPlugins.size()) {
+                double percent = ((double) 100 / currentPlugins.size()) * (unlinkedPlugins.size() + linkedPlugins.size() + unknownPlugins.size());
+                UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oRetrieved plugin data for " + (unlinkedPlugins.size() + linkedPlugins.size() + unknownPlugins.size()) + "/" + (currentPlugins.size()) + " plugins (" + String.format("%.2f", percent) + "%)", player);
+                if (unlinkedPlugins.size() + linkedPlugins.size() + unknownPlugins.size() == currentPlugins.size()) {
 
-                    UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oRetrieved plugin data for "+currentPlugins.size()+" plugins in "+String.format("%.2f", ((double)(System.currentTimeMillis()-startTime)/1000)) +"s", player);
+                    UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oRetrieved plugin data for " + currentPlugins.size() + " plugins in " + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + "s", player);
 
 //                    if (linkedPlugins.size() > 0)
 //                        linkedPlugins.removeAll(UtilStatisticsDatabase.getInstance().getIncompatiblePlugins(linkedPlugins));
@@ -278,9 +278,9 @@ public class SetupCommand implements CommandExecutor {
                     new MessageBuilder().addPlainText("&dUp2Date has parsed through your plugins in order to link &dthem to actual spigot plugins.").sendToPlayersPrefixed(player);
                     new MessageBuilder().addPlainText("&dHowever since this is only a program we can't obtain the &ddata for all of your plugins perfectly.").sendToPlayersPrefixed(player);
 
-                    String notMatched = unknownPlugins.size() == 0 ? "" : "find &5"+ unknownPlugins.size()+"&d "+UtilText.getUtil().getEnding("plugin", unknownPlugins.size(), false)+" that will need to be &dmanually setup.";
-                    String partiallyMatched = unlinkedPlugins.size() == 0 ? "" : "partially match &5"+unlinkedPlugins.size()+" &d"+UtilText.getUtil().getEnding("plugin", unlinkedPlugins.size(), false);
-                    String perfectlyMatched = linkedPlugins.size() == 0 ? "" : "perfectly match &5"+linkedPlugins.size()+"&d "+UtilText.getUtil().getEnding("plugin", linkedPlugins.size(), false);
+                    String notMatched = unknownPlugins.size() == 0 ? "" : "find &5" + unknownPlugins.size() + "&d " + UtilText.getUtil().getEnding("plugin", unknownPlugins.size(), false) + " that will need to be &dmanually setup.";
+                    String partiallyMatched = unlinkedPlugins.size() == 0 ? "" : "partially match &5" + unlinkedPlugins.size() + " &d" + UtilText.getUtil().getEnding("plugin", unlinkedPlugins.size(), false);
+                    String perfectlyMatched = linkedPlugins.size() == 0 ? "" : "perfectly match &5" + linkedPlugins.size() + "&d " + UtilText.getUtil().getEnding("plugin", linkedPlugins.size(), false);
 
                     if (notMatched.length() > 0 || partiallyMatched.length() > 0)
                         perfectlyMatched += ", ";
@@ -288,10 +288,10 @@ public class SetupCommand implements CommandExecutor {
                     if (notMatched.length() > 0)
                         partiallyMatched += ", ";
 
-                    if (perfectlyMatched.length() > 0  || partiallyMatched.length() > 0)
-                        notMatched = "however there's still &5"+ unknownPlugins.size()+"&d "+UtilText.getUtil().getEnding("plugin", unknownPlugins.size(), false)+" that will need to be &dmanually setup.";
+                    if (perfectlyMatched.length() > 0 || partiallyMatched.length() > 0)
+                        notMatched = "however there's still &5" + unknownPlugins.size() + "&d " + UtilText.getUtil().getEnding("plugin", unknownPlugins.size(), false) + " that will need to be &dmanually setup.";
 
-                    new MessageBuilder().addPlainText("&dWe managed to "+perfectlyMatched+partiallyMatched+notMatched).sendToPlayersPrefixed(player);
+                    new MessageBuilder().addPlainText("&dWe managed to " + perfectlyMatched + partiallyMatched + notMatched).sendToPlayersPrefixed(player);
                     new MessageBuilder().addPlainText("&dWe need you to go in and manually tell us which plugins &dmatch which search result, and for those that have no search &dresults, you can either provide their ID or have Up2Date ignore &dthem.").sendToPlayersPrefixed(player);
                     new MessageBuilder().addPlainText("&dWe apologize that this is a rather complex task; just know &dthat you'll only have to do it once. You can even copy the data &dfile between similar servers or use a database.").sendToPlayersPrefixed(player);
                     new MessageBuilder().addPlainText("").sendToPlayers(player);
@@ -315,7 +315,7 @@ public class SetupCommand implements CommandExecutor {
 
             BufferedInputStream in = new BufferedInputStream(httpConnection.getInputStream());
 
-            File location = new File(plugin.getDataFolder().getParentFile().getPath() + Up2Date.fs + "AutoUpdaterAPI.jar");
+            File location = new File(plugin.getDataFolder().getParentFile().getPath() + "/AutoUpdaterAPI.jar");
             location.getParentFile().mkdirs();
 
             FileOutputStream fos = new FileOutputStream(location);
@@ -372,7 +372,7 @@ public class SetupCommand implements CommandExecutor {
                             new MessageBuilder().addPlainText("").sendToPlayers(player);
                             new MessageBuilder().addPlainText("&dMay we proceed?").sendToPlayersPrefixed(player);
                             new MessageBuilder().addHoverClickText("&2&l✔ &aYES", "&2&lPROCEED", "/stp authenticate", false).addPlainText("    &8&l|    ").addHoverClickText("&4&l✘ &cNO", "&4&lSKIP", "/stp skip", false).sendToPlayers(player);
-                            }
+                        }
                     }.runTaskLater(Up2Date.getInstance(), 100L);
                 }
             }.runTaskLater(Up2Date.getInstance(), 100L);
@@ -410,8 +410,7 @@ public class SetupCommand implements CommandExecutor {
                     unknownPlugins.add(plugin);
                     Up2Date.getInstance().printError(e, "Error occurred while pinging Spigot!");
                 }
-            }
-            else if (priorities.size()-1 == 0)
+            } else if (priorities.size() - 1 == 0)
                 unknownPlugins.add(plugin);
             else
                 unlinkedPlugins.put(plugin, searchResults);

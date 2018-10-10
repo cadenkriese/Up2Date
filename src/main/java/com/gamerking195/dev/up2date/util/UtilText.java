@@ -15,14 +15,14 @@ import org.bukkit.scheduler.BukkitRunnable;
 import java.lang.reflect.InvocationTargetException;
 
 /**
- * Created by GamerKing195 on 8/13/17.
+ * @author Caden Kriese (flogic)
  * <p>
- * License is specified by the distributor which this
- * file was written for. Otherwise it can be found in the LICENSE file.
+ * Created on 8/13/17
  */
 public class UtilText {
 
-    private UtilText() {}
+    private UtilText() {
+    }
 
     private static UtilText instance = new UtilText();
 
@@ -34,25 +34,24 @@ public class UtilText {
      * Sends a title to certain players.
      *
      * @param players The player the title will be sent too.
-     * @param title The text within the title (& chatcolors supported).
-     * @param fadeIn Fade in time for the title (in ticks).
-     * @param stay Stay time for the title (in ticks).
+     * @param title   The text within the title (& chatcolors supported).
+     * @param fadeIn  Fade in time for the title (in ticks).
+     * @param stay    Stay time for the title (in ticks).
      * @param fadeOut Fade out time for the title (in ticks).
      */
-    public void sendTitle(String title, int fadeIn, int stay, int fadeOut, Player... players)
-    {
+    public void sendTitle(String title, int fadeIn, int stay, int fadeOut, Player... players) {
         sendTitle(title, "", fadeIn, stay, fadeOut, players);
     }
 
     /**
      * Sends a title & subtitle to certain players.
      *
-     * @param players The players the title will be sent too.
-     * @param title The text within the title (& chatcolors supported).
+     * @param players  The players the title will be sent too.
+     * @param title    The text within the title (& chatcolors supported).
      * @param subTitle The text within the subtitle (& chatcolors supported).
-     * @param fadeIn Fade in time for the title (in ticks).
-     * @param stay Stay time for the title (in ticks).
-     * @param fadeOut Fade out time for the title (in ticks).
+     * @param fadeIn   Fade in time for the title (in ticks).
+     * @param stay     Stay time for the title (in ticks).
+     * @param fadeOut  Fade out time for the title (in ticks).
      */
     public void sendTitle(String title, String subTitle, int fadeIn, int stay, int fadeOut, Player... players) {
 
@@ -109,11 +108,11 @@ public class UtilText {
     /**
      * Sends a subtitle to certain players.
      *
-     * @param players The player the title will be sent too.
+     * @param players  The player the title will be sent too.
      * @param subTitle The text within the subtitle (& chatcolors supported).
-     * @param fadeIn Fade in time for the title (in ticks).
-     * @param stay Stay time for the title (in ticks).
-     * @param fadeOut Fade out time for the title (in ticks).
+     * @param fadeIn   Fade in time for the title (in ticks).
+     * @param stay     Stay time for the title (in ticks).
+     * @param fadeOut  Fade out time for the title (in ticks).
      */
     public void sendSubTitle(String subTitle, int fadeIn, int stay, int fadeOut, Player... players) {
         sendTitle("", subTitle, fadeIn, stay, fadeOut, players);
@@ -133,11 +132,11 @@ public class UtilText {
      * Titles sent will have an interval of (fadein+stay+fadeout) * title index.
      * (All timing uses ticks)
      *
-     * @param player The player the titles will be sent to.
-     * @param fadeIn The time a title fade in animation will take.
-     * @param stay The time the title will stay on screen.
+     * @param player  The player the titles will be sent to.
+     * @param fadeIn  The time a title fade in animation will take.
+     * @param stay    The time the title will stay on screen.
      * @param fadeOut The time the title fade out animation will take.
-     * @param titles The list of titles, use \n to send a subtitle.
+     * @param titles  The list of titles, use \n to send a subtitle.
      */
     public void sendMultipleTitles(Player player, int fadeIn, int stay, int fadeOut, String... titles) {
         for (int index = 0; index < titles.length; index++) {
@@ -153,14 +152,14 @@ public class UtilText {
                         sendTitle(title, fadeIn, stay, fadeOut, player);
                     }
                 }
-            }.runTaskLater(Up2Date.getInstance(), (fadeIn+stay+fadeOut)*index);
+            }.runTaskLater(Up2Date.getInstance(), (fadeIn + stay + fadeOut) * index);
         }
     }
 
     /**
      * Send an action bar to a player.
      *
-     * @param text The text to be sent.
+     * @param text    The text to be sent.
      * @param players The players who will recieve the action bar.
      */
     public void sendActionBar(String text, Player... players) {
@@ -172,7 +171,7 @@ public class UtilText {
     /**
      * Send an action bar to a player.
      *
-     * @param text The text to be sent.
+     * @param text    The text to be sent.
      * @param players The players who will recieve the action bar.
      */
     public void sendActionBarSync(String text, Player... players) {
@@ -207,6 +206,6 @@ public class UtilText {
         } else
             ending += possessive ? "'s" : "";
 
-        return word+ending;
+        return word + ending;
     }
 }

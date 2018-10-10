@@ -6,6 +6,7 @@ import com.gamerking195.dev.autoupdaterapi.AutoUpdaterAPI;
 import com.gamerking195.dev.autoupdaterapi.util.UtilPlugin;
 import com.gamerking195.dev.autoupdaterapi.util.UtilReader;
 import com.gamerking195.dev.up2date.Up2Date;
+import com.gamerking195.dev.up2date.config.MainConfig;
 import com.gamerking195.dev.up2date.update.PluginInfo;
 import com.gamerking195.dev.up2date.update.UpdateManager;
 import com.gamerking195.dev.up2date.util.UtilSiteSearch;
@@ -34,12 +35,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Created by Caden Kriese (GamerKing195) on 10/15/17.
+ * @author Caden Kriese (flogic)
  * <p>
- * License is specified by the distributor which this
- * file was written for. Otherwise it can be found in the LICENSE file.
- * If there is no license file the code is then completely copyrighted
- * and you must contact me before using it IN ANY WAY.
+ * Created on 10/15/17
  */
 public class UnlinkedGUI extends PageGUI {
     UnlinkedGUI() {
@@ -52,7 +50,7 @@ public class UnlinkedGUI extends PageGUI {
                     linked = true;
             }
 
-            if (Up2Date.getInstance().getMainConfig().isSetupComplete() && !linked && !UpdateManager.getInstance().getUnknownPlugins().contains(plugin) && !plugin.getName().equals("Up2Date") && !plugin.getName().equals("AutoUpdaterAPI") && !plugin.getName().equalsIgnoreCase("ProtocolLib"))
+            if (MainConfig.getConf().isSetupComplete() && !linked && !UpdateManager.getInstance().getUnknownPlugins().contains(plugin) && !plugin.getName().equals("Up2Date") && !plugin.getName().equals("AutoUpdaterAPI") && !plugin.getName().equalsIgnoreCase("ProtocolLib"))
                 UpdateManager.getInstance().addUnknownPlugin(plugin);
             else if (UpdateManager.getInstance().getUnknownPlugins().contains(plugin) && (plugin.getName().equals("Up2Date") || plugin.getName().equals("AutoUpdaterAPI") || plugin.getName().equals("ProtocolLib")))
                 UpdateManager.getInstance().getUnknownPlugins().remove(plugin);
@@ -76,7 +74,7 @@ public class UnlinkedGUI extends PageGUI {
 
             stackList.add(new ItemStackBuilder(Material.STAINED_CLAY)
                                   .setDurability((short) 14)
-                                  .setName("&f&l"+plugin.getName().toUpperCase())
+                                  .setName("&f&l" + plugin.getName().toUpperCase())
                                   .setLore(getLore(WordUtils.wrap(plugin.getDescription().getDescription() != null ? plugin.getDescription().getDescription() : "None", 40, "%new%", false).split("%new%"),
                                           "",
                                           "&7&lDescription: ",
@@ -95,7 +93,7 @@ public class UnlinkedGUI extends PageGUI {
 
     @Override
     protected void onPlayerClickIcon(InventoryClickEvent event) {
-        ((Player) event.getWhoClicked()).playSound(event.getWhoClicked().getLocation(), Sound.UI_BUTTON_CLICK, 1 ,1);
+        ((Player) event.getWhoClicked()).playSound(event.getWhoClicked().getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
 
         if (event.getRawSlot() == 45)
             new UpdateGUI((Player) event.getWhoClicked()).open((Player) event.getWhoClicked());
@@ -122,7 +120,8 @@ public class UnlinkedGUI extends PageGUI {
                                     return "Resource type must be a jar.";
                                 }
 
-                                Type type = new TypeToken<JsonObject>(){}.getType();
+                                Type type = new TypeToken<JsonObject>() {
+                                }.getType();
                                 JsonObject object = new Gson().fromJson(pluginJson, type);
                                 ArrayList<String> testedVersions = new ArrayList<>();
                                 object.getAsJsonArray("testedVersions").forEach(testedVersion -> testedVersions.add(testedVersion.getAsString()));
@@ -172,7 +171,7 @@ public class UnlinkedGUI extends PageGUI {
                             },
 
                             "&7Click '&a&lCONFIRM&7' if you want U2D",
-                            "to &nfully delete&7 '&d"+plugin.getName()+"&7'"
+                            "to &nfully delete&7 '&d" + plugin.getName() + "&7'"
                     ).open((Player) event.getWhoClicked());
                 }
             }
@@ -195,7 +194,7 @@ public class UnlinkedGUI extends PageGUI {
         for (String line : description) {
             if (line.contains("%description%")) {
                 for (String varArgLine : varArgLines)
-                    lines.add("&a&d&l"+varArgLine);
+                    lines.add("&a&d&l" + varArgLine);
             } else
                 lines.add(line);
         }

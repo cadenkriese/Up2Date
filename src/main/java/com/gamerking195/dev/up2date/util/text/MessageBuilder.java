@@ -1,6 +1,7 @@
 package com.gamerking195.dev.up2date.util.text;
 
 import com.gamerking195.dev.up2date.Up2Date;
+import com.gamerking195.dev.up2date.config.MainConfig;
 import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;
 import net.md_5.bungee.api.ChatMessageType;
@@ -8,26 +9,26 @@ import net.md_5.bungee.api.chat.ClickEvent;
 import net.md_5.bungee.api.chat.ComponentBuilder;
 import net.md_5.bungee.api.chat.HoverEvent;
 import net.md_5.bungee.api.chat.TextComponent;
-import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
 
 /**
- * Created by GamerKing195 on 8/13/17.
- * <p>
- * License is specified by the distributor which this
- * file was written for. Otherwise it can be found in the LICENSE file.
+ * @author Caden Kriese (flogic)
+ *
+ * Created on 8/13/17
  */
 public class MessageBuilder {
     @Getter
     private TextComponent component = new TextComponent();
 
-    public MessageBuilder() {}
+    public MessageBuilder() {
+    }
+
     public MessageBuilder(TextComponent component) {
         this.component = component;
     }
 
     public MessageBuilder addPlainText(String text) {
-        text = text.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
+        text = text.replace("%prefix%", MainConfig.getConf().getPrefix());
 
         component.addExtra(ChatColor.translateAlternateColorCodes('&', text));
         return this;
@@ -39,7 +40,7 @@ public class MessageBuilder {
     }
 
     public MessageBuilder addHoverText(String text, String hover) {
-        text = text.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
+        text = text.replace("%prefix%", MainConfig.getConf().getPrefix());
 
         TextComponent newComponent = new TextComponent(ChatColor.translateAlternateColorCodes('&', text));
 
@@ -49,7 +50,7 @@ public class MessageBuilder {
     }
 
     public MessageBuilder addClickText(String text, String command, boolean suggest) {
-        text = text.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
+        text = text.replace("%prefix%", MainConfig.getConf().getPrefix());
 
         TextComponent newComponent = new TextComponent(ChatColor.translateAlternateColorCodes('&', text));
         ClickEvent.Action event = suggest ? ClickEvent.Action.SUGGEST_COMMAND : ClickEvent.Action.RUN_COMMAND;
@@ -61,7 +62,7 @@ public class MessageBuilder {
     }
 
     public MessageBuilder addURLText(String text, String url) {
-        text = text.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
+        text = text.replace("%prefix%", MainConfig.getConf().getPrefix());
 
         TextComponent newComponent = new TextComponent(ChatColor.translateAlternateColorCodes('&', text));
 
@@ -72,7 +73,7 @@ public class MessageBuilder {
     }
 
     public MessageBuilder addHoverClickText(String text, String hover, String command, boolean suggest) {
-        text = text.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
+        text = text.replace("%prefix%", MainConfig.getConf().getPrefix());
 
         TextComponent newComponent = new TextComponent(ChatColor.translateAlternateColorCodes('&', text));
         ClickEvent.Action event = suggest ? ClickEvent.Action.SUGGEST_COMMAND : ClickEvent.Action.RUN_COMMAND;
@@ -85,7 +86,7 @@ public class MessageBuilder {
     }
 
     public MessageBuilder addHoverUrlText(String text, String hover, String url) {
-        text = text.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
+        text = text.replace("%prefix%", MainConfig.getConf().getPrefix());
 
         TextComponent newComponent = new TextComponent(ChatColor.translateAlternateColorCodes('&', text));
 
@@ -97,7 +98,7 @@ public class MessageBuilder {
     }
 
     public MessageBuilder sendToPlayers(Player... players) {
-        component.setText(component.getText().replace(" ", " "+ChatColor.LIGHT_PURPLE));
+        component.setText(component.getText().replace(" ", " " + ChatColor.LIGHT_PURPLE));
         for (Player player : players) {
             player.spigot().sendMessage(ChatMessageType.CHAT, component);
         }
@@ -108,7 +109,7 @@ public class MessageBuilder {
     public MessageBuilder sendToPlayersPrefixed(Player... players) {
         for (Player player : players) {
 
-            TextComponent prefix = new TextComponent(ChatColor.translateAlternateColorCodes('&', Up2Date.getInstance().getMainConfig().getPrefix()));
+            TextComponent prefix = new TextComponent(ChatColor.translateAlternateColorCodes('&', MainConfig.getConf().getPrefix()));
 
             prefix.addExtra(component);
 
@@ -125,12 +126,12 @@ public class MessageBuilder {
 //
 //        Bukkit.broadcastMessage("Legacy Text = "+component.toLegacyText());
 //
-//        players[0].spigot().sendMessage(new TextComponent(component.toString().replace("%prefix%", ChatColor.translateAlternateColorCodes('&', Up2Date.getInstance().getMainConfig().getPrefix()))));
+//        players[0].spigot().sendMessage(new TextComponent(component.toString().replace("%prefix%", ChatColor.translateAlternateColorCodes('&', MainConfig.getConf().getPrefix()))));
 //
 //        //TODO test
 //        Bukkit.broadcastMessage("TEXT = "+componentText);
 //
-//        componentText = componentText.replace("%prefix%", Up2Date.getInstance().getMainConfig().getPrefix());
+//        componentText = componentText.replace("%prefix%", MainConfig.getConf().getPrefix());
 //
 //        //TODO test
 //        Bukkit.broadcastMessage("TEXT = "+componentText);

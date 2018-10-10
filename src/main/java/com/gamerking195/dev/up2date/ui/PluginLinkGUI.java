@@ -29,12 +29,9 @@ import java.util.HashMap;
 import java.util.List;
 
 /**
- * Created by Caden Kriese (GamerKing195) on 9/2/17.
+ * @author Caden Kriese (flogic)
  * <p>
- * License is specified by the distributor which this
- * file was written for. Otherwise it can be found in the LICENSE file.
- * If there is no license file the code is then completely copyrighted
- * and you must contact me before using it IN ANY WAY.
+ * Created on 9/2/17
  */
 public class PluginLinkGUI extends PageGUI {
 
@@ -67,9 +64,9 @@ public class PluginLinkGUI extends PageGUI {
                                       .setName("&f&l" + plugin.getName().toUpperCase())
                                       .setLore(getLore(WordUtils.wrap(pluginInfo.getDescription() != null ? pluginInfo.getDescription() : "None", 40, "%new%", false).split("%new%"),
                                               "",
-                                              "&7&lAuthor: &d&l"+pluginInfo.getAuthor(),
-                                              "&7&lVersion: &d&l"+plugin.getDescription().getVersion(),
-                                              "&7&lSupported MC Versions: &d&l"+pluginInfo.getSupportedMcVersions(),
+                                              "&7&lAuthor: &d&l" + pluginInfo.getAuthor(),
+                                              "&7&lVersion: &d&l" + plugin.getDescription().getVersion(),
+                                              "&7&lSupported MC Versions: &d&l" + pluginInfo.getSupportedMcVersions(),
                                               "&7&lID: &d&l" + pluginInfo.getId(),
                                               "&7&lDescription: ",
                                               "%description%",
@@ -80,7 +77,7 @@ public class PluginLinkGUI extends PageGUI {
                                               "&8SHIFT-RIGHT-CLICK &f| &c&oDelete Link"))
                                       .build());
             } catch (Exception ex) {
-                Up2Date.getInstance().printError(ex, "Error occurred while retrieving extra information for '"+plugin.getName()+"' #1");
+                Up2Date.getInstance().printError(ex, "Error occurred while retrieving extra information for '" + plugin.getName() + "' #1");
             }
         }
 
@@ -90,10 +87,10 @@ public class PluginLinkGUI extends PageGUI {
 
             stackList.add(new ItemStackBuilder(Material.STAINED_CLAY)
                                   .setDurability((short) 4)
-                                  .setName("&f&l"+plugin.getName().toUpperCase())
+                                  .setName("&f&l" + plugin.getName().toUpperCase())
                                   .setLore(getLore(WordUtils.wrap(plugin.getDescription().getDescription() != null ? plugin.getDescription().getDescription() : "None", 40, "%new%", false).split("%new%"),
                                           "",
-                                          "&7&lSearch Results: &d&l"+results.size(),
+                                          "&7&lSearch Results: &d&l" + results.size(),
                                           "&7&lDescription: ",
                                           "%description%",
                                           "",
@@ -108,7 +105,7 @@ public class PluginLinkGUI extends PageGUI {
         for (Plugin plugin : unknownPlugins) {
             stackList.add(new ItemStackBuilder(Material.STAINED_CLAY)
                                   .setDurability((short) 14)
-                                  .setName("&f&l"+plugin.getName().toUpperCase())
+                                  .setName("&f&l" + plugin.getName().toUpperCase())
                                   .setLore(getLore(WordUtils.wrap(plugin.getDescription().getDescription() != null ? plugin.getDescription().getDescription() : "None", 40, "%new%", false).split("%new%"),
                                           "",
                                           "&7&lDescription: ",
@@ -129,7 +126,7 @@ public class PluginLinkGUI extends PageGUI {
         for (String line : description) {
             if (line.contains("%description%")) {
                 for (String varArgLine : varArgLines)
-                    lines.add("&d&l"+varArgLine);
+                    lines.add("&d&l" + varArgLine);
             } else
                 lines.add(line);
         }
@@ -165,13 +162,13 @@ public class PluginLinkGUI extends PageGUI {
                         new PluginLinkGUI(player).open(player);
                         player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
                     }, () -> new PluginLinkGUI(player).open(player),
-                                          "&7Click '&a&lCONFIRM&7' to remove",
-                                          "&7this plugin from the list of",
-                                          "&7linked plugins.",
-                                          "&7Don't worry you can add it back later.",
-                                          "&7You can also click '&c&lCANCEL&7' to return",
-                                          "&7to the overview GUI."
-                                          ).open(player);
+                            "&7Click '&a&lCONFIRM&7' to remove",
+                            "&7this plugin from the list of",
+                            "&7linked plugins.",
+                            "&7Don't worry you can add it back later.",
+                            "&7You can also click '&c&lCANCEL&7' to return",
+                            "&7to the overview GUI."
+                    ).open(player);
                 }
             } else if (event.getCurrentItem().getDurability() == 4) {
                 if (event.getClick() == ClickType.RIGHT)
@@ -187,12 +184,12 @@ public class PluginLinkGUI extends PageGUI {
                         UpdateManager.getInstance().removeUnlinkedPlugin(plugin);
                         new PluginLinkGUI(player).open(player);
                     }, () -> new PluginLinkGUI(player).open(player),
-                                          "&7Click '&a&lCONFIRM&7' to remove",
-                                          "&7this plugin from the list of",
-                                          "&7linked plugins.",
-                                          "&7Don't worry you can add it back later.",
-                                          "&7You can also click '&c&lCANCEL&7' to return",
-                                          "&7to the overview GUI."
+                            "&7Click '&a&lCONFIRM&7' to remove",
+                            "&7this plugin from the list of",
+                            "&7linked plugins.",
+                            "&7Don't worry you can add it back later.",
+                            "&7You can also click '&c&lCANCEL&7' to return",
+                            "&7to the overview GUI."
                     ).open(player);
                 }
             } else if (event.getCurrentItem().getDurability() == 14) {
@@ -207,12 +204,12 @@ public class PluginLinkGUI extends PageGUI {
                         UpdateManager.getInstance().removeUnknownPlugin(plugin);
                         new PluginLinkGUI(player).open(player);
                     }, () -> new PluginLinkGUI(player).open(player),
-                                          "&7Click '&a&lCONFIRM&7' to remove",
-                                          "&7this plugin from the list of",
-                                          "&7linked plugins.",
-                                          "&7Don't worry you can add it back later.",
-                                          "&7You can also click '&c&lCANCEL&7' to return",
-                                          "&7to the overview GUI."
+                            "&7Click '&a&lCONFIRM&7' to remove",
+                            "&7this plugin from the list of",
+                            "&7linked plugins.",
+                            "&7Don't worry you can add it back later.",
+                            "&7You can also click '&c&lCANCEL&7' to return",
+                            "&7to the overview GUI."
                     ).open(player);
                 }
             }
@@ -237,20 +234,20 @@ public class PluginLinkGUI extends PageGUI {
         new AnvilGUI(Up2Date.getInstance(), player, "Enter plugin ID", (player, reply) -> {
             if (NumberUtils.isNumber(reply)) {
                 try {
-                        String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources/"+reply);
+                    String pluginJson = UtilReader.readFrom("https://api.spiget.org/v2/resources/" + reply);
 
-                        boolean premium = pluginJson.contains("\"premium\": true");
+                    boolean premium = pluginJson.contains("\"premium\": true");
 
-                        if (pluginJson.contains("\"external\": true")) {
-                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                            return "External downloads not supported!";
-                        } else if (premium && AutoUpdaterAPI.getInstance().getCurrentUser() == null) {
-                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                            return "You must login to spigot for premium resources!";
-                        } else if (!pluginJson.contains("\"type\": \".jar\"")) {
-                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                            return "Resource download type must be a jar!";
-                        }
+                    if (pluginJson.contains("\"external\": true")) {
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                        return "External downloads not supported!";
+                    } else if (premium && AutoUpdaterAPI.getInstance().getCurrentUser() == null) {
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                        return "You must login to spigot for premium resources!";
+                    } else if (!pluginJson.contains("\"type\": \".jar\"")) {
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                        return "Resource download type must be a jar!";
+                    }
 
                     Resource resource = manager.getResourceById(Integer.valueOf(reply));
                     if (resource != null) {
@@ -270,7 +267,7 @@ public class PluginLinkGUI extends PageGUI {
                         return "Resource info not found!";
                     }
                 } catch (Exception ex) {
-                    Up2Date.getInstance().printError(ex, "Error occurred while authenticating plugin with potential id '"+reply+"'");
+                    Up2Date.getInstance().printError(ex, "Error occurred while authenticating plugin with potential id '" + reply + "'");
                 }
             }
 

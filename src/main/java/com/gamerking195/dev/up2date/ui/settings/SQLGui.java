@@ -20,22 +20,19 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 
 /**
- * Created by Caden Kriese (GamerKing195) on 11/19/17.
+ * @author Caden Kriese (flogic)
  * <p>
- * License is specified by the distributor which this
- * file was written for. Otherwise it can be found in the LICENSE file.
- * If there is no license file the code is then completely copyrighted
- * and you must contact me before using it IN ANY WAY.
+ * Created on 11/19/17
  */
 public class SQLGui extends GUI {
     public SQLGui() {
-        super ("&d&lU&5&l2&d&lD &8- &DSettings &8- &dSQL", 45);
+        super("&d&lU&5&l2&d&lD &8- &DSettings &8- &dSQL", 45);
     }
 
     @Override
     protected void onPlayerClick(InventoryClickEvent event) {
         Player player = (Player) event.getWhoClicked();
-        MainConfig config = Up2Date.getInstance().getMainConfig();
+        MainConfig config = MainConfig.getConf();
 
         player.playSound(player.getLocation(), Sound.UI_BUTTON_CLICK, 1, 1);
 
@@ -44,25 +41,25 @@ public class SQLGui extends GUI {
                 String enable = config.isEnableSQL() ? "&cdisable&7" : "&aenable&7";
 
                 new ConfirmGUI("&dContinue?",
-                                      () -> {
-                                          boolean enableSql = !config.isEnableSQL();
+                        () -> {
+                            boolean enableSql = !config.isEnableSQL();
 
-                                          config.setEnableSQL(enableSql);
+                            config.setEnableSQL(enableSql);
 
-                                          UpdateManager.getInstance().swapData(enableSql);
+                            UpdateManager.getInstance().swapData(enableSql);
 
-                                          player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
-                                          new SQLGui().open(player);
-                                      },
+                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
+                            new SQLGui().open(player);
+                        },
 
-                                      () -> {
-                                          player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
-                                          new SQLGui().open(player);
-                                      },
+                        () -> {
+                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                            new SQLGui().open(player);
+                        },
 
-                                      "&7Click '&a&lCONFIRM&7' if you want U2D",
-                                      "&7to "+enable+" SQL support and automatically",
-                                      "&7swap all data."
+                        "&7Click '&a&lCONFIRM&7' if you want U2D",
+                        "&7to " + enable + " SQL support and automatically",
+                        "&7swap all data."
                 ).open(player);
 
                 break;
@@ -171,10 +168,10 @@ public class SQLGui extends GUI {
     @Override
     protected void populate() {
         inventory.setItem(4, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
-                                     .setDurability(Up2Date.getInstance().getMainConfig().isEnableSQL() ? (short) 5 : (short) 14)
+                                     .setDurability(MainConfig.getConf().isEnableSQL() ? (short) 5 : (short) 14)
                                      .setName("&f&lENABLE SQL")
                                      .setLore(
-                                             "&7&lValue: &d&l"+ Up2Date.getInstance().getMainConfig().isEnableSQL(),
+                                             "&7&lValue: &d&l" + MainConfig.getConf().isEnableSQL(),
                                              "&7&lDescription: ",
                                              "     &d&lShould Up2Date data be stored in a MySQL ",
                                              "     &d&ldatabase so you can sync linked plugins",
@@ -188,7 +185,7 @@ public class SQLGui extends GUI {
                                       .setDurability((short) 5)
                                       .setName("&f&lHOSTNAME")
                                       .setLore(
-                                              "&7&lValue: &d&l"+ Up2Date.getInstance().getMainConfig().getHostName(),
+                                              "&7&lValue: &d&l" + MainConfig.getConf().getHostName(),
                                               "&7&lDescription: ",
                                               "     &d&lHostname / IP to the MySQL db,",
                                               "     &d&lport included.",
@@ -200,7 +197,7 @@ public class SQLGui extends GUI {
                                       .setDurability((short) 5)
                                       .setName("&f&lUSERNAME")
                                       .setLore(
-                                              "&7&lValue: &d&l"+ Up2Date.getInstance().getMainConfig().getUsername(),
+                                              "&7&lValue: &d&l" + MainConfig.getConf().getUsername(),
                                               "&7&lDescription: ",
                                               "     &d&lUsername Up2Date will use to",
                                               "     &d&lconnect to the database.",
@@ -212,7 +209,7 @@ public class SQLGui extends GUI {
                                       .setDurability((short) 5)
                                       .setName("&f&lPASSWORD")
                                       .setLore(
-                                              "&7&lValue: &d&l"+ Up2Date.getInstance().getMainConfig().getPassword(),
+                                              "&7&lValue: &d&l" + MainConfig.getConf().getPassword(),
                                               "&7&lDescription: ",
                                               "     &d&lPassword Up2Date will use to",
                                               "     &d&lconnect to the database.",
@@ -224,7 +221,7 @@ public class SQLGui extends GUI {
                                       .setDurability((short) 5)
                                       .setName("&f&lDATABASE")
                                       .setLore(
-                                              "&7&lValue: &d&l"+ Up2Date.getInstance().getMainConfig().getDatabase(),
+                                              "&7&lValue: &d&l" + MainConfig.getConf().getDatabase(),
                                               "&7&lDescription: ",
                                               "     &d&lThe database that Up2Date",
                                               "     &d&lwill store its table in.",
@@ -236,7 +233,7 @@ public class SQLGui extends GUI {
                                       .setDurability((short) 5)
                                       .setName("&f&lTABLENAME")
                                       .setLore(
-                                              "&7&lValue: &d&l"+ Up2Date.getInstance().getMainConfig().getTablename(),
+                                              "&7&lValue: &d&l" + MainConfig.getConf().getTablename(),
                                               "&7&lDescription: ",
                                               "     &d&lThe name of the table",
                                               "     &d&lUp2Date will store data in.",

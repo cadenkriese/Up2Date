@@ -1,6 +1,7 @@
 package com.gamerking195.dev.up2date.util;
 
 import com.gamerking195.dev.up2date.Up2Date;
+import com.gamerking195.dev.up2date.config.MainConfig;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import org.bukkit.scheduler.BukkitRunnable;
@@ -11,18 +12,19 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.concurrent.ExecutorService;
 
+
 /**
- * Created by Caden Kriese (GamerKing195) on 9/8/17.
+ * @author Caden Kriese (flogic)
  * <p>
- * License is specified by the distributor which this
- * file was written for. Otherwise it can be found in the LICENSE file.
- * If there is no license file the code is then completely copyrighted
- * and you must contact me before using it IN ANY WAY.
+ * Created on 9/8/17
  */
 
 public class UtilSQL {
-    private UtilSQL() {}
+    private UtilSQL() {
+    }
+
     private static UtilSQL instance = new UtilSQL();
+
     public static UtilSQL getInstance() {
         return instance;
     }
@@ -32,13 +34,13 @@ public class UtilSQL {
     public void init() {
         if (dataSource == null) {
             HikariConfig config = new HikariConfig();
-            config.setJdbcUrl("jdbc:mysql://"+ Up2Date.getInstance().getMainConfig().getHostName()+"/"+ Up2Date.getInstance().getMainConfig().getDatabase());
-            config.setUsername(Up2Date.getInstance().getMainConfig().getUsername());
-            config.setPassword(Up2Date.getInstance().getMainConfig().getPassword());
+            config.setJdbcUrl("jdbc:mysql://" + MainConfig.getConf().getHostName() + "/" + MainConfig.getConf().getDatabase());
+            config.setUsername(MainConfig.getConf().getUsername());
+            config.setPassword(MainConfig.getConf().getPassword());
 
-            config.setMaximumPoolSize(Up2Date.getInstance().getMainConfig().getConnectionPoolSize());
+            config.setMaximumPoolSize(MainConfig.getConf().getConnectionPoolSize());
 
-            config.setPoolName("U2D - User DB ("+Up2Date.getInstance().getMainConfig().getUsername()+"@"+Up2Date.getInstance().getMainConfig().getHostName()+")");
+            config.setPoolName("U2D - User DB (" + MainConfig.getConf().getUsername() + "@" + MainConfig.getConf().getHostName() + ")");
 
             dataSource = new HikariDataSource(config);
         }
@@ -52,7 +54,7 @@ public class UtilSQL {
     }
 
     public void runStatement(String statement) {
-        final String updatedStatement = statement.replace("TABLENAME", Up2Date.getInstance().getMainConfig().getTablename());
+        final String updatedStatement = statement.replace("TABLENAME", MainConfig.getConf().getTablename());
 
         Connection connection;
 
@@ -83,13 +85,13 @@ public class UtilSQL {
                     }
                 }
             });
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             Up2Date.getInstance().printError(ex, "Error occurred while running MySQL statement.");
         }
     }
 
     public void runStatement(String statement, boolean supressErrors) {
-        final String updatedStatement = statement.replace("TABLENAME", Up2Date.getInstance().getMainConfig().getTablename());
+        final String updatedStatement = statement.replace("TABLENAME", MainConfig.getConf().getTablename());
 
         Connection connection;
 
@@ -119,7 +121,7 @@ public class UtilSQL {
                     }
                 }
             });
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             if (supressErrors)
                 return;
 
@@ -128,7 +130,7 @@ public class UtilSQL {
     }
 
     public void runStatementSync(String statement) {
-        final String updatedStatement = statement.replace("TABLENAME", Up2Date.getInstance().getMainConfig().getTablename());
+        final String updatedStatement = statement.replace("TABLENAME", MainConfig.getConf().getTablename());
 
         if (dataSource == null)
             init();
@@ -150,14 +152,13 @@ public class UtilSQL {
                 preparedStatement.close();
                 connection.close();
             }
-        }
-        catch(Exception ex) {
+        } catch (Exception ex) {
             Up2Date.getInstance().printError(ex, "Error occurred while running MySQL statement.");
         }
     }
 
     public void runStatementSync(String statement, boolean supressErrors) {
-        final String updatedStatement = statement.replace("TABLENAME", Up2Date.getInstance().getMainConfig().getTablename());
+        final String updatedStatement = statement.replace("TABLENAME", MainConfig.getConf().getTablename());
 
         if (dataSource == null)
             init();
@@ -182,8 +183,7 @@ public class UtilSQL {
                 preparedStatement.close();
                 connection.close();
             }
-        }
-        catch(Exception ex) {
+        } catch (Exception ex) {
             if (supressErrors)
                 return;
 
@@ -192,7 +192,7 @@ public class UtilSQL {
     }
 
     public ResultSet runQuery(String query) {
-        final String updatedQuery = query.replace("TABLENAME", Up2Date.getInstance().getMainConfig().getTablename());
+        final String updatedQuery = query.replace("TABLENAME", MainConfig.getConf().getTablename());
 
         Connection connection;
 
@@ -205,16 +205,15 @@ public class UtilSQL {
                 public void run() {
                     try {
                         connection.close();
-                    }
-                    catch(Exception ex) {
+                    } catch (Exception ex) {
                         Up2Date.getInstance().printError(ex, "Error occurred while closing connection.");
                     }
                 }
             }.runTaskLater(Up2Date.getInstance(), 40L);
 
             return preparedStatement.executeQuery();
-        } catch(Exception ex) {
-            Up2Date.getInstance().printError(ex, "Error occurred while running query '"+updatedQuery+"'.");
+        } catch (Exception ex) {
+            Up2Date.getInstance().printError(ex, "Error occurred while running query '" + updatedQuery + "'.");
         }
 
         return null;

@@ -1,6 +1,7 @@
 package com.gamerking195.dev.up2date.ui.settings;
 
 import com.gamerking195.dev.up2date.Up2Date;
+import com.gamerking195.dev.up2date.config.MainConfig;
 import com.gamerking195.dev.up2date.ui.SettingsGUI;
 import com.gamerking195.dev.up2date.util.gui.GUI;
 import com.gamerking195.dev.up2date.util.item.ItemStackBuilder;
@@ -12,16 +13,13 @@ import org.bukkit.entity.Player;
 import org.bukkit.event.inventory.InventoryClickEvent;
 
 /**
- * Created by Caden Kriese (GamerKing195) on 11/19/17.
+ * @author Caden Kriese (flogic)
  * <p>
- * License is specified by the distributor which this
- * file was written for. Otherwise it can be found in the LICENSE file.
- * If there is no license file the code is then completely copyrighted
- * and you must contact me before using it IN ANY WAY.
+ * Created on 11/19/17
  */
 public class AdvancedGUI extends GUI {
     public AdvancedGUI() {
-        super ("&d&lU&5&l2&d&lD &8- &DSettings &8- &dAdvanced", 36);
+        super("&d&lU&5&l2&d&lD &8- &DSettings &8- &dAdvanced", 36);
     }
 
     @Override
@@ -39,7 +37,7 @@ public class AdvancedGUI extends GUI {
                         if (number > 12)
                             number = 12;
 
-                        Up2Date.getInstance().getMainConfig().setThreadPoolSize(number);
+                        MainConfig.getConf().setThreadPoolSize(number);
                         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
                         new AdvancedGUI().open(player);
                         return "Success";
@@ -56,7 +54,7 @@ public class AdvancedGUI extends GUI {
                         if (number > 15)
                             number = 15;
 
-                        Up2Date.getInstance().getMainConfig().setConnectionPoolSize(number);
+                        MainConfig.getConf().setConnectionPoolSize(number);
                         player.playSound(player.getLocation(), Sound.ENTITY_EXPERIENCE_ORB_PICKUP, 1, 1);
                         new AdvancedGUI().open(player);
                         return "Success";
@@ -77,7 +75,7 @@ public class AdvancedGUI extends GUI {
                                       .setDurability((short) 5)
                                       .setName("&f&lTHREAD POOL SIZE")
                                       .setLore(
-                                              "&7&lValue: &d&l"+ Up2Date.getInstance().getMainConfig().getThreadPoolSize(),
+                                              "&7&lValue: &d&l" + MainConfig.getConf().getThreadPoolSize(),
                                               "&7&lDescription: ",
                                               "     &d&lAmount of threads used while",
                                               "     &d&lparsing your plugins.",
@@ -92,7 +90,7 @@ public class AdvancedGUI extends GUI {
                                       .setDurability((short) 5)
                                       .setName("&f&lCONNECTION POOL SIZE")
                                       .setLore(
-                                              "&7&lValue: &d&l"+ Up2Date.getInstance().getMainConfig().getConnectionPoolSize(),
+                                              "&7&lValue: &d&l" + MainConfig.getConf().getConnectionPoolSize(),
                                               "&7&lDescription: ",
                                               "     &d&lAmount of connections ",
                                               "     &d&lused while transferring ",
