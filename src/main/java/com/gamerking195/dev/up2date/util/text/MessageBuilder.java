@@ -1,6 +1,5 @@
 package com.gamerking195.dev.up2date.util.text;
 
-import com.gamerking195.dev.up2date.Up2Date;
 import com.gamerking195.dev.up2date.config.MainConfig;
 import lombok.Getter;
 import net.md_5.bungee.api.ChatColor;

@@ -60,9 +60,7 @@ public class UtilSiteSearch {
         return pluginIds;
     }
 
-    @Getter
-    @Setter
-    public static class SearchResult {
+    public @Getter @Setter static class SearchResult {
         private int id;
         private String name;
         private String tag;
