@@ -39,10 +39,10 @@ import java.util.stream.Stream;
 
 /**
  * @author Caden Kriese (flogic)
- * <p>
+ *
  * Created on 8/13/17
- * <p>
- * Copyright © Caden Kriese 2018
+ *
+ * Copyright © Caden "flogic" Kriese 2018
  * All rights reserved.
  */
 
@@ -68,6 +68,7 @@ public final class Up2Date extends JavaPlugin {
         }
         MainConfig mainConfig = MainConfig.getConf();
 
+        //Apply limits to config values
         if (mainConfig.getCacheRefreshDelay() < 5)
             mainConfig.setCacheRefreshDelay(5);
 
@@ -95,6 +96,7 @@ public final class Up2Date extends JavaPlugin {
         metrics = new Metrics(instance);
 
         //Classes
+        UtilSQL.getInstance().init();
         UpdateManager.getInstance().init();
         UtilStatisticsDatabase.getInstance().init();
 

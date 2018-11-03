@@ -16,7 +16,6 @@ import org.bukkit.Bukkit;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitRunnable;
 
-import java.sql.ResultSet;
 import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,8 +50,6 @@ public class UpdateManager {
     public void init() {
         //Setup Linked plugins
         if (MainConfig.getConf().isEnableSQL()) {
-            UtilSQL.getInstance().init();
-
             new BukkitRunnable() {
                 @Override
                 public void run() {
@@ -66,30 +63,10 @@ public class UpdateManager {
                         query = "SELECT * FROM TABLENAME WHERE lastupdated > '" + latestDbUpdate.toString() + "'";
                     }
 
-                    ResultSet resultSet = UtilSQL.getInstance().runQuery(query);
-                    ArrayList<PluginInfo> pluginInfos = new ArrayList<>();
-
-                    if (resultSet != null) {
-                        try {
-                            while (resultSet.next())
-                                pluginInfos.add(new PluginInfo(resultSet.getString("name"), resultSet.getInt("id"), resultSet.getString("description"), resultSet.getString("author"), resultSet.getString("version"), resultSet.getBoolean("premium"), resultSet.getString("testedversions")));
-
-                            resultSet.close();
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-
-                    //Check if theres already a version of this info in the list, if so remove it.
-                    //if the plugin is installed add it as linked.
-                    //This makes it so we wont create duplicates, and we wont re-link plugins that no longer exist.
-                    for (PluginInfo info : pluginInfos) {
-                        if (getInfoFromPluginName(info.getName()) != null)
-                            removeLinkedPlugin(info);
-
-                        if (Bukkit.getPluginManager().getPlugin(info.getName()) != null)
-                            addLinkedPlugin(info);
-                    }
+                    UtilSQL.getInstance().runQuerySync(query).stream()
+                                                       //Ensure we aren't adding duplicates & that we're only adding valid plugins.
+                                                       .filter(info -> getInfoFromPluginName(info.getName()) == null && Bukkit.getPluginManager().getPlugin(info.getName()) != null)
+                                                       .forEach(UpdateManager.this::addLinkedPlugin);
 
                     latestDbUpdate = new Timestamp(System.currentTimeMillis());
                 }
@@ -183,7 +160,7 @@ public class UpdateManager {
 
                 if (i % entriesPerStatement == 0) {
                     statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions),lastupdated=VALUES(lastupdated)");
-                    UtilSQL.getInstance().runStatement(statement.toString().replace("'", "\\'").replace("`", "'"));
+                    UtilSQL.getInstance().runStatementAsync(statement.toString().replace("'", "\\'").replace("`", "'"));
 
                     statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ");
                 } else if (iterator.hasNext() || i + 1 % entriesPerStatement == 0) {
@@ -193,7 +170,7 @@ public class UpdateManager {
 
             if (i % entriesPerStatement != 0) {
                 statement.append(" ON DUPLICATE KEY UPDATE name=VALUES(name), id=VALUES(id), author=VALUES(author), version=VALUES(version), description=VALUES(description), premium=VALUES(premium), testedversions=VALUES(testedversions), lastupdated=VALUES(lastupdated)");
-                UtilSQL.getInstance().runStatement(statement.toString().replace("'", "\'").replace("`", "'"));
+                UtilSQL.getInstance().runStatementAsync(statement.toString().replace("'", "\'").replace("`", "'"));
             }
         }
 
@@ -245,7 +222,7 @@ public class UpdateManager {
                 i++;
 
                 if (i % entriesPerStatement == 0) {
-                    UtilSQL.getInstance().runStatement(statement.toString().replace("'", "\'").replace("`", "'"));
+                    UtilSQL.getInstance().runStatementAsync(statement.toString().replace("'", "\'").replace("`", "'"));
 
                     statement = new StringBuilder("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ");
                 } else if (iterator.hasNext() || i + 1 % 100 == 0) {
@@ -254,41 +231,16 @@ public class UpdateManager {
             }
 
             if (i % entriesPerStatement != 0)
-                UtilSQL.getInstance().runStatement(statement.toString().replace("'", "\'").replace("`", "'"));
+                UtilSQL.getInstance().runStatementAsync(statement.toString().replace("'", "\'").replace("`", "'"));
 
         } else {
             DataConfig.getConfig().init();
 
-            new BukkitRunnable() {
-                @Override
-                public void run() {
-                    ResultSet rs = UtilSQL.getInstance().runQuery("SELECT * FROM TABLENAME");
+            UtilSQL.getInstance().runQueryAsync("SELECT * FROM TABLENAME", result -> {
 
-                    ArrayList<PluginInfo> info = new ArrayList<>();
-
-                    if (rs != null) {
-                        try {
-                            while (rs.next()) {
-                                info.add(new PluginInfo(rs.getString("name"), rs.getInt("id"), rs.getString("author"), rs.getString("version"), rs.getString("description").replace("'", ""), rs.getBoolean("premium"), rs.getString("testedversion")));
-                            }
-
-                            rs.close();
-                        } catch (Exception ex) {
-                            ex.printStackTrace();
-                        }
-                    }
-
-                    UtilSQL.getInstance().runStatementSync("DROP TABLE IF EXISTS TABLENAME CASCADE");
-
-                    //Switch back to main thread.
-                    new BukkitRunnable() {
-                        @Override
-                        public void run() {
-                            DataConfig.getConfig().setFile(info);
-                        }
-                    }.runTask(Up2Date.getInstance());
-                }
-            }.runTaskAsynchronously(Up2Date.getInstance());
+                UtilSQL.getInstance().runStatementSync("DROP TABLE IF EXISTS TABLENAME CASCADE");
+                DataConfig.getConfig().setFile(result);
+            });
         }
     }
 
@@ -338,7 +290,7 @@ public class UpdateManager {
         addLinkedPlugin(info);
 
         if (MainConfig.getConf().isEnableSQL())
-            UtilSQL.getInstance().runStatement("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ('" + info.getName() + "', '" + info.getId() + "', '" + info.getAuthor() + "', '" + info.getLatestVersion() + "', '" + info.getDescription() + "', '" + info.isPremium() + "', '" + info.getSupportedMcVersions() + "', '" + new Timestamp(System.currentTimeMillis()) + "')" +
+            UtilSQL.getInstance().runStatementAsync("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ('" + info.getName() + "', '" + info.getId() + "', '" + info.getAuthor() + "', '" + info.getLatestVersion() + "', '" + info.getDescription() + "', '" + info.isPremium() + "', '" + info.getSupportedMcVersions() + "', '" + new Timestamp(System.currentTimeMillis()) + "')" +
                                                        " ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions),lastupdated=VALUES(lastupdated)");
         else
             DataConfig.getConfig().writeInfoToFile(info);
@@ -351,7 +303,7 @@ public class UpdateManager {
         linkedPlugins.add(info);
 
         if (MainConfig.getConf().isEnableSQL())
-            UtilSQL.getInstance().runStatement("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ('" + info.getName() + "', '" + info.getId() + "', '" + info.getAuthor() + "', '" + info.getLatestVersion() + "', '" + info.getDescription() + "', '" + info.isPremium() + "', '" + info.getSupportedMcVersions() + "', '" + new Timestamp(System.currentTimeMillis()) + "')" +
+            UtilSQL.getInstance().runStatementAsync("INSERT INTO TABLENAME (name, id, author, version, description, premium, testedversions, lastupdated) VALUES ('" + info.getName() + "', '" + info.getId() + "', '" + info.getAuthor() + "', '" + info.getLatestVersion() + "', '" + info.getDescription() + "', '" + info.isPremium() + "', '" + info.getSupportedMcVersions() + "', '" + new Timestamp(System.currentTimeMillis()) + "')" +
                                                        " ON DUPLICATE KEY UPDATE name=VALUES(name),id=VALUES(id),author=VALUES(author),version=VALUES(version),description=VALUES(description),premium=VALUES(premium),testedversions=VALUES(testedversions),lastupdated=VALUES(lastupdated)");
         else
             DataConfig.getConfig().writeInfoToFile(info);
@@ -377,7 +329,7 @@ public class UpdateManager {
 
     public void removeLinkedPlugin(PluginInfo info) {
         if (MainConfig.getConf().isEnableSQL()) {
-            UtilSQL.getInstance().runStatement("DELETE FROM TABLENAME WHERE id='" + info.getId() + "'");
+            UtilSQL.getInstance().runStatementAsync("DELETE FROM TABLENAME WHERE id='" + info.getId() + "'");
         } else {
             DataConfig.getConfig().deletePath(info.getName());
             DataConfig.getConfig().saveFile();
@@ -448,7 +400,7 @@ public class UpdateManager {
         return updates;
     }
 
-    public PluginInfo getInfoFromPlugin(Plugin plugin) {
+    private PluginInfo getInfoFromPlugin(Plugin plugin) {
         for (PluginInfo info : linkedPlugins) {
             if (info.getName().equals(plugin.getName()))
                 return info;

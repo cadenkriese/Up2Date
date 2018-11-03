@@ -2,6 +2,7 @@ package com.gamerking195.dev.up2date.util;
 
 import com.gamerking195.dev.up2date.Up2Date;
 import com.gamerking195.dev.up2date.config.MainConfig;
+import com.gamerking195.dev.up2date.update.PluginInfo;
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
 import lombok.Getter;
@@ -9,6 +10,7 @@ import lombok.Getter;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.util.ArrayList;
 
 
 /**
@@ -35,7 +37,7 @@ public class UtilSQL {
             dataSource = new HikariDataSource(config);
         }
 
-        runStatement("CREATE TABLE IF NOT EXISTS TABLENAME " +
+        runStatementAsync("CREATE TABLE IF NOT EXISTS TABLENAME " +
                              "(id varchar(6) NOT NULL, " +
                              "name TEXT, " +
                              "author TEXT, " +
@@ -44,7 +46,7 @@ public class UtilSQL {
                              "premium TEXT, " +
                              "testedversions TEXT, " +
                              "lastupdated TIMESTAMP, " +
-                             "PRIMARY KEY(id))", true);
+                             "PRIMARY KEY(id))");
     }
 
     public void shutdown() {
@@ -63,13 +65,13 @@ public class UtilSQL {
      * @param query The query to be run.
      * @param callback The callback to be called with the result set.
      */
-    public void executeQueryAsync(String query, Callback callback) {
+    public void runQueryAsync(String query, Callback callback) {
         final String updatedQuery = query.replace("TABLENAME", MainConfig.getConf().getTablename());
 
         try (Connection connection = dataSource.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(updatedQuery)) {
             Up2Date.getInstance().getFixedThreadPool().submit(() -> {
                 try {
-                    callback.call(preparedStatement.executeQuery());
+                    callback.call(mapResultSetToArrayList(preparedStatement.executeQuery()));
                 } catch (Exception ex) {
                     Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while executing query.");
                 }
@@ -85,11 +87,11 @@ public class UtilSQL {
      * @param query The query to be executed.
      * @return The result of the query.
      */
-    public ResultSet executeQuery(String query) {
+    public ArrayList<PluginInfo> runQuerySync(String query) {
         final String updatedQuery = query.replace("TABLENAME", MainConfig.getConf().getTablename());
 
         try (Connection connection = dataSource.getConnection(); PreparedStatement preparedStatement = connection.prepareStatement(updatedQuery)) {
-            return preparedStatement.executeQuery();
+            return mapResultSetToArrayList(preparedStatement.executeQuery());
         } catch (Exception ex) {
             Up2Date.getInstance().printError(ex, "Error occurred while running query '" + updatedQuery + "'.");
         }
@@ -104,28 +106,43 @@ public class UtilSQL {
     /**
      * Executes an SQL statement on the users database.
      *
+     * @apiNote Runs synchronously.
      * @param statement The statement to be executed.
-     * @param synchronous Should the statement be executed on the main thread of a new thread from the pool.
      * @param suppressErrors Should errors be printed to console.
      */
-    public void runStatement(String statement, boolean synchronous, boolean suppressErrors) {
-        if (synchronous)
-            executeStatement(statement, suppressErrors);
-        else
-            Up2Date.getInstance().getFixedThreadPool().submit(() -> executeStatement(statement, suppressErrors));
+    public void runStatementSync(String statement, boolean suppressErrors) {
+        executeStatement(statement, suppressErrors);
     }
 
     /**
      * Executes an SQL statement on the users database.
      *
+     * @apiNote Runs synchronously.
      * @param statement The statement to be executed.
-     * @param synchronous Should the statement be executed on the main thread of a new thread from the pool.
      */
-    public void runStatement(String statement, boolean synchronous) {
-        if (synchronous)
-            executeStatement(statement, false);
-        else
-            Up2Date.getInstance().getFixedThreadPool().submit(() -> executeStatement(statement, false));
+    public void runStatementSync(String statement) {
+        executeStatement(statement, false);
+    }
+
+    /**
+     * Executes an SQL statement on the users database.
+     *
+     * @apiNote Runs asynchronously.
+     * @param suppressErrors Should errors be suppressed or not.
+     * @param statement The statement to be executed.
+     */
+    public void runStatementAsync(String statement, boolean suppressErrors) {
+        Up2Date.getInstance().getFixedThreadPool().submit(() -> executeStatement(statement, suppressErrors));
+    }
+
+    /**
+     * Executes an SQL statement on the users database.
+     *
+     * @apiNote Runs asynchronously.
+     * @param statement The statement to be executed.
+     */
+    public void runStatementAsync(String statement) {
+        Up2Date.getInstance().getFixedThreadPool().submit(() -> executeStatement(statement, false));
     }
 
     private void executeStatement(String statement, boolean suppressErrors) {
@@ -140,5 +157,24 @@ public class UtilSQL {
                 return;
             Up2Date.getInstance().systemOutPrintError(ex, "Error occurred while closing connection.");
         }
+    }
+
+    /*
+     * UTILITIES
+     */
+
+    private ArrayList<PluginInfo> mapResultSetToArrayList(ResultSet resultSet) {
+        ArrayList<PluginInfo> plugins = new ArrayList<>();
+
+        try {
+            if (resultSet != null && !resultSet.isClosed()) {
+                while (resultSet.next())
+                    plugins.add(new PluginInfo(resultSet.getString("name"), resultSet.getInt("id"), resultSet.getString("description"), resultSet.getString("author"), resultSet.getString("version"), resultSet.getBoolean("premium"), resultSet.getString("testedversions")));
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
+
+        return plugins;
     }
 }

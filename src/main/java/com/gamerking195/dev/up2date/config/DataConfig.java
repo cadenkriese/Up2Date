@@ -11,12 +11,11 @@ import java.util.ArrayList;
 
 /**
  * @author Caden Kriese (flogic)
- * <p>
+ *
  * Created on 9/8/17
  */
 public class DataConfig {
-    private DataConfig() {
-    }
+    private DataConfig() {}
 
     private static DataConfig instance = new DataConfig();
 

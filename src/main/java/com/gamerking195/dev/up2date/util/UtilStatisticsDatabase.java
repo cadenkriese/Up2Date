@@ -297,7 +297,7 @@ public class UtilStatisticsDatabase {
 
 
 
-                            ResultSet rs = runQuery("SELECT * FROM "+statstable+" WHERE id ='" + MainConfig.getConf().getServerId() + "'");
+                            ResultSet rs = runQueryAsync("SELECT * FROM "+statstable+" WHERE id ='" + MainConfig.getConf().getServerId() + "'");
                             try {
                                 if (rs != null && !rs.isClosed()) {
                                     rs.first();

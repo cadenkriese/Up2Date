@@ -12,9 +12,7 @@ import org.bukkit.plugin.Plugin;
  * <p>
  * Created on 9/6/17
  */
-public @Getter
-@Setter
-class PluginInfo {
+public @Getter @Setter class PluginInfo {
     private String name;
     private int id;
     private String author;
