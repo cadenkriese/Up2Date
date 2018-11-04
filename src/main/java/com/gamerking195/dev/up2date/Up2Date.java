@@ -96,7 +96,9 @@ public final class Up2Date extends JavaPlugin {
         metrics = new Metrics(instance);
 
         //Classes
-        UtilSQL.getInstance().init();
+        if (MainConfig.getConf().isEnableSQL())
+            UtilSQL.getInstance().init();
+
         UpdateManager.getInstance().init();
         UtilStatisticsDatabase.getInstance().init();
 

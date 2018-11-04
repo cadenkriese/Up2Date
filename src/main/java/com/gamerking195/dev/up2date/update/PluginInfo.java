@@ -9,7 +9,7 @@ import org.bukkit.plugin.Plugin;
 
 /**
  * @author Caden Kriese (flogic)
- * <p>
+ *
  * Created on 9/6/17
  */
 public @Getter @Setter class PluginInfo {

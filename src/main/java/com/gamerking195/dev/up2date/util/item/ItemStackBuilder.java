@@ -53,6 +53,8 @@ public class ItemStackBuilder {
     }
 
     public ItemStackBuilder setDurability(short durability) {
+        //TODO write compatibility for 1.13
+
         item.setDurability(durability);
         return this;
     }

@@ -203,7 +203,6 @@ public class SetupCommand implements CommandExecutor {
                 continue;
 
             pool.submit(() -> {
-
                 ArrayList<UtilSiteSearch.SearchResult> searchResults = UtilSiteSearch.getInstance().searchResources(plugin.getName(), 5);
 
                 if (searchResults == null || searchResults.size() == 0) {
