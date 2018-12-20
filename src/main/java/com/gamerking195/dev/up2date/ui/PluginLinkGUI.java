@@ -59,8 +59,7 @@ public class PluginLinkGUI extends PageGUI {
 
             try {
 
-                stackList.add(new ItemStackBuilder(Material.STAINED_CLAY)
-                                      .setDurability((short) 5)
+                stackList.add(new ItemStackBuilder(Material.LIME_CONCRETE)
                                       .setName("&f&l" + plugin.getName().toUpperCase())
                                       .setLore(getLore(WordUtils.wrap(pluginInfo.getDescription() != null ? pluginInfo.getDescription() : "None", 40, "%new%", false).split("%new%"),
                                               "",
@@ -85,8 +84,7 @@ public class PluginLinkGUI extends PageGUI {
 
             ArrayList<UtilSiteSearch.SearchResult> results = unlinkedPlugins.get(plugin);
 
-            stackList.add(new ItemStackBuilder(Material.STAINED_CLAY)
-                                  .setDurability((short) 4)
+            stackList.add(new ItemStackBuilder(Material.YELLOW_CONCRETE)
                                   .setName("&f&l" + plugin.getName().toUpperCase())
                                   .setLore(getLore(WordUtils.wrap(plugin.getDescription().getDescription() != null ? plugin.getDescription().getDescription() : "None", 40, "%new%", false).split("%new%"),
                                           "",
@@ -103,8 +101,7 @@ public class PluginLinkGUI extends PageGUI {
         }
 
         for (Plugin plugin : unknownPlugins) {
-            stackList.add(new ItemStackBuilder(Material.STAINED_CLAY)
-                                  .setDurability((short) 14)
+            stackList.add(new ItemStackBuilder(Material.RED_CONCRETE)
                                   .setName("&f&l" + plugin.getName().toUpperCase())
                                   .setLore(getLore(WordUtils.wrap(plugin.getDescription().getDescription() != null ? plugin.getDescription().getDescription() : "None", 40, "%new%", false).split("%new%"),
                                           "",
@@ -136,7 +133,7 @@ public class PluginLinkGUI extends PageGUI {
 
     @Override
     protected void onPlayerClickIcon(InventoryClickEvent event) {
-        if (event.getCurrentItem() != null && event.getCurrentItem().getType() != null && event.getCurrentItem().getType() == Material.STAINED_CLAY) {
+        if (event.getCurrentItem() != null && event.getCurrentItem().getType() != null && event.getCurrentItem().getType().name().contains("CONCRETE")) {
 
             event.setCancelled(true);
 
@@ -150,8 +147,7 @@ public class PluginLinkGUI extends PageGUI {
 
             //Green = Right | Change ID, Yellow = Right | Change ID, Left | Select result, Red = Left | Change ID
 
-            if (event.getCurrentItem().getDurability() == 5) {
-
+            if (event.getCurrentItem().getType().name().contains("GREEN")) {
                 if (event.getClick() == ClickType.RIGHT)
                     changeId(Bukkit.getServer().getPluginManager().getPlugin(pluginName));
 
@@ -160,7 +156,7 @@ public class PluginLinkGUI extends PageGUI {
                     new ConfirmGUI("&dDelete '&5" + plugin.getName() + "&d'?", () -> {
                         UpdateManager.getInstance().removeLinkedPlugin(plugin);
                         new PluginLinkGUI(player).open(player);
-                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                     }, () -> new PluginLinkGUI(player).open(player),
                             "&7Click '&a&lCONFIRM&7' to remove",
                             "&7this plugin from the list of",
@@ -170,7 +166,7 @@ public class PluginLinkGUI extends PageGUI {
                             "&7to the overview GUI."
                     ).open(player);
                 }
-            } else if (event.getCurrentItem().getDurability() == 4) {
+            } else if (event.getCurrentItem().getType().name().contains("YELLOW")) {
                 if (event.getClick() == ClickType.RIGHT)
                     changeId(Bukkit.getServer().getPluginManager().getPlugin(pluginName));
 
@@ -180,7 +176,7 @@ public class PluginLinkGUI extends PageGUI {
                 else if (event.getClick() == ClickType.SHIFT_RIGHT) {
                     Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin(pluginName);
                     new ConfirmGUI("&dDelete '&5" + plugin.getName() + "&d'?", () -> {
-                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                         UpdateManager.getInstance().removeUnlinkedPlugin(plugin);
                         new PluginLinkGUI(player).open(player);
                     }, () -> new PluginLinkGUI(player).open(player),
@@ -192,15 +188,14 @@ public class PluginLinkGUI extends PageGUI {
                             "&7to the overview GUI."
                     ).open(player);
                 }
-            } else if (event.getCurrentItem().getDurability() == 14) {
-
+            } else if (event.getCurrentItem().getType().name().contains("RED")) {
                 if (event.getClick() == ClickType.LEFT)
                     changeId(Bukkit.getServer().getPluginManager().getPlugin(pluginName));
 
                 else if (event.getClick() == ClickType.SHIFT_RIGHT) {
                     Plugin plugin = Bukkit.getServer().getPluginManager().getPlugin(pluginName);
                     new ConfirmGUI("&dDelete '&5" + plugin.getName() + "&d'?", () -> {
-                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                         UpdateManager.getInstance().removeUnknownPlugin(plugin);
                         new PluginLinkGUI(player).open(player);
                     }, () -> new PluginLinkGUI(player).open(player),
@@ -239,13 +234,13 @@ public class PluginLinkGUI extends PageGUI {
                     boolean premium = pluginJson.contains("\"premium\": true");
 
                     if (pluginJson.contains("\"external\": true")) {
-                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                         return "External downloads not supported!";
                     } else if (premium && AutoUpdaterAPI.getInstance().getCurrentUser() == null) {
-                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                         return "You must login to spigot for premium resources!";
                     } else if (!pluginJson.contains("\"type\": \".jar\"")) {
-                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                         return "Resource download type must be a jar!";
                     }
 
@@ -263,7 +258,7 @@ public class PluginLinkGUI extends PageGUI {
                         new PluginLinkGUI(player).open(player);
                         return "Success!";
                     } else {
-                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                         return "Resource info not found!";
                     }
                 } catch (Exception ex) {

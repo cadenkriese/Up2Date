@@ -25,7 +25,7 @@ import java.util.*;
  */
 public abstract class GUI {
 
-    protected static final ItemStack SPACER = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 0);
+    protected static final ItemStack SPACER = new ItemStack(Material.WHITE_STAINED_GLASS_PANE, 1);
 
     static {
         ItemMeta spacerMeta = SPACER.getItemMeta();
@@ -317,20 +317,12 @@ public abstract class GUI {
 
         }
 
-        public boolean contains(int i) {
-            return proxyInventory.contains(i);
-        }
-
         public boolean contains(Material material) throws IllegalArgumentException {
             return proxyInventory.contains(material);
         }
 
         public boolean contains(ItemStack itemStack) {
             return proxyInventory.contains(itemStack);
-        }
-
-        public boolean contains(int i, int i1) {
-            return proxyInventory.contains(i, i1);
         }
 
         public boolean contains(Material material, int i) throws IllegalArgumentException {
@@ -345,20 +337,12 @@ public abstract class GUI {
             return proxyInventory.containsAtLeast(itemStack, i);
         }
 
-        public HashMap<Integer, ? extends ItemStack> all(int i) {
-            return proxyInventory.all(i);
-        }
-
         public HashMap<Integer, ? extends ItemStack> all(Material material) throws IllegalArgumentException {
             return proxyInventory.all(material);
         }
 
         public HashMap<Integer, ? extends ItemStack> all(ItemStack itemStack) {
             return proxyInventory.all(itemStack);
-        }
-
-        public int first(int i) {
-            return proxyInventory.first(i);
         }
 
         public int first(Material material) throws IllegalArgumentException {
@@ -371,10 +355,6 @@ public abstract class GUI {
 
         public int firstEmpty() {
             return proxyInventory.firstEmpty();
-        }
-
-        public void remove(int i) {
-            proxyInventory.remove(i);
         }
 
         public void remove(Material material) throws IllegalArgumentException {

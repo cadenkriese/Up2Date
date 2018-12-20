@@ -74,8 +74,7 @@ public class GeneralGUI extends GUI {
 
     @Override
     protected void populate() {
-        inventory.setItem(12, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
-                                      .setDurability((short) 5)
+        inventory.setItem(12, new ItemStackBuilder(Material.LIME_STAINED_GLASS_PANE)
                                       .setName("&f&lCACHE REFRESH DELAY")
                                       .setLore(
                                               "&7&lValue: &d&l" + MainConfig.getConf().getCacheRefreshDelay(),
@@ -89,8 +88,7 @@ public class GeneralGUI extends GUI {
                                               "&7&lDefault: &d&l120")
                                       .build());
 
-        inventory.setItem(14, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
-                                      .setDurability((short) 5)
+        inventory.setItem(14, new ItemStackBuilder(Material.LIME_STAINED_GLASS_PANE)
                                       .setName("&f&lDATABASE REFRESH DELAY")
                                       .setLore(
                                               "&7&lValue: &d&l" + MainConfig.getConf().getDatabaseRefreshDelay(),

@@ -71,8 +71,7 @@ public class AdvancedGUI extends GUI {
 
     @Override
     protected void populate() {
-        inventory.setItem(12, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
-                                      .setDurability((short) 5)
+        inventory.setItem(12, new ItemStackBuilder(Material.LIME_STAINED_GLASS_PANE)
                                       .setName("&f&lTHREAD POOL SIZE")
                                       .setLore(
                                               "&7&lValue: &d&l" + MainConfig.getConf().getThreadPoolSize(),
@@ -86,8 +85,7 @@ public class AdvancedGUI extends GUI {
                                               "&7&lDefault: &d&l5")
                                       .build());
 
-        inventory.setItem(14, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
-                                      .setDurability((short) 5)
+        inventory.setItem(14, new ItemStackBuilder(Material.LIME_STAINED_GLASS_PANE)
                                       .setName("&f&lCONNECTION POOL SIZE")
                                       .setLore(
                                               "&7&lValue: &d&l" + MainConfig.getConf().getConnectionPoolSize(),

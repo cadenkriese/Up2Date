@@ -18,7 +18,7 @@ public class SkullUtil {
     private static final String chars = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 
     public static ItemStack makeSkull(String skinURL, String name, List<String> lore) {
-        ItemStack skull = new ItemStack(Material.SKULL_ITEM, 1, (short) 3);
+        ItemStack skull = new ItemStack(Material.PLAYER_HEAD, 1, (short) 3);
         skull = Up2Date.getInstance().getServer().getUnsafe().modifyItemStack(skull, "{SkullOwner:{Id:\"" + UUID.randomUUID() + "\",Name:\"" + getRandomString(16) + "\",Properties:{textures:[{Value:\"" + skinURL + "\"}]}}}");
         SkullMeta skullMeta = (SkullMeta) skull.getItemMeta();
         skullMeta.setDisplayName(name);

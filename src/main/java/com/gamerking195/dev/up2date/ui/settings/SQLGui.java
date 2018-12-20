@@ -48,12 +48,12 @@ public class SQLGui extends GUI {
 
                             UpdateManager.getInstance().swapData(enableSql);
 
-                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
+                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                             new SQLGui().open(player);
                         },
 
                         () -> {
-                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                            player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                             new SQLGui().open(player);
                         },
 
@@ -71,7 +71,7 @@ public class SQLGui extends GUI {
                     @Override
                     public void run() {
                         UtilText.getUtil().sendTitle("&a&lSUCCESS", 10, 40, 0, player);
-                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
 
                         new BukkitRunnable() {
                             @Override
@@ -86,7 +86,7 @@ public class SQLGui extends GUI {
                     @Override
                     public void run() {
                         UtilText.getUtil().sendTitle("&4&lFAILED", "&7&oCheck console.", 10, 40, 0, player);
-                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                         new BukkitRunnable() {
                             @Override
                             public void run() {
@@ -167,8 +167,7 @@ public class SQLGui extends GUI {
 
     @Override
     protected void populate() {
-        inventory.setItem(4, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
-                                     .setDurability(MainConfig.getConf().isEnableSQL() ? (short) 5 : (short) 14)
+        inventory.setItem(4, new ItemStackBuilder(MainConfig.getConf().isEnableSQL() ? Material.LIME_STAINED_GLASS_PANE : Material.RED_STAINED_GLASS_PANE)
                                      .setName("&f&lENABLE SQL")
                                      .setLore(
                                              "&7&lValue: &d&l" + MainConfig.getConf().isEnableSQL(),
@@ -181,8 +180,7 @@ public class SQLGui extends GUI {
                                      .build());
 
 
-        inventory.setItem(18, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
-                                      .setDurability((short) 5)
+        inventory.setItem(18, new ItemStackBuilder(Material.LIME_STAINED_GLASS_PANE)
                                       .setName("&f&lHOSTNAME")
                                       .setLore(
                                               "&7&lValue: &d&l" + MainConfig.getConf().getHostName(),
@@ -193,8 +191,7 @@ public class SQLGui extends GUI {
                                       .build());
 
 
-        inventory.setItem(20, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
-                                      .setDurability((short) 5)
+        inventory.setItem(20, new ItemStackBuilder(Material.LIME_STAINED_GLASS_PANE)
                                       .setName("&f&lUSERNAME")
                                       .setLore(
                                               "&7&lValue: &d&l" + MainConfig.getConf().getUsername(),
@@ -205,8 +202,7 @@ public class SQLGui extends GUI {
                                       .build());
 
 
-        inventory.setItem(22, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
-                                      .setDurability((short) 5)
+        inventory.setItem(22, new ItemStackBuilder(Material.LIME_STAINED_GLASS_PANE)
                                       .setName("&f&lPASSWORD")
                                       .setLore(
                                               "&7&lValue: &d&l" + MainConfig.getConf().getPassword(),
@@ -217,8 +213,7 @@ public class SQLGui extends GUI {
                                       .build());
 
 
-        inventory.setItem(24, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
-                                      .setDurability((short) 5)
+        inventory.setItem(24, new ItemStackBuilder(Material.LIME_STAINED_GLASS_PANE)
                                       .setName("&f&lDATABASE")
                                       .setLore(
                                               "&7&lValue: &d&l" + MainConfig.getConf().getDatabase(),
@@ -229,8 +224,7 @@ public class SQLGui extends GUI {
                                       .build());
 
 
-        inventory.setItem(26, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
-                                      .setDurability((short) 5)
+        inventory.setItem(26, new ItemStackBuilder(Material.LIME_STAINED_GLASS_PANE)
                                       .setName("&f&lTABLENAME")
                                       .setLore(
                                               "&7&lValue: &d&l" + MainConfig.getConf().getTablename(),
@@ -241,8 +235,7 @@ public class SQLGui extends GUI {
                                       .build());
 
 
-        inventory.setItem(8, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
-                                     .setDurability((short) 13)
+        inventory.setItem(8, new ItemStackBuilder(Material.GREEN_STAINED_GLASS_PANE)
                                      .setName("&f&lTEST CONNECTION")
                                      .setLore(
                                              "&7Click to test the connection",

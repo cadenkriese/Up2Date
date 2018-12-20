@@ -95,18 +95,17 @@ public class UpdateGUI extends PageGUI {
             }
 
             try {
-                short durability = 5;
+                Material mat = Material.LIME_CONCRETE;
                 String updateStatus = "&dPlugin is &l&nUp&5&l&n2&d&l&nDate!";
 
                 if (UtilPlugin.compareVersions(plugin.getDescription().getVersion(), pluginInfo.getLatestVersion())) {
                     updateStatus = "&e&lUpdate Available";
-                    durability = 1;
+                    mat = Material.ORANGE_CONCRETE;
                     if (!updatesAvailable.contains(pluginInfo))
                         updatesAvailable.add(pluginInfo);
                 }
 
-                stackList.add(new ItemStackBuilder(Material.STAINED_CLAY)
-                                      .setDurability(durability)
+                stackList.add(new ItemStackBuilder(mat)
                                       .setName("&f&l" + plugin.getName().toUpperCase())
                                       .setLore(getLore(WordUtils.wrap(pluginInfo.getDescription() != null ? pluginInfo.getDescription() : "None", 40, "%new%", false).split("%new%"),
                                               "",
@@ -181,11 +180,11 @@ public class UpdateGUI extends PageGUI {
                     new ConfirmGUI("&dContinue?",
                             () -> {
                                 selection.forEach(info -> UpdateManager.getInstance().removeLinkedPlugin(info));
-                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
+                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                             },
 
                             () -> {
-                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                 new UpdateGUI(player).open(player);
                             },
 
@@ -252,17 +251,17 @@ public class UpdateGUI extends PageGUI {
                             boolean premium = pluginJson.contains("\"premium\": true");
 
                             if (pluginJson.contains("\"external\": true")) {
-                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                 new MessageBuilder().addPlainText("&dPlugins with external downloads are not supported!").sendToPlayersPrefixed(player);
                                 new UpdateGUI(player).open(player);
                                 return "External downloads not supported!";
                             } else if (premium && AutoUpdaterAPI.getInstance().getCurrentUser() == null) {
-                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                 new MessageBuilder().addPlainText("&dYou must be logged into spigot to download premium resources!").sendToPlayersPrefixed(player);
                                 new UpdateGUI(player).open(player);
                                 return "You must login to spigot for premium resources!";
                             } else if (!pluginJson.contains("\"type\": \".jar\"")) {
-                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                 new MessageBuilder().addPlainText("&dResource download must be a jar!").sendToPlayersPrefixed(player);
                                 new UpdateGUI(player).open(player);
                                 return "Resource download must be a jar!";
@@ -303,7 +302,7 @@ public class UpdateGUI extends PageGUI {
                                         UtilStatisticsDatabase.getInstance().addDownloadedFiles(1);
                                         UtilStatisticsDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
                                     } else
-                                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                 }).update();
                                 player.closeInventory();
 
@@ -318,7 +317,7 @@ public class UpdateGUI extends PageGUI {
                                         UtilStatisticsDatabase.getInstance().addDownloadedFiles(1);
                                         UtilStatisticsDatabase.getInstance().addDownloadsize(getFileSize(plugin.getName()));
                                     } else {
-                                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                     }
                                 }).update();
                                 player.closeInventory();
@@ -388,7 +387,7 @@ public class UpdateGUI extends PageGUI {
 
                 break;
             default:
-                if (event.getCurrentItem() == null || event.getCurrentItem().getType() != Material.STAINED_CLAY)
+                if (event.getCurrentItem() == null || event.getCurrentItem().getType().name().contains("CONCRETE"))
                     return;
 
                 int pageNumber = Integer.valueOf(ChatColor.stripColor(bukkitInventory.getItem(49).getItemMeta().getDisplayName()).replace("Page #", ""));
@@ -397,7 +396,7 @@ public class UpdateGUI extends PageGUI {
                 PluginInfo pluginInfo = inventoryMap.get(((pageNumber - 1) * 45) + event.getRawSlot());
                 Plugin plugin = Bukkit.getPluginManager().getPlugin(pluginInfo.getName());
 
-                if (event.getCurrentItem().getType() == Material.STAINED_CLAY) {
+                if (event.getCurrentItem().getType().name().contains("CONCRETE")) {
                     //LEFT-CLICK, SELECT PLUGIN
                     if (event.getClick() == ClickType.LEFT) {
                         if (event.getCurrentItem().getDurability() == 4) {
@@ -417,13 +416,13 @@ public class UpdateGUI extends PageGUI {
                                     boolean premium = pluginJson.contains("\"premium\": true");
 
                                     if (pluginJson.contains("\"external\": true")) {
-                                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                         return "External downloads not supported!";
                                     } else if (premium && AutoUpdaterAPI.getInstance().getCurrentUser() == null) {
-                                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                         return "You must login to spigot for premium resources!";
                                     } else if (!pluginJson.contains("\"type\": \".jar\"")) {
-                                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                         return "Resource type must be a jar!";
                                     }
 
@@ -446,7 +445,7 @@ public class UpdateGUI extends PageGUI {
                                         new UpdateGUI(player).open(player);
                                         return "Success.";
                                     } else {
-                                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                        player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                         return "Resource info not found.";
                                     }
                                 } catch (Exception ex) {
@@ -467,12 +466,12 @@ public class UpdateGUI extends PageGUI {
                                 () -> {
                                     UpdateManager.getInstance().removeLinkedPlugin(info);
 
-                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
+                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                     new UpdateGUI(player).open(player);
                                 },
 
                                 () -> {
-                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                     new UpdateGUI(player).open(player);
                                 },
 
@@ -528,15 +527,14 @@ public class UpdateGUI extends PageGUI {
     //Items for bottom row
     @Override
     protected void populateSpecial() {
-        inventory.setItem(45, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
+        inventory.setItem(45, new ItemStackBuilder(Material.LIME_STAINED_GLASS_PANE)
                                       .setName("&2&lUPDATE ALL")
                                       .setLore(
                                               "",
                                               "&8CLICK &f| &a&oUpdate Everything")
-                                      .setDurability((short) 5)
                                       .build());
 
-        inventory.setItem(46, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
+        inventory.setItem(46, new ItemStackBuilder(Material.YELLOW_STAINED_GLASS_PANE)
                                       .setName("&e&lAPPLY ACTION TO SELECTED")
                                       .setLore(
                                               "",
@@ -544,10 +542,9 @@ public class UpdateGUI extends PageGUI {
                                               "&8RIGHT-CLICK &f| &c&oDelete Link",
                                               "&8SHIFT-RIGHT-CLICK &f| &a&oToggle Entire Selection",
                                               "&8SHIFT-LEFT-CLICK &f| &a&oSelect Everything")
-                                      .setDurability((short) 4)
                                       .build());
 
-        inventory.setItem(47, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
+        inventory.setItem(47, new ItemStackBuilder(Material.RED_STAINED_GLASS_PANE)
                                       .setName("&4&lVIEW UNLINKED PLUGINS")
                                       .setLore(
                                               "",
@@ -557,28 +554,25 @@ public class UpdateGUI extends PageGUI {
 
         String dataStorage = MainConfig.getConf().isEnableSQL() ? "database" : "file";
 
-        inventory.setItem(51, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
+        inventory.setItem(51, new ItemStackBuilder(Material.BLUE_STAINED_GLASS_PANE)
                                       .setName("&2&lSAVE ALL DATA")
                                       .setLore(
                                               "",
                                               "&8CLICK &f| &a&oSave all data to the " + dataStorage + ".")
-                                      .setDurability((short) 11)
                                       .build());
 
-        inventory.setItem(52, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
+        inventory.setItem(52, new ItemStackBuilder(Material.MAGENTA_STAINED_GLASS_PANE)
                                       .setName("&5&lINSTALL A PLUGIN")
                                       .setLore(
                                               "",
                                               "&8CLICK &f| &a&oEnter an ID for a plugin to be downloaded & installed.")
-                                      .setDurability((short) 2)
                                       .build());
 
-        inventory.setItem(53, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
+        inventory.setItem(53, new ItemStackBuilder(Material.PINK_STAINED_GLASS_PANE)
                                       .setName("&d&lFORCE REFRESH")
                                       .setLore(
                                               "",
                                               "&8CLICK &f| &a&oRetrieve latest plugin info from Spigot. (ETA " + UpdateManager.getInstance().getLinkedPlugins().size() * 4 + " Sec)")
-                                      .setDurability((short) 6)
                                       .build());
     }
 
@@ -658,7 +652,7 @@ public class UpdateGUI extends PageGUI {
                 restoreFile(oldFileResult, name);
 
                 if (!silent)
-                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
 
                 if (ex instanceof IllegalPluginAccessException || ex instanceof InvalidPluginException || ex instanceof InvalidDescriptionException) {
                     UtilStatisticsDatabase.getInstance().addIncompatiblePlugin(pluginInfo);
@@ -750,7 +744,7 @@ public class UpdateGUI extends PageGUI {
                                     player.playSound(player.getLocation(), Sound.ENTITY_PLAYER_LEVELUP, 1, 1);
                                     UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated all " + totalUpdateCount + " plugins in " + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds.", player);
                                 } else {
-                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                     UtilText.getUtil().sendActionBar("&d&lU&5&l2&d&lD &7&oSuccessfully updated " + successfulUpdates.size() + " plugins and " + failedUpdates.size() + " " + UtilText.getUtil().getEnding("update", failedUpdates.size(), false) + " failed in " + String.format("%.2f", ((double) (System.currentTimeMillis() - startTime) / 1000)) + " seconds. &c&o(Check Console.)", player);
                                 }
 

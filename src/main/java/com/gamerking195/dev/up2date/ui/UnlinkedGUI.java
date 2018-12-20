@@ -72,8 +72,7 @@ public class UnlinkedGUI extends PageGUI {
                 continue;
             }
 
-            stackList.add(new ItemStackBuilder(Material.STAINED_CLAY)
-                                  .setDurability((short) 14)
+            stackList.add(new ItemStackBuilder(Material.RED_CONCRETE)
                                   .setName("&f&l" + plugin.getName().toUpperCase())
                                   .setLore(getLore(WordUtils.wrap(plugin.getDescription().getDescription() != null ? plugin.getDescription().getDescription() : "None", 40, "%new%", false).split("%new%"),
                                           "",
@@ -98,7 +97,7 @@ public class UnlinkedGUI extends PageGUI {
         if (event.getRawSlot() == 45)
             new UpdateGUI((Player) event.getWhoClicked()).open((Player) event.getWhoClicked());
         else {
-            if (event.getCurrentItem() != null && event.getCurrentItem().getType() == Material.STAINED_CLAY) {
+            if (event.getCurrentItem() != null && event.getCurrentItem().getType().name().contains("CONCRETE")) {
                 if (event.getClick() == ClickType.LEFT) {
                     new AnvilGUI(Up2Date.getInstance(), (Player) event.getWhoClicked(), "Enter plugin ID", (player, reply) -> {
                         if (NumberUtils.isNumber(reply)) {
@@ -110,13 +109,13 @@ public class UnlinkedGUI extends PageGUI {
                                 ResourceManager manager = AutoUpdaterAPI.getInstance().getApi().getResourceManager();
 
                                 if (pluginJson.contains("\"external\": true")) {
-                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                     return "External downloads not supported.";
                                 } else if (premium && AutoUpdaterAPI.getInstance().getCurrentUser() == null) {
-                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                     return "You must login to spigot for premium resources.";
                                 } else if (!pluginJson.contains("\"type\": \".jar\"")) {
-                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                     return "Resource type must be a jar.";
                                 }
 
@@ -145,7 +144,7 @@ public class UnlinkedGUI extends PageGUI {
                                     new UnlinkedGUI().open(player);
                                     return "Success!";
                                 } else {
-                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                     return "Resource info not found!";
                                 }
                             } catch (Exception ex) {
@@ -161,12 +160,12 @@ public class UnlinkedGUI extends PageGUI {
                     new ConfirmGUI("&dContinue?",
                             () -> {
                                 UtilPlugin.unload(plugin);
-                                ((Player) event.getWhoClicked()).playSound(event.getWhoClicked().getLocation(), Sound.BLOCK_NOTE_PLING, 1, 1);
+                                ((Player) event.getWhoClicked()).playSound(event.getWhoClicked().getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                 new UnlinkedGUI().open((Player) event.getWhoClicked());
                             },
 
                             () -> {
-                                ((Player) event.getWhoClicked()).playSound(event.getWhoClicked().getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                ((Player) event.getWhoClicked()).playSound(event.getWhoClicked().getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                                 new UnlinkedGUI().open((Player) event.getWhoClicked());
                             },
 

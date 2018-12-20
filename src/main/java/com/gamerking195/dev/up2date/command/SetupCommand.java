@@ -59,7 +59,7 @@ public class SetupCommand implements CommandExecutor {
 
                 if (args[0].equals("deny")) {
                     new MessageBuilder().addPlainText("&dSetup cancelled.").sendToPlayersPrefixed(player);
-                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                    player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                 } else if (args[0].equals("accept")) {
                     inSetup = true;
                     UtilText.getUtil().sendMultipleTitles(player, 20, 80, 20, "&dWelcome to &d&lU&5&l2&d&lD!\n&7&oThis setup wizard will help you get started.", "&a&lStep &2&o1/3\n&7Downloading dependencies.");

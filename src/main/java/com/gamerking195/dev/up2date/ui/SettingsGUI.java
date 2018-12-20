@@ -47,8 +47,7 @@ public class SettingsGUI extends GUI {
 
     @Override
     protected void populate() {
-        inventory.setItem(11, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
-                                      .setDurability((short) 2)
+        inventory.setItem(11, new ItemStackBuilder(Material.MAGENTA_STAINED_GLASS_PANE)
                                       .setName("&d&lGENERAL")
                                       .setLore(
                                               "",
@@ -58,8 +57,7 @@ public class SettingsGUI extends GUI {
                                       .build());
 
 
-        inventory.setItem(13, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
-                                      .setDurability((short) 2)
+        inventory.setItem(13, new ItemStackBuilder(Material.MAGENTA_STAINED_GLASS_PANE)
                                       .setName("&d&lADVANCED")
                                       .setLore(
                                               "",
@@ -69,8 +67,7 @@ public class SettingsGUI extends GUI {
                                       .build());
 
 
-        inventory.setItem(15, new ItemStackBuilder(Material.STAINED_GLASS_PANE)
-                                      .setDurability((short) 2)
+        inventory.setItem(15, new ItemStackBuilder(Material.MAGENTA_STAINED_GLASS_PANE)
                                       .setName("&d&lSQL")
                                       .setLore(
                                               "",

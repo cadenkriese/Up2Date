@@ -48,7 +48,7 @@ public class SelectResultGUI extends GUI {
         if (event.getSlot() == 31)
             new PluginLinkGUI(player).open(player);
 
-        if (event.getCurrentItem().getType() == Material.STAINED_CLAY && event.getCurrentItem().getDurability() == (short) 5) {
+        if (event.getCurrentItem().getType().name().contains("CONCRETE") && event.getCurrentItem().getType().name().contains("LIME")) {
             int id = Integer.valueOf(ChatColor.stripColor(event.getCurrentItem().getItemMeta().getLore().get(2)).replace("ID: ", ""));
 
             try {
@@ -70,7 +70,7 @@ public class SelectResultGUI extends GUI {
 
     @Override
     protected void populate() {
-        inventory.setItem(0, new ItemStackBuilder(Material.DOUBLE_PLANT)
+        inventory.setItem(0, new ItemStackBuilder(Material.SUNFLOWER)
                                      .setName("&f&l" + plugin.getName().toUpperCase())
                                      .setLore(getLore(WordUtils.wrap(plugin.getDescription().getDescription() != null ? plugin.getDescription().getDescription() : "None", 40, "%new%", false).split("%new%"),
                                              "",
@@ -84,9 +84,9 @@ public class SelectResultGUI extends GUI {
         inventory.setItem(31, new ItemStackBuilder(Material.BARRIER).setName("&c&l«&m---&r &4&lBACK").build());
 
         for (int i = 0; i < 5; i++)
-            inventory.setItem(11 + i, new ItemStackBuilder(Material.STAINED_CLAY).setDurability((short) 9).setName("&8&oLoading results...").build());
+            inventory.setItem(11 + i, new ItemStackBuilder(Material.CYAN_CONCRETE).setName("&8&oLoading results...").build());
 
-        if (inventory.getItem(11) != null && inventory.getItem(11).getDurability() != (short) 5)
+        if (inventory.getItem(11) != null && !inventory.getItem(11).getType().name().contains("LIME"))
             loadItems();
     }
 
@@ -132,9 +132,8 @@ public class SelectResultGUI extends GUI {
 
                             if (results.contains(result) && playerInventory.getTitle().equals(inventory.getTitle())) {
                                 for (int j = 0; j < 5; j++) {
-                                    if (playerInventory.getItem(11 + j).getDurability() == (short) 9) {
-                                        playerInventory.setItem(j + 11, new ItemStackBuilder(Material.STAINED_CLAY)
-                                                                                .setDurability((short) 5)
+                                    if (playerInventory.getItem(11 + j).getType().name().contains("LIME")) {
+                                        playerInventory.setItem(j + 11, new ItemStackBuilder(Material.LIME_CONCRETE)
                                                                                 .setName("&f&l" + plugin.getName().toUpperCase())
                                                                                 .setLore(getLore(WordUtils.wrap(result.getTag(), 40, "%new%", false).split("%new%"),
                                                                                         "",
@@ -151,7 +150,7 @@ public class SelectResultGUI extends GUI {
                                 }
 
                                 //update info item
-                                playerInventory.setItem(0, new ItemStackBuilder(Material.DOUBLE_PLANT)
+                                playerInventory.setItem(0, new ItemStackBuilder(Material.SUNFLOWER)
                                                                    .setName("&f&l" + plugin.getName().toUpperCase())
                                                                    .setLore(getLore(WordUtils.wrap(plugin.getDescription().getDescription() != null ? plugin.getDescription().getDescription() : "None", 40, "%new%", false).split("%new%"),
                                                                            "",
@@ -166,8 +165,8 @@ public class SelectResultGUI extends GUI {
                             //Loop through in reverse (start at 15 and go backwards) and set the clay to "no results"
                             int difference = 5 - results.size();
                             for (int i = 0; i < difference; i++) {
-                                if (playerInventory.getTitle().equals(inventory.getTitle()) && playerInventory.getItem(15 - i).getDurability() != (short) 5)
-                                    playerInventory.setItem(15 - i, new ItemStackBuilder(Material.STAINED_CLAY).setDurability((short) 14).setName("&4&lNO RESULT").build());
+                                if (playerInventory.getTitle().equals(inventory.getTitle()) && !playerInventory.getItem(15 - i).getType().name().contains("LIME"))
+                                    playerInventory.setItem(15 - i, new ItemStackBuilder(Material.RED_CONCRETE).setName("&4&lNO RESULT").build());
                             }
                         }
                     }.runTask(Up2Date.getInstance());
@@ -183,7 +182,7 @@ public class SelectResultGUI extends GUI {
                             @Override
                             public void run() {
                                 new PluginLinkGUI(player).open(player);
-                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BASS, 1, 1);
+                                player.playSound(player.getLocation(), Sound.BLOCK_NOTE_BLOCK_BASS, 1, 1);
                             }
                         }.runTask(Up2Date.getInstance());
                     } else if (results.size() == 1 && results.contains(result)) {

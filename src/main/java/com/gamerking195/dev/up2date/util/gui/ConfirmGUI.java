@@ -84,7 +84,7 @@ public class ConfirmGUI extends GUI {
     @Override
     protected void populate() {
         for (int slot : new int[]{0, 1, 2, 9, 10, 11, 18, 19, 20}) {
-            ItemStack icon = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 13);
+            ItemStack icon = new ItemStack(Material.GREEN_STAINED_GLASS_PANE, 1);
             ItemMeta iconMeta = icon.getItemMeta();
             iconMeta.setDisplayName(ChatColor.GREEN.toString() + ChatColor.BOLD + "CONFIRM");
             icon.setItemMeta(iconMeta);
@@ -92,14 +92,14 @@ public class ConfirmGUI extends GUI {
         }
 
         for (int slot : new int[]{6, 7, 8, 15, 16, 17, 24, 25, 26}) {
-            ItemStack icon = new ItemStack(Material.STAINED_GLASS_PANE, 1, (short) 14);
+            ItemStack icon = new ItemStack(Material.RED_STAINED_GLASS_PANE, 1);
             ItemMeta iconMeta = icon.getItemMeta();
             iconMeta.setDisplayName(ChatColor.RED.toString() + ChatColor.BOLD + "CANCEL");
             icon.setItemMeta(iconMeta);
             this.inventory.setItem(slot, icon);
         }
 
-        ItemStack questionIcon = new ItemStack(Material.SKULL_ITEM, 1, (short) 0, (byte) 3);
+        ItemStack questionIcon = new ItemStack(Material.PLAYER_HEAD, 1);
         Bukkit.getUnsafe().modifyItemStack(questionIcon, "{SkullOwner:{Id:\"808ac216-799a-4d42-bd68-7c9f0c1e89d1\",Properties:{textures:[{Value:\"eyJ0ZXh0dXJlcyI6eyJTS0lOIjp7InVybCI6Imh0dHA6Ly90ZXh0dXJlcy5taW5lY3JhZnQubmV0L3RleHR1cmUvM2FhYjI3Mjg0MGQ3OTBjMmVkMmJlNWM4NjAyODlmOTVkODhlMzE2YjY1YzQ1NmZmNmEzNTE4MGQyZTViZmY2In19fQ==\"}]}}}");
         ItemMeta questionIconMeta = questionIcon.getItemMeta();
         questionIconMeta.setDisplayName(ChatColor.WHITE + title);
