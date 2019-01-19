@@ -37,16 +37,6 @@ import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 import java.util.stream.Stream;
 
-/**
- * This code is fully copyright by GamerKing195 (Caden Kriese)
- * If you are viewing this message you have already violated that rule (unless you're a spigot resource staff <3)
- * by decompiling the plugin.
- *
- * THIS IS NOT A SCARE MESSAGE
- * By default, any code without a license specifying otherwise
- * is automatically copyrighted by its creator.
- */
-
 public final class Up2Date extends JavaPlugin {
 
     public static String fs = FileSystems.getDefault().getSeparator();
